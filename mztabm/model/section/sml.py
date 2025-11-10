@@ -1,0 +1,225 @@
+from typing import (
+    Annotated,
+    List,
+    Literal,
+    Optional,
+)
+
+from pydantic import AnyUrl, Field
+
+from mztabm.model.common import AdductIon, Comment, OptColumnMapping, Parameter
+from mztabm.model.section.base_table_section import BaseTableSection
+from mztabm.model.serialization import TableSerialization
+
+
+class SmallMoleculeSummary(BaseTableSection):
+    prefix: Annotated[
+        Optional[Literal["SML"]],
+        Field(
+            description="The small molecule table row prefix. "
+            "SML MUST be used for rows of the small molecule table.",
+            json_schema_extra=TableSerialization(ignore=True).model_dump(
+                exclude_unset=True, exclude_defaults=True
+            ),
+        ),
+    ] = "SML"
+    header_prefix: Annotated[
+        Optional[Literal["SMH"]],
+        Field(
+            description="The small molecule table header prefix. "
+            "SMH MUST be used for the small molecule table header line (the column labels).",
+            json_schema_extra=TableSerialization(ignore=True).model_dump(
+                exclude_unset=True, exclude_defaults=True
+            ),
+        ),
+    ] = "SMH"
+    sml_id: Annotated[
+        int,
+        Field(
+            alias="SML_ID",
+            description="A within file unique identifier for the small molecule.",
+        ),
+    ]
+    smf_id_refs: Annotated[
+        Optional[List[int]],
+        Field(
+            alias="SMF_ID_REFS",
+            description="References to all the features "
+            "on which quantitation has been based (SMF elements) "
+            "via referencing SMF_ID values. "
+            "Multiple values SHOULD be provided as a “|” separated list. "
+            "This MAY be null only if this is a Summary file.",
+            json_schema_extra=TableSerialization(list_concatenation_str="|").model_dump(
+                exclude_unset=True, exclude_defaults=True
+            ),
+        ),
+    ] = None
+    database_identifier: Annotated[
+        Optional[List[str]],
+        Field(
+            description="A list of “|” separated possible identifiers "
+            "for the small molecule; multiple values MUST only be provided "
+            "to indicate ambiguity in the identification of the molecule "
+            "and not to demonstrate different identifier types for the same molecule. "
+            "Alternative identifiers for the same molecule MAY be provided "
+            "as optional columns. "
+            "The database identifier must be preceded "
+            "by the resource description (prefix) followed by a colon, "
+            "as specified in the metadata section. "
+            "A null value MAY be provided if the identification is sufficiently ambiguous "
+            "as to be meaningless for reporting or "
+            "the small molecule has not been identified.",
+            json_schema_extra=TableSerialization(list_concatenation_str="|").model_dump(
+                exclude_unset=True, exclude_defaults=True
+            ),
+        ),
+    ] = None
+    chemical_formula: Annotated[
+        Optional[List[str]],
+        Field(
+            description="A list of “|” separated potential chemical formulae "
+            "of the reported compound. "
+            "The number of values provided MUST match the number of entities "
+            "reported under “database_identifier”, "
+            "even if this leads to redundant reporting of information "
+            "(i.e. if ambiguity can be resolved in the chemical formula), "
+            "and the validation software will throw an error "
+            "if the number of “|” symbols does not match. “null” values "
+            "between bars are allowed. "
+            "This should be specified in Hill notation (EA Hill 1900), "
+            "i.e. elements in the order C, H and then alphabetically "
+            "all other elements. Counts of one may be omitted. "
+            "Elements should be capitalized properly to "
+            "avoid confusion (e.g., “CO” vs. “Co”). "
+            "The chemical formula reported should refer to the neutral form."
+            "Example: N-acetylglucosamine would be encoded by the string “C8H15NO6”.",
+            json_schema_extra=TableSerialization(list_concatenation_str="|").model_dump(
+                exclude_unset=True, exclude_defaults=True
+            ),
+        ),
+    ] = None
+    smiles: Annotated[
+        Optional[List[str]],
+        Field(
+            description="A list of “|” separated potential molecule structures "
+            "in the simplified molecular-input line-entry system (SMILES) for the small molecule. "
+            "The number of values provided MUST match the number of entities reported "
+            "under “database_identifier”, and the validation software will throw an error "
+            "if the number of “|” symbols does not match. “null” values between bars are allowed.",
+            json_schema_extra=TableSerialization(list_concatenation_str="|").model_dump(
+                exclude_unset=True, exclude_defaults=True
+            ),
+        ),
+    ] = None
+    inchi: Annotated[
+        Optional[List[str]],
+        Field(
+            description="A list of “|” separated potential standard IUPAC International Chemical Identifier (InChI) of the given substance.  The number of values provided MUST match the number of entities reported under “database_identifier”, even if this leads to redundant information being reported (i.e. if ambiguity can be resolved in the InChi), and the validation software will throw an error if the number of “|” symbols does not match. “null” values between bars are allowed. ",
+            json_schema_extra=TableSerialization(list_concatenation_str="|").model_dump(
+                exclude_unset=True, exclude_defaults=True
+            ),
+        ),
+    ] = None
+    chemical_name: Annotated[
+        Optional[List[str]],
+        Field(
+            description="A list of “|” separated possible chemical/common names for the small molecule, or general description if a chemical name is unavailable. Multiple names are only to demonstrate ambiguity in the identification. The number of values provided MUST match the number of entities reported under “database_identifier”, and the validation software will throw an error if the number of “|” symbols does not match. “null” values between bars are allowed. ",
+            json_schema_extra=TableSerialization(list_concatenation_str="|").model_dump(
+                exclude_unset=True, exclude_defaults=True
+            ),
+        ),
+    ] = None
+    uri: Annotated[
+        Optional[List[AnyUrl]],
+        Field(
+            description="A URI pointing to the small molecule's entry in a reference database (e.g., the small molecule's HMDB or KEGG entry). The number of values provided MUST match the number of entities reported under “database_identifier”, and the validation software will throw an error if the number of “|” symbols does not match. “null” values between bars are allowed.",
+            json_schema_extra=TableSerialization(list_concatenation_str="|").model_dump(
+                exclude_unset=True, exclude_defaults=True
+            ),
+        ),
+    ] = None
+    theoretical_neutral_mass: Annotated[
+        Optional[List[Optional[float]]],
+        Field(
+            description="The small molecule's precursor's theoretical neutral mass.  The number of values provided MUST match the number of entities reported under “database_identifier”, and the validation software will throw an error if the number of “|” symbols does not match. “null” values (in general and between bars) are allowed for molecules that have not been identified only, or for molecules where the neutral mass cannot be calculated. In these cases, the SML entry SHOULD reference features in which exp_mass_to_charge values are captured. ",
+            json_schema_extra=TableSerialization(list_concatenation_str="|").model_dump(
+                exclude_unset=True, exclude_defaults=True
+            ),
+        ),
+    ] = None
+    adduct_ions: Annotated[
+        Optional[List[AdductIon]],
+        Field(
+            description="A “|” separated list of detected adducts for this this molecule, following the general style in the 2013 IUPAC recommendations on terms relating to MS e.g. [M+H]1+, [M+Na]1+, [M+NH4]1+, [M-H]1-, [M+Cl]1-, [M+H]1+. If the adduct classification is ambiguous with regards to identification evidence it MAY be null. ",
+            json_schema_extra=TableSerialization(list_concatenation_str="|").model_dump(
+                exclude_unset=True, exclude_defaults=True
+            ),
+        ),
+    ] = None
+    reliability: Annotated[
+        Optional[str],
+        Field(
+            description="The reliability of the given small molecule identification. This must be supplied by the resource and MUST be reported as an integer between 1-4:      identified metabolite (1)      putatively annotated compound (2)      putatively characterized compound class (3)      unknown compound (4)  These MAY be replaced using a suitable CV term in the metadata section e.g. to use MSI recommendation levels (see Section 6.2.57 for details).  The following CV terms are already available within the PSI MS CV. Future schemes may be implemented by extending the PSI MS CV with new terms and associated levels.  The MSI has recently discussed an extension of the original four level scheme into a five level scheme MS:1002896 (compound identification confidence level) with levels      isolated, pure compound, full stereochemistry (0)      reference standard match or full 2D structure (1)      unambiguous diagnostic evidence (literature, database) (2)      most likely structure, including isomers, substance class or substructure match (3)      unknown compound (4)  For high-resolution MS, the following term and its levels may be used: MS:1002955 (hr-ms compound identification confidence level) with levels      confirmed structure (1)      probable structure (2)          unambiguous ms library match (2a)          diagnostic evidence (2b)      tentative candidates (3)      unequivocal molecular formula (4)      exact mass (5)  A String data type is set to allow for different systems to be specified in the metadata section. "
+        ),
+    ] = None
+    best_id_confidence_measure: Optional[Parameter] = None
+    best_id_confidence_value: Annotated[
+        Optional[float],
+        Field(
+            description="The best confidence measure in identification (for this type of score) for the given small molecule across all assays. The type of score MUST be defined in the metadata section. If the small molecule was not identified by the specified search engine, “null” MUST be reported. If the confidence measure does not report a numerical confidence value, “null” SHOULD be reported."
+        ),
+    ] = None
+    abundance_assay: Annotated[
+        Optional[List[Optional[float]]],
+        Field(
+            description="The small molecule's abundance in every assay described in the metadata section MUST be reported. Null or zero values may be reported as appropriate. 'null' SHOULD be used to report missing quantities, while zero SHOULD be used to indicate a present but not reliably quantifiable value (e.g. below a minimum noise threshold).",
+            json_schema_extra=TableSerialization(multiple_columns=True).model_dump(
+                exclude_unset=True, exclude_defaults=True
+            ),
+        ),
+    ] = None
+    abundance_study_variable: Annotated[
+        Optional[List[Optional[float]]],
+        Field(
+            description="The small molecule's abundance in all the study variables described "
+            "in the metadata section (study_variable[1-n]_average_function), "
+            "calculated using the method as described in the Metadata section "
+            "(default = arithmetic mean across assays). "
+            "Null or zero values may be reported as appropriate. "
+            "'null' SHOULD be used to report missing quantities, "
+            "while zero SHOULD be used to indicate a present but not reliably quantifiable value "
+            "(e.g. below a minimum noise threshold).",
+            json_schema_extra=TableSerialization(multiple_columns=True).model_dump(
+                exclude_unset=True, exclude_defaults=True
+            ),
+        ),
+    ] = None
+    abundance_variation_study_variable: Annotated[
+        Optional[List[Optional[float]]],
+        Field(
+            description="A measure of the variability of the study variable abundance measurement, calculated using the method as described in the metadata section (study_variable[1-n]_average_function), with a default = arithmethic co-efficient of variation of the small molecule's abundance in the given study variable.",
+            json_schema_extra=TableSerialization(multiple_columns=True).model_dump(
+                exclude_unset=True, exclude_defaults=True
+            ),
+        ),
+    ] = None
+    opt: Annotated[
+        Optional[List[OptColumnMapping]],
+        Field(
+            description="Additional columns can be added to the end of the small molecule table. These column headers MUST start with the prefix “opt_” followed by the {identifier} of the object they reference: assay, study variable, MS run or “global” (if the value relates to all replicates). Column names MUST only contain the following characters: ‘A'-‘Z', ‘a'-‘z', ‘0'-‘9', ‘', ‘-', ‘[', ‘]', and ‘:'. CV parameter accessions MAY be used for optional columns following the format: opt{identifier}_cv_{accession}_{parameter name}. Spaces within the parameter's name MUST be replaced by ‘_'. ",
+            json_schema_extra=TableSerialization(
+                multiple_columns=True,
+                column_name_field="identifier",
+                column_value_field="value",
+            ).model_dump(exclude_unset=True, exclude_defaults=True),
+        ),
+    ] = None
+    comment: Annotated[
+        Optional[List[Comment]],
+        Field(
+            description="",
+            json_schema_extra=TableSerialization(ignore=True).model_dump(
+                exclude_unset=True, exclude_defaults=True
+            ),
+        ),
+    ] = None
