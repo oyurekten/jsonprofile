@@ -23,7 +23,7 @@ export PATH=$HOME/.local/bin:$PATH
 # clone project from github
 git clone https://github.com/lifs-tools/pymzTab-m
 
-git checkout pydantic-based
+git checkout development
 
 # install python if it is not installed
 uv python install 3.12
