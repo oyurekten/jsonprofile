@@ -1,23 +1,19 @@
 [project]
 name = "mztabm"
 version = "0.1.0"
-description = "Add your description here"
+description="The Python3 language bindings for mzTab-M"
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
     "pydantic>=2.10.6",
     "pyyaml>=6.0.3",
 ]
-[tool.uv]
-package = true
-
 [dependency-groups]
 dev = [
     "pytest>=8.3.5",
     "ruff>=0.14.4",
     "uv-build>=0.9.8",
 ]
-
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "N", "C90"]
@@ -27,3 +23,14 @@ ignore = ["E501", "C901"]
 addopts = "-v"
 testpaths = ["tests"]
 
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mztabm*"]
+exclude = ["tests*", "docs*", "scripts*"]
+
+[tool.setuptools.package-data]
+"mztabm" = ["**/*.json"]
