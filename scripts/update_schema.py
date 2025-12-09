@@ -1,0 +1,8 @@
+import json
+from mztabm.model.mztabm import MzTabM
+
+
+if __name__ == "__main__":
+    schema = MzTabM.model_json_schema(by_alias=True)
+    with open("mztabm/schema/mztabm.schema-2.1.json", "w") as f:
+        json.dump(schema, f, indent=2)

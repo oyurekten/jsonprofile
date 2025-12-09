@@ -1,7 +1,12 @@
+import json
 from mztabm import MzTabMLoadResult, convert_to_dict, read
+from mztabm.model.mztabm import MzTabM
 
 
 if __name__ == "__main__":
+    schema = MzTabM.model_json_schema(by_alias=True)
+    with open("mztabm.schema.json", "w") as f:
+        json.dump(schema, f, indent=2)
     file_path = "tests/data/example/example.mztab"
     result: MzTabMLoadResult = read(file_path)
 

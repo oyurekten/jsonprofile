@@ -15,6 +15,7 @@ from mztabm.model.serialization import (
     MetadataSerialization,
     SerializationContext,
 )
+from pydantic.alias_generators import to_camel, to_pascal
 
 
 class SerializationCategory(str, enum.Enum):
@@ -33,11 +34,15 @@ class CustomSerializer(abc.ABC):
 
 class MzTabBaseModel(BaseModel):
     model_config = ConfigDict(
+        alias_generator=to_camel,
         populate_by_name=True,
         str_strip_whitespace=True,
         validate_default=True,
         validate_assignment=True,
         validation_error_cause=True,
+        field_title_generator=lambda field_name, field_info: to_pascal(
+            field_name.replace("_", " ").strip()
+        ),
     )
 
     def serialize_to_json(
