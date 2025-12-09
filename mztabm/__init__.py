@@ -88,6 +88,23 @@ def read(
 
     if format == "tsv":
         content = input_path.read_text()
+        result = MzTabMLoadResult(success=False, messages=[], source_format="tsv")
+        try:
+            mztabm = MzTabM.model_validate(content, by_alias=True, context=result)
+            result.mztabm = mztabm
+            result.success = True
+        except ValidationError as ex:
+            result.messages.extend(
+                [
+                    ValidationMessage(
+                        category=Category.FORMAT,
+                        message_type=MessageType.ERROR,
+                        message=repr(x),
+                    )
+                    for x in ex.errors()
+                ]
+            )
+        return result
     elif format == "json":
         with input_path.open() as f:
             content = json.load(f)
@@ -145,7 +162,7 @@ def write(
         )
     elif format in {"json", "yaml"}:
         result = mztabm.model_dump_json(
-            context=SerializationContext(convert_to=format),
+            context=SerializationContext(convert_to="json"),
             by_alias=True,
             indent=2,
             exclude_none=True,
@@ -187,7 +204,7 @@ def load_from_dict(data: dict[str, Any]) -> MzTabMLoadResult:
         ...     for msg in result.messages:
         ...         print(f"{msg.message_type}: {msg.message}")
     """
-    result = MzTabMLoadResult(success=False, messages=[])
+    result = MzTabMLoadResult(success=False, messages=[], source_format="json")
     try:
         mztabm = MzTabM.model_validate(data, by_alias=True, context=result)
         result.mztabm = mztabm

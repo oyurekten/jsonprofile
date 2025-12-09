@@ -174,7 +174,7 @@ class PublicationItem(MzTabBaseModel, CustomSerializer):
         if isinstance(data, (OrderedDict, dict)):
             if len(data) == 1 and None in data:
                 val = data[None]
-        if isinstance(val, str):
+        if isinstance(val, str) and ":" in val:
             parts = val.split(":", maxsplit=1)
             val = {"type": parts[0], "accession": parts[1]}
         return handler(val)

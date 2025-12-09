@@ -658,7 +658,12 @@ class Metadata(MzTabBaseModel, CustomSerializer):
                     line = f"{section}\t{key_name}\t{value}"
                 lines.append(line)
             elif isinstance(value, MzTabBaseModel):
-                self.serialize_object(section, key_name, value, lines)
+                if isinstance(value, Parameter):
+                    line_value = value.model_dump(by_alias=True)
+                    line = f"{section}\t{key_name}\t{line_value or ''}"
+                    lines.append(line)
+                else:
+                    self.serialize_object(section, key_name, value, lines)
             elif isinstance(value, list):
                 if not value:
                     continue
@@ -699,10 +704,16 @@ class Metadata(MzTabBaseModel, CustomSerializer):
                                 id_val = item.get_id()
                                 if id_val:
                                     indexed_key_name = f"{key_name}[{id_val}]"
-
-                            line_value = item.model_dump(by_alias=True)
-                            line = f"{section}\t{indexed_key_name}\t{line_value or ''}"
-                            lines.append(line)
+                            if isinstance(item, Parameter):
+                                line_value = item.model_dump(by_alias=True)
+                                line = (
+                                    f"{section}\t{indexed_key_name}\t{line_value or ''}"
+                                )
+                                lines.append(line)
+                            else:
+                                self.serialize_object(
+                                    section, indexed_key_name, item, lines
+                                )
                 else:
                     print("not expected")
 
