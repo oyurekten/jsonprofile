@@ -6,9 +6,9 @@ import yaml
 from pydantic import Field, ValidationError
 from typing_extensions import Literal
 
-from mztabm.model.mztabm import MzTabM
-from mztabm.model.serialization import SerializationContext
-from mztabm.model.validation import (
+from mztab_m_io.model.mztabm import MzTabM
+from mztab_m_io.model.serialization import SerializationContext
+from mztab_m_io.model.validation import (
     Category,
     MessageType,
     ValidationMessage,

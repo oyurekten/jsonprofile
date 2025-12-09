@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 import shutil
-import mztabm
+import mztab_m_io
 
 
 def test_read_01():
@@ -9,13 +9,13 @@ def test_read_01():
     tsv file read
     """
     file_path = "tests/data/example/example.mztab"
-    result: mztabm.MzTabMLoadResult = mztabm.read(file_path)
+    result: mztab_m_io.MzTabMLoadResult = mztab_m_io.read(file_path)
     for message in result.messages:
         print(message.message_type.name, message.message)
 
     assert result.success
     assert result.mztabm
-    mztabm_dict = mztabm.convert_to_dict(result.mztabm)
+    mztabm_dict = mztab_m_io.convert_to_dict(result.mztabm)
     assert mztabm_dict
 
 
@@ -25,12 +25,12 @@ def test_read_02():
     """
     file_path = "tests/data/example/example.json"
 
-    result: mztabm.MzTabMLoadResult = mztabm.read(file_path, format="json")
+    result: mztab_m_io.MzTabMLoadResult = mztab_m_io.read(file_path, format="json")
     for message in result.messages:
         print(message.message_type.name, message.message)
     assert result.success
     assert result.mztabm
-    mztabm_dict = mztabm.convert_to_dict(result.mztabm)
+    mztabm_dict = mztab_m_io.convert_to_dict(result.mztabm)
     assert mztabm_dict
 
 
@@ -40,12 +40,12 @@ def test_read_03():
     """
     file_path = "tests/data/example/example.yaml"
 
-    result: mztabm.MzTabMLoadResult = mztabm.read(file_path, format="yaml")
+    result: mztab_m_io.MzTabMLoadResult = mztab_m_io.read(file_path, format="yaml")
     for message in result.messages:
         print(message.message_type.name, message.message)
     assert result.success
     assert result.mztabm
-    mztabm_dict = mztabm.convert_to_dict(result.mztabm)
+    mztabm_dict = mztab_m_io.convert_to_dict(result.mztabm)
     assert mztabm_dict
 
 
@@ -56,7 +56,7 @@ def test_load_from_dict():
     file_path = "tests/data/example/example.json"
     with open(file_path) as f:
         mztabm_dict = json.load(f)
-    mztabm_model = mztabm.load_from_dict(mztabm_dict)
+    mztabm_model = mztab_m_io.load_from_dict(mztabm_dict)
     assert mztabm_model
 
 
@@ -66,13 +66,13 @@ def test_write_01():
     """
     file_path = "tests/data/example/example.mztab"
 
-    result: mztabm.MzTabMLoadResult = mztabm.read(file_path)
+    result: mztab_m_io.MzTabMLoadResult = mztab_m_io.read(file_path)
     for message in result.messages:
         print(message.message_type.name, message.message)
     temp_folder = Path(".temp/mztabm")
     target_path = temp_folder / Path("example.mztab")
     try:
-        mztabm.write(result.mztabm, str(target_path), format="tsv")
+        mztab_m_io.write(result.mztabm, str(target_path), format="tsv")
     finally:
         shutil.rmtree(temp_folder)
         pass
@@ -84,13 +84,13 @@ def test_write_02():
     """
     file_path = "tests/data/example/example.json"
 
-    result: mztabm.MzTabMLoadResult = mztabm.read(file_path, format="json")
+    result: mztab_m_io.MzTabMLoadResult = mztab_m_io.read(file_path, format="json")
     for message in result.messages:
         print(message.message_type.name, message.message)
     temp_folder = Path(".temp/mztabm")
     target_path = temp_folder / Path("example.json")
     try:
-        mztabm.write(result.mztabm, str(target_path), format="json")
+        mztab_m_io.write(result.mztabm, str(target_path), format="json")
         # assert target_path.read_text() == Path(file_path).read_text()
     finally:
         shutil.rmtree(temp_folder)
@@ -103,13 +103,13 @@ def test_write_03():
     """
     file_path = "tests/data/example/example.yaml"
 
-    result: mztabm.MzTabMLoadResult = mztabm.read(file_path, format="yaml")
+    result: mztab_m_io.MzTabMLoadResult = mztab_m_io.read(file_path, format="yaml")
     for message in result.messages:
         print(message.message_type.name, message.message)
     temp_folder = Path(".temp/mztabm")
     target_path = temp_folder / Path("example.yaml")
     try:
-        mztabm.write(result.mztabm, str(target_path), format="yaml")
+        mztab_m_io.write(result.mztabm, str(target_path), format="yaml")
         # assert target_path.read_text() == Path(file_path).read_text()
     finally:
         # shutil.rmtree(temp_folder)

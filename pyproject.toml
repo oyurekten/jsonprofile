@@ -1,5 +1,5 @@
 [project]
-name = "mztabm"
+name = "pymztab-m-iaaiaaspdr"
 version = "0.1.0"
 description="The Python3 language bindings for mzTab-M"
 readme = "README.md"
@@ -29,8 +29,8 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["mztabm*"]
+include = ["mztab_m_io*"]
 exclude = ["tests*", "docs*", "scripts*"]
 
 [tool.setuptools.package-data]
-"mztabm" = ["**/*.json"]
+"mztab_m_io" = ["**/*.json"]

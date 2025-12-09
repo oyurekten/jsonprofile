@@ -1,6 +1,6 @@
 import abc
 import enum
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any, Optional, Union
 
 from pydantic import (
     BaseModel,
@@ -10,7 +10,7 @@ from pydantic import (
     SerializerFunctionWrapHandler,
 )
 
-from mztabm.model.serialization import (
+from mztab_m_io.model.serialization import (
     MetadataDictInfo,
     MetadataSerialization,
     SerializationContext,
@@ -34,7 +34,6 @@ class CustomSerializer(abc.ABC):
 
 class MzTabBaseModel(BaseModel):
     model_config = ConfigDict(
-        alias_generator=to_camel,
         populate_by_name=True,
         str_strip_whitespace=True,
         validate_default=True,
@@ -55,7 +54,7 @@ class MzTabBaseModel(BaseModel):
 
 
 class SerializableModel(MzTabBaseModel):
-    __field_info__: None | MetadataDictInfo = None
+    __field_info__: Union[None, MetadataDictInfo] = None
 
     @classmethod
     def get_dict_info(cls):

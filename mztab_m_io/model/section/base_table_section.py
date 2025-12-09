@@ -1,10 +1,11 @@
 from typing import (
     Annotated,
     Any,
+    List,
     Literal,
     Optional,
     OrderedDict,
-    Self,
+    Union,
 )
 
 from pydantic import (
@@ -14,9 +15,9 @@ from pydantic import (
     model_serializer,
 )
 
-from mztabm.model import CustomSerializer, MzTabBaseModel
-from mztabm.model.field_utils import get_field_type_info
-from mztabm.model.serialization import TableInfo, TableSerialization
+from mztab_m_io.model import CustomSerializer, MzTabBaseModel
+from mztab_m_io.model.field_utils import get_field_type_info
+from mztab_m_io.model.serialization import TableInfo, TableSerialization
 
 
 class BaseTableSection(MzTabBaseModel, CustomSerializer):
@@ -60,7 +61,7 @@ class BaseTableSection(MzTabBaseModel, CustomSerializer):
     @model_serializer(mode="wrap")
     def serialize_model(
         self, handler: SerializerFunctionWrapHandler, info: SerializationInfo
-    ) -> str | dict[str, Any]:
+    ) -> Union[str, dict[str, Any]]:
         default_success, result = self.serialize_to_json(handler, info)
         if default_success:
             return result
@@ -141,7 +142,7 @@ class BaseTableSection(MzTabBaseModel, CustomSerializer):
         return table_info
 
     @classmethod
-    def get_table_header(cls, data: list[Self]):
+    def get_table_header(cls, data: List["BaseTableSection"]):
         columns = OrderedDict()
         for field, field_info in cls.model_fields.items():
             extra = field_info.json_schema_extra or {}

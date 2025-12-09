@@ -7,9 +7,9 @@ from typing import (
 
 from pydantic import AnyUrl, Field
 
-from mztabm.model.common import Comment, OptColumnMapping, Parameter, SpectraRef
-from mztabm.model.section.base_table_section import BaseTableSection
-from mztabm.model.serialization import TableSerialization
+from mztab_m_io.model.common import Comment, OptColumnMapping, Parameter, SpectraRef
+from mztab_m_io.model.section.base_table_section import BaseTableSection
+from mztab_m_io.model.serialization import TableSerialization
 
 
 class SmallMoleculeEvidence(BaseTableSection):
@@ -80,7 +80,12 @@ class SmallMoleculeEvidence(BaseTableSection):
             description="A URI pointing to the small molecule's entry in a database (e.g., the small molecule's HMDB, Chebi or KEGG entry)."
         ),
     ] = None
-    derivatized_form: Optional[Parameter] = None
+    derivatized_form: Annotated[
+        Optional[Parameter],
+        Field(
+            description="Derivatization form",
+        ),
+    ] = None
     adduct_ion: Annotated[
         Optional[str],
         Field(

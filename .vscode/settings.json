@@ -1,6 +1,11 @@
 {
     "cSpell.words": [
-        "mztabm"
+        "iaaiaaspdr",
+        "mztab",
+        "mztabm",
+        "pydantic",
+        "pymztab",
+        "pytest"
     ],
     "python.testing.pytestArgs": [
         "tests"

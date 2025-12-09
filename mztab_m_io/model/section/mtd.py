@@ -6,7 +6,7 @@ from typing import (
     Literal,
     Optional,
     OrderedDict,
-    Self,
+    Union,
 )
 
 from pydantic import (
@@ -20,13 +20,13 @@ from pydantic import (
     model_validator,
 )
 
-from mztabm.model import (
+from mztab_m_io.model import (
     CustomSerializer,
     IdentifiableModel,
     MzTabBaseModel,
     SerializableModel,
 )
-from mztabm.model.common import (
+from mztab_m_io.model.common import (
     CV,
     Assay,
     ColumnParameterMapping,
@@ -42,9 +42,9 @@ from mztabm.model.common import (
     StudyVariable,
     Uri,
 )
-from mztabm.model.field_utils import get_field_type_info
-from mztabm.model.serialization import MetadataDictInfo, MetadataSerialization
-from mztabm.model.validation import ValidationSummary
+from mztab_m_io.model.field_utils import get_field_type_info
+from mztab_m_io.model.serialization import MetadataDictInfo, MetadataSerialization
+from mztab_m_io.model.validation import ValidationSummary
 
 
 class Metadata(MzTabBaseModel, CustomSerializer):
@@ -473,9 +473,9 @@ class Metadata(MzTabBaseModel, CustomSerializer):
         value,
         data_dict,
         field: str,
-        field_index: None | int,
+        field_index: Union[None, int],
         sub_field: str,
-        sub_field_index: None | int,
+        sub_field_index: Union[None, int],
     ):
         if field not in data_dict:
             if field_index is not None:
@@ -512,9 +512,10 @@ class Metadata(MzTabBaseModel, CustomSerializer):
         pattern = re.compile(
             r"^(?P<field>[^\[\]]+)"
             r"(?:\[(?P<field_index>\d+)\])?"
-            r"(?:-(?P<subfield>[^\[\]]++)"
+            r"(?:-(?P<subfield>[^\[\]]+)"
             r"(?:\[(?P<subfield_index>\d+)\])?)?$"
         )
+
         metadata_dict = OrderedDict()
         for line in lines:
             if not line.startswith("MTD"):
@@ -548,9 +549,9 @@ class Metadata(MzTabBaseModel, CustomSerializer):
     def validate_model(
         cls,
         input_data: Any,
-        handler: ModelWrapValidatorHandler[Self],
+        handler: ModelWrapValidatorHandler["Metadata"],
         info: ValidationInfo,
-    ) -> Self:
+    ) -> "Metadata":
         if isinstance(input_data, Metadata):
             return handler(input_data)
         if isinstance(info.context, ValidationSummary):
@@ -619,7 +620,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
     @model_serializer(mode="wrap")
     def serialize_model(
         self, handler: SerializerFunctionWrapHandler, info: SerializationInfo
-    ) -> str | dict[str, Any]:
+    ) -> Union[str, dict[str, Any]]:
         default_success, result = self.serialize_to_json(handler, info)
         if default_success:
             return result
@@ -628,7 +629,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
         return "\n".join(lines)
 
     def serialize_object(
-        self, section: str, prefix: str, model: MzTabBaseModel, lines: list[str]
+        self, section: str, prefix: str, model: MzTabBaseModel, lines: List[str]
     ):
         for field, field_info in model.__class__.model_fields.items():
             serializer_model = field_info.json_schema_extra

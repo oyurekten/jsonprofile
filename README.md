@@ -40,7 +40,7 @@ uv sync
 ```python
 # These features are still experimental.
 
-import mztabm
+import mztab_m_io as mztabm
 
 file_path = "tests/data/example/example.mztab"
 result: mztabm.MzTabMLoadResult = mztabm.read(file_path)

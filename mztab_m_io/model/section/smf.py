@@ -7,9 +7,9 @@ from typing import (
 
 from pydantic import Field
 
-from mztabm.model.common import Comment, OptColumnMapping, Parameter
-from mztabm.model.section.base_table_section import BaseTableSection
-from mztabm.model.serialization import TableSerialization
+from mztab_m_io.model.common import Comment, OptColumnMapping, Parameter
+from mztab_m_io.model.section.base_table_section import BaseTableSection
+from mztab_m_io.model.serialization import TableSerialization
 
 
 class SmallMoleculeFeature(BaseTableSection):

@@ -1,11 +1,10 @@
 import re
-import types
 from typing import Annotated, Any, List, OrderedDict, Union, get_args, get_origin
 
 from pydantic import BaseModel
 
 
-def sanitize_str(val: None | str) -> str:
+def sanitize_str(val: Union[None, str]) -> str:
     if not val:
         return ""
     if not isinstance(val, str):
@@ -22,7 +21,11 @@ def sanitize_str(val: None | str) -> str:
 def _is_union(t):
     """True for typing.Union[...] or PEP 604 T | U."""
     origin = get_origin(t)
-    return origin is Union or origin is types.UnionType
+    try:
+        import types
+        return origin is Union or origin is types.UnionType
+    except Exception:
+        return origin is Union
 
 
 def _unwrap_annotated(t):

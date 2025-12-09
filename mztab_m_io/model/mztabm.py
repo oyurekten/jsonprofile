@@ -5,7 +5,7 @@ from typing import (
     List,
     Optional,
     OrderedDict,
-    Self,
+    Union,
 )
 
 from pydantic import (
@@ -20,14 +20,14 @@ from pydantic import (
     model_validator,
 )
 
-from mztabm.model import IdentifiableModel, MzTabBaseModel
-from mztabm.model.common import Comment
-from mztabm.model.section.base_table_section import BaseTableSection
-from mztabm.model.section.mtd import Metadata
-from mztabm.model.section.sme import SmallMoleculeEvidence
-from mztabm.model.section.smf import SmallMoleculeFeature
-from mztabm.model.section.sml import SmallMoleculeSummary
-from mztabm.model.validation import (
+from mztab_m_io.model import IdentifiableModel, MzTabBaseModel
+from mztab_m_io.model.common import Comment
+from mztab_m_io.model.section.base_table_section import BaseTableSection
+from mztab_m_io.model.section.mtd import Metadata
+from mztab_m_io.model.section.sme import SmallMoleculeEvidence
+from mztab_m_io.model.section.smf import SmallMoleculeFeature
+from mztab_m_io.model.section.sml import SmallMoleculeSummary
+from mztab_m_io.model.validation import (
     Category,
     MessageType,
     ValidationMessage,
@@ -115,15 +115,15 @@ class MzTabM(MzTabBaseModel):
         return column_map
 
     @classmethod
-    def split_file_sections(cls, lines: list[str]) -> dict[str, list[str]]:
+    def split_file_sections(cls, lines: List[str]) -> dict[str, List[str]]:
         all_section_headers = {"SEH", "SME", "SFH", "SMF", "SMH", "SML", "MTD", "COM"}
-        section_order: dict[str, list[str]] = [
+        section_order: dict[str, List[str]] = [
             ("MTD", [None, ("MTD", "COM"), ("SMH")]),
             ("SML", ["SMH", ("SMH", "SML", "COM"), ("SFH")]),
             ("SMF", ["SFH", ("SFH", "SMF", "COM"), ("SEH")]),
             ("SME", ["SEH", ("SEH", "SME", "COM"), None]),
         ]
-        sections: dict[str, list[str]] = {"MTD": [], "SML": [], "SMF": [], "SME": []}
+        sections: dict[str, List[str]] = {"MTD": [], "SML": [], "SMF": [], "SME": []}
         current_section = 0
         for idx, line in enumerate(lines, start=1):
             sanitized = line.strip()
@@ -151,7 +151,7 @@ class MzTabM(MzTabBaseModel):
     @model_serializer(mode="wrap")
     def serialize_model(
         self, handler: SerializerFunctionWrapHandler, info: SerializationInfo
-    ) -> str | dict[str, Any]:
+    ) -> Union[str, dict[str, Any]]:
         default_success, result = self.serialize_to_json(handler, info)
         if default_success:
             return result
@@ -177,9 +177,9 @@ class MzTabM(MzTabBaseModel):
     def validate_model(
         cls,
         data: Any,
-        handler: ModelWrapValidatorHandler[Self],
+        handler: ModelWrapValidatorHandler["MzTabM"],
         info: ValidationInfo,
-    ) -> Self:
+    ) -> "MzTabM":
         if isinstance(data, MzTabM):
             return handler(data)
         if isinstance(info.context, ValidationSummary):
@@ -193,7 +193,7 @@ class MzTabM(MzTabBaseModel):
 
         model = handler(mztabm)
         cls.update_ids(model)
-        messages: list[ValidationMessage] = []
+        messages: List[ValidationMessage] = []
         if isinstance(info.context, ValidationSummary):
             messages = info.context.messages
 
@@ -201,7 +201,7 @@ class MzTabM(MzTabBaseModel):
         return model
 
     @classmethod
-    def parse_tsv_file(cls, data: str | list[str]) -> OrderedDict[str, Any]:
+    def parse_tsv_file(cls, data: Union[str, List[str]]) -> OrderedDict[str, Any]:
         lines = data
         if isinstance(data, str):
             lines = data.split("\n")
@@ -235,7 +235,7 @@ class MzTabM(MzTabBaseModel):
 
         return mztabm
 
-    def cross_check(self, messages: list[ValidationMessage]) -> list[ValidationMessage]:
+    def cross_check(self, messages: List[ValidationMessage]) -> List[ValidationMessage]:
         if messages is None:
             messages = []
         references = self._get_reference_dict(messages)
@@ -246,7 +246,7 @@ class MzTabM(MzTabBaseModel):
         return messages
 
     def _check_referenced_items(
-        self, references: dict[str, dict[int, Any]], messages: list[ValidationMessage]
+        self, references: dict[str, dict[int, Any]], messages: List[ValidationMessage]
     ) -> dict[str, dict[int, int]]:
         reference_hits: dict[str, dict[int, int]] = {}
         for k, v in references.items():
@@ -320,7 +320,7 @@ class MzTabM(MzTabBaseModel):
     def _check_unreferenced_items(
         self,
         reference_hits: dict[str, dict[int, int]],
-        messages: list[ValidationMessage],
+        messages: List[ValidationMessage],
     ):
         for k, v in reference_hits.items():
             for idx, hit in v.items():
@@ -334,7 +334,7 @@ class MzTabM(MzTabBaseModel):
                     )
 
     def _get_reference_dict(
-        self, messages: list[ValidationMessage]
+        self, messages: List[ValidationMessage]
     ) -> dict[str, dict[int, Any]]:
         references: dict[str, dict[int, Any]] = {}
 
@@ -388,7 +388,7 @@ class MzTabM(MzTabBaseModel):
         referenced_field: str,
         target: BaseModel,
         reference_hits: dict[str, dict[int, Any]],
-        messages: list[ValidationMessage],
+        messages: List[ValidationMessage],
     ):
         subfield_vals = getattr(target, subfield)
         indexed_items = references.get(referenced_field, {})
@@ -420,7 +420,7 @@ class MzTabM(MzTabBaseModel):
                 )
 
     @classmethod
-    def update_ids(cls, model: BaseModel, idx: None | int = None):
+    def update_ids(cls, model: BaseModel, idx: Union[None, int] = None):
         if isinstance(model, IdentifiableModel):
             if idx is not None:
                 model.id = idx
@@ -444,7 +444,7 @@ class MzTabM(MzTabBaseModel):
         cls,
         field_type: type[BaseTableSection],
         summary_headers,
-        rows: list[OrderedDict[str, Any]],
+        rows: List[OrderedDict[str, Any]],
     ):
         new_table = []
         table_info = field_type.get_table_info()

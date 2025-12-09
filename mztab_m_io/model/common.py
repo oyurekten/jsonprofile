@@ -5,7 +5,6 @@ from typing import (
     Literal,
     Optional,
     OrderedDict,
-    Self,
     Union,
 )
 
@@ -20,10 +19,10 @@ from pydantic import (
     model_validator,
 )
 
-from mztabm.model import CustomSerializer, IdentifiableModel, MzTabBaseModel
-from mztabm.model.field_utils import sanitize_str
-from mztabm.model.serialization import MetadataSerialization
-from mztabm.model.validation import ValidationSummary
+from mztab_m_io.model import CustomSerializer, IdentifiableModel, MzTabBaseModel
+from mztab_m_io.model.field_utils import sanitize_str
+from mztab_m_io.model.serialization import MetadataSerialization
+from mztab_m_io.model.validation import ValidationSummary
 
 AdductIon = Annotated[str, Field(pattern=r"^\[\d*M([+-][\w\d]+)*\]\d*[+-]$")]
 
@@ -37,7 +36,7 @@ class Parameter(IdentifiableModel, CustomSerializer):
     @model_serializer(mode="wrap")
     def serialize_model(
         self, handler: SerializerFunctionWrapHandler, info: SerializationInfo
-    ) -> str | dict[str, Any]:
+    ) -> Union[str, dict[str, Any]]:
         default_success, result = self.serialize_to_json(handler, info)
         if default_success:
             return result
@@ -52,8 +51,8 @@ class Parameter(IdentifiableModel, CustomSerializer):
     @model_validator(mode="wrap")
     @classmethod
     def validate_model(
-        cls, data: Any, handler: ModelWrapValidatorHandler[Self], info: ValidationInfo
-    ) -> Self:
+        cls, data: Any, handler: ModelWrapValidatorHandler["Parameter"], info: ValidationInfo
+    ) -> "Parameter":
         if not data:
             return None
         if isinstance(data, Parameter):
@@ -154,7 +153,7 @@ class PublicationItem(MzTabBaseModel, CustomSerializer):
     @model_serializer(mode="wrap")
     def serialize_model(
         self, handler: SerializerFunctionWrapHandler, info: SerializationInfo
-    ) -> str | dict[str, Any]:
+    ) -> Union[str, dict[str, Any]]:
         default_success, result = self.serialize_to_json(handler, info)
         if default_success:
             return result
@@ -163,8 +162,8 @@ class PublicationItem(MzTabBaseModel, CustomSerializer):
     @model_validator(mode="wrap")
     @classmethod
     def deserialize(
-        cls, data: Any, handler: ModelWrapValidatorHandler[Self], info: ValidationInfo
-    ) -> Self:
+        cls, data: Any, handler: ModelWrapValidatorHandler["PublicationItem"], info: ValidationInfo
+    ) -> "PublicationItem":
         if isinstance(data, PublicationItem):
             return handler(data)
         if isinstance(info.context, ValidationSummary):
@@ -505,7 +504,7 @@ class SpectraRef(MzTabBaseModel, CustomSerializer):
     @model_serializer(mode="wrap")
     def serialize_model(
         self, handler: SerializerFunctionWrapHandler, info: SerializationInfo
-    ) -> str | dict[str, Any]:
+    ) -> Union[str, dict[str, Any]]:
         default_success, result = self.serialize_to_json(handler, info)
         if default_success:
             return result
@@ -514,8 +513,8 @@ class SpectraRef(MzTabBaseModel, CustomSerializer):
     @model_validator(mode="wrap")
     @classmethod
     def validate_model(
-        cls, data: Any, handler: ModelWrapValidatorHandler[Self], info: ValidationInfo
-    ) -> Self:
+        cls, data: Any, handler: ModelWrapValidatorHandler["SpectraRef"], info: ValidationInfo
+    ) -> "SpectraRef":
         if isinstance(data, SpectraRef):
             return handler(data)
         if isinstance(info.context, ValidationSummary):
@@ -556,7 +555,7 @@ class ColumnParameterMapping(MzTabBaseModel, CustomSerializer):
     @model_serializer(mode="wrap")
     def serialize_model(
         self, handler: SerializerFunctionWrapHandler, info: SerializationInfo
-    ) -> str | dict[str, Any]:
+    ) -> Union[str, dict[str, Any]]:
         default_success, result = self.serialize_to_json(handler, info)
         if default_success:
             return result

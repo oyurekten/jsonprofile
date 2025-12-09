@@ -1,6 +1,6 @@
 import json
-from mztabm import MzTabMLoadResult, convert_to_dict, read
-from mztabm.model.mztabm import MzTabM
+from mztab_m_io import MzTabMLoadResult, convert_to_dict, read
+from mztab_m_io.model.mztabm import MzTabM
 
 
 if __name__ == "__main__":
