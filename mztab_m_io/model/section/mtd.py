@@ -566,22 +566,28 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             data = cls.parse_metadata(lines)
         elif isinstance(input_data, (dict, OrderedDict)):
             data = input_data
-
+        new_data = OrderedDict()
         for field, field_info in cls.model_fields.items():
             extra = field_info.json_schema_extra or {}
             json_extra = MetadataSerialization.model_validate(extra, by_alias=True)
             if json_extra.ignore:
                 continue
+            val = None
+            if field_info.validation_alias:
+                field_name = field_info.validation_alias
+                val = data.get(field_info.validation_alias)
+            else:
+                field_name = field
+            if val is None:
+                val = data.get(field)
 
-            field_name = field_info.validation_alias or field
-            val = data.get(field_name)
             is_list, field_type = get_field_type_info(cls, field)
             if not is_list:
                 if issubclass(field_type, str):
                     str_val = val
                     if isinstance(val, (dict, OrderedDict)):
                         str_val = val.get(None)
-                    data[field_name] = str_val
+                    new_data[field_name] = str_val
                 elif issubclass(field_type, int):
                     int_val = val
                     if isinstance(val, (dict, OrderedDict)):
@@ -589,12 +595,15 @@ class Metadata(MzTabBaseModel, CustomSerializer):
                     ref_match = re.match(r"(.+)\[(\d+)\]")
                     if ref_match:
                         int_val = ref_match.groups(1)
-                    data[field_name] = None if int_val is None else int(int_val)
+                    new_data[field_name] = None if int_val is None else int(int_val)
                 elif issubclass(field_type, MzTabBaseModel):
-                    str_val = val
-                    if isinstance(val, (dict, OrderedDict)):
-                        str_val = val.get(None)
-                    data[field_name] = field_type.model_validate(str_val, by_alias=True)
+                    if isinstance(val, MzTabBaseModel):
+                        new_data[field_name] = val
+                    else:
+                        str_val = val
+                        if isinstance(val, (dict, OrderedDict)):
+                            str_val = val.get(None)
+                        new_data[field_name] = field_type.model_validate(str_val, by_alias=True)
             else:
                 if issubclass(field_type, int):
                     int_val = val
@@ -603,19 +612,21 @@ class Metadata(MzTabBaseModel, CustomSerializer):
                     ref_match = re.match(r"(.+)\[(\d+)\]")
                     if ref_match:
                         int_val = ref_match.groups(1)
-                    data[field_name] = None if int_val is None else int(int_val)
-                if issubclass(field_type, SerializableModel):
+                    new_data[field_name] = None if int_val is None else int(int_val)
+                elif issubclass(field_type, SerializableModel):
                     new_list = []
                     dict_info = field_type.get_dict_info()
                     list_val = val or []
                     for item in list_val:
-                        cls.update_dict(dict_info, item)
+                        if isinstance(item, MzTabBaseModel):
+                            new_list.append(item)
+                        else:
+                            cls.update_dict(dict_info, item)
 
-                        new_list.append(field_type.model_validate(item, by_alias=True))
-                    if new_list:
-                        data[field_name] = new_list
+                            new_list.append(field_type.model_validate(item, by_alias=True))
+                    new_data[field_name] = new_list or None
 
-        return handler(data)
+        return handler(new_data)
 
     @model_serializer(mode="wrap")
     def serialize_model(
