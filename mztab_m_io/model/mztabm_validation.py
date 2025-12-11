@@ -1,0 +1,426 @@
+import datetime
+import re
+from typing_extensions import Any, List, Union, Dict
+
+from pydantic import (
+    AnyUrl,
+    BaseModel,
+)
+
+from mztab_m_io.model import IdentifiableModel
+from mztab_m_io.model.serialization import (
+    EnforcementLevel,
+    MetadataSerialization,
+    ValidationPolicy,
+    ValueConstraint,
+)
+from mztab_m_io.model.validation import (
+    Category,
+    MessageType,
+    ValidationMessage,
+)
+
+MessageTypeMap: Dict[EnforcementLevel, MessageType] = {
+    "optional": MessageType.INFO,
+    "recommended": MessageType.WARNING,
+    "required": MessageType.ERROR,
+}
+
+
+def to_jsonpath(reference: List[Union[str, int]]):
+    if not reference:
+        return "$"
+    return "$." + ".".join([str(x) for x in reference])
+
+
+def check_value_constraint(constraint: ValueConstraint, value: Union[str, int, float]):
+    if constraint == "any-url":
+        try:
+            AnyUrl(value)
+            return True
+        except Exception:
+            return False
+
+    if constraint == "positive-integer":
+        if isinstance(value, int) and value > 0:
+            return True
+        return False
+    if constraint == "non-negative-integer":
+        if isinstance(value, int) and value >= 0:
+            return True
+        return False
+    if constraint == "curie":
+        if isinstance(value, str) and len(value.split(":")) == 2:
+            return True
+        return False
+    if constraint == "datetime":
+        try:
+            datetime.datetime.fromisoformat(value)
+            return True
+        except Exception:
+            return False
+
+    if constraint == "date":
+        try:
+            datetime.datetime.strptime(value, "YYYY-MM-DD")
+            return True
+        except Exception:
+            return False
+
+
+def check_validation_policies(
+    reference: List[Union[str, int]],
+    model: BaseModel,
+    messages: List[ValidationMessage],
+) -> List[ValidationMessage]:
+    if isinstance(model, str):
+        pass
+    for field, field_info in model.__class__.model_fields.items():
+        val = getattr(model, field)
+        # label = field_info.validation_alias or field
+        new_ref = reference.copy()
+        new_ref.append(field)
+        extra = field_info.json_schema_extra or {}
+        json_extra = MetadataSerialization.model_validate(extra, by_alias=True)
+        policies = []
+        if isinstance(json_extra.validation_policy, list):
+            policies = json_extra.validation_policy
+        elif isinstance(json_extra.validation_policy, ValidationPolicy):
+            policies = [json_extra.validation_policy]
+        for policy in policies:
+            if policy.required and not val:
+                item_ref = new_ref.copy()
+                messages.append(
+                    ValidationMessage(
+                        code="",
+                        category=Category.CROSS_CHECK,
+                        message_type=MessageTypeMap.get(
+                            policy.enforcement_level, "required"
+                        ),
+                        message=f"'{to_jsonpath(item_ref)}' is required.",
+                        source=to_jsonpath(item_ref),
+                    )
+                )
+            if policy.value_constraint and val is not None:
+                if isinstance(val, list):
+                    for idx, item in enumerate(val):
+                        match = check_value_constraint(policy.value_constraint, item)
+                        if not match:
+                            list_ref = new_ref.copy()
+                            list_ref.append(idx)
+                            messages.append(
+                                ValidationMessage(
+                                    code="",
+                                    category=Category.CROSS_CHECK,
+                                    message_type=MessageTypeMap.get(
+                                        policy.enforcement_level, "required"
+                                    ),
+                                    message=f"'{to_jsonpath(list_ref)}' value constraint violation. "
+                                    f"Expected value format {policy.value_constraint}",
+                                    source=to_jsonpath(list_ref),
+                                )
+                            )
+                elif isinstance(val, str):
+                    match = check_value_constraint(policy.value_constraint, val)
+                    if not match:
+                        item_ref = new_ref.copy()
+                        messages.append(
+                            ValidationMessage(
+                                code="",
+                                category=Category.CROSS_CHECK,
+                                message_type=MessageTypeMap.get(
+                                    policy.enforcement_level, "required"
+                                ),
+                                message=f"'{to_jsonpath(item_ref)}' value constraint violation. "
+                                f"Expected value format {policy.value_constraint}",
+                                source=to_jsonpath(item_ref),
+                            )
+                        )
+            if policy.pattern and val is not None:
+                if isinstance(val, list):
+                    for idx, item in enumerate(val):
+                        match = re.match(policy.pattern, item)
+                        if not match:
+                            list_ref = new_ref.copy()
+                            list_ref.append(idx)
+                            messages.append(
+                                ValidationMessage(
+                                    code="",
+                                    category=Category.CROSS_CHECK,
+                                    message_type=MessageTypeMap.get(
+                                        policy.enforcement_level, "required"
+                                    ),
+                                    message=f"'{to_jsonpath(list_ref)}' pattern match violation. "
+                                    f"Expected pattern {policy.pattern}",
+                                    source=to_jsonpath(list_ref),
+                                )
+                            )
+                elif isinstance(val, str):
+                    match = re.match(policy.pattern, val)
+                    if not match:
+                        item_ref = new_ref.copy()
+                        messages.append(
+                            ValidationMessage(
+                                code="",
+                                category=Category.CROSS_CHECK,
+                                message_type=MessageTypeMap.get(
+                                    policy.enforcement_level, "required"
+                                ),
+                                message=f"'{to_jsonpath(item_ref)}' pattern match violation."
+                                f"Expected pattern is {policy.pattern}",
+                                source=to_jsonpath(item_ref),
+                            )
+                        )
+            minimum_violation = False
+            if policy.minimum and val is not None:
+                if isinstance(val, (str, list)):
+                    if val and len(val) < policy.minimum:
+                        minimum_violation = True
+                elif isinstance(val, int):
+                    if val < policy.minimum:
+                        minimum_violation = True
+            if minimum_violation:
+                item_ref = new_ref.copy()
+                messages.append(
+                    ValidationMessage(
+                        code="",
+                        category=Category.CROSS_CHECK,
+                        message_type=MessageTypeMap.get(
+                            policy.enforcement_level, "required"
+                        ),
+                        message=f"'{to_jsonpath(item_ref)}' min length violation. "
+                        f"Expected minimum length is {policy.minimum}",
+                        source=to_jsonpath(item_ref),
+                    )
+                )
+            maximum_violation = False
+            if policy.maximum and val is not None:
+                if isinstance(val, (str, list)):
+                    if val and len(val) > policy.maximum:
+                        maximum_violation = True
+                elif isinstance(val, int):
+                    if val > policy.maximum:
+                        maximum_violation = True
+            if maximum_violation:
+                item_ref = new_ref.copy()
+                messages.append(
+                    ValidationMessage(
+                        code="",
+                        category=Category.CROSS_CHECK,
+                        message_type=MessageTypeMap.get(
+                            policy.enforcement_level, "required"
+                        ),
+                        message=f"'{to_jsonpath(item_ref)}' max length violation. "
+                        f"Expected minimum length is {policy.max}",
+                        source=to_jsonpath(item_ref),
+                    )
+                )
+
+        if isinstance(val, BaseModel):
+            check_validation_policies(new_ref.copy(), val, messages)
+        elif isinstance(val, list):
+            for idx, item in enumerate(val):
+                if isinstance(item, BaseModel):
+                    list_ref = new_ref.copy()
+                    list_ref.append(idx)
+                    check_validation_policies(list_ref.copy(), item, messages)
+
+
+def cross_check(
+    model: BaseModel, messages: List[ValidationMessage]
+) -> List[ValidationMessage]:
+    if messages is None:
+        messages = []
+    references = _get_reference_dict(model, messages)
+
+    reference_hits = _check_referenced_items(model, references, messages)
+
+    _check_unreferenced_items(reference_hits, messages)
+    return messages
+
+
+def _check_referenced_items(
+    model: BaseModel,
+    references: Dict[str, Dict[int, Any]],
+    messages: List[ValidationMessage],
+) -> Dict[str, Dict[int, int]]:
+    reference_hits: Dict[str, Dict[int, int]] = {}
+    for k, v in references.items():
+        reference_hits[k] = {key: 0 for key in v.keys()}
+
+    for section, field, subfield, referenced_field in [
+        ("metadata", "ms_run", "instrument_ref", "instrument"),
+        ("metadata", "assay", "sample_ref", "sample"),
+        ("metadata", "assay", "ms_run_ref", "ms_run"),
+        ("metadata", "study_variable", "assay_refs", "assay"),
+        ("small_molecule_summary", None, "smf_id_refs", "small_molecule_feature"),
+        ("small_molecule_feature", None, "sme_id_refs", "small_molecule_evidence"),
+        ("small_molecule_evidence", "spectra_ref", "ms_run", "ms_run"),
+    ]:
+        section_data = getattr(model, section, {})
+        if not section_data:
+            continue
+        target = section_data
+        field_ref = section
+        targets = []
+        if not isinstance(section_data, list):
+            field_ref = field
+            target = getattr(section_data, field, None)
+            if not target:
+                continue
+            targets = [(None, target)]
+        else:
+            if field:
+                targets = [
+                    (idx, getattr(x, field)) for idx, x in enumerate(section_data)
+                ]
+            else:
+                targets = [(idx, x) for idx, x in enumerate(section_data)]
+
+        for target_idx, target in targets:
+            if isinstance(target, list):
+                for idx, list_item in enumerate(target):
+                    field_ref_name = (
+                        f"{field_ref}[{idx}]"
+                        if target_idx is None
+                        else f"{field}[{target_idx}] {field_ref}[{idx}]"
+                    )
+                    _check_references(
+                        references,
+                        field_ref_name,
+                        subfield,
+                        referenced_field,
+                        list_item,
+                        reference_hits,
+                        messages,
+                    )
+            elif target:
+                field_ref_name = (
+                    f"{field_ref}"
+                    if target_idx is None
+                    else f"{field}[{target_idx}] {field_ref}"
+                )
+                if isinstance(target, tuple):
+                    pass
+                _check_references(
+                    references,
+                    field_ref_name,
+                    subfield,
+                    referenced_field,
+                    target,
+                    reference_hits,
+                    messages,
+                )
+    return reference_hits
+
+
+def _check_unreferenced_items(
+    reference_hits: Dict[str, Dict[int, int]],
+    messages: List[ValidationMessage],
+):
+    for k, v in reference_hits.items():
+        for idx, hit in v.items():
+            if hit < 1:
+                messages.append(
+                    ValidationMessage(
+                        category=Category.CROSS_CHECK,
+                        message_type=MessageType.WARNING,
+                        message=f"{k}[{idx}] is not referenced in the file",
+                        source=f"{k}[{idx}]",
+                    )
+                )
+
+
+def _get_reference_dict(
+    model: BaseModel, messages: List[ValidationMessage], metadata_field_name="metadata"
+) -> Dict[str, Dict[int, Any]]:
+    references: Dict[str, Dict[int, Any]] = {}
+    metadata = getattr(model, metadata_field_name)
+    if not metadata:
+        messages.append(
+            ValidationMessage(
+                category=Category.CROSS_CHECK,
+                message_type=MessageType.ERROR,
+                message="metadata is not defined",
+            )
+        )
+    if metadata:
+        for indexed_field in ["assay", "instrument", "sample", "ms_run"]:
+            vals = getattr(metadata, indexed_field)
+            if not vals:
+                continue
+            references[indexed_field] = {}
+            for idx, item in enumerate(vals):
+                if isinstance(item, IdentifiableModel):
+                    references[indexed_field][item.id] = item
+                    if item.id != idx + 1:
+                        messages.append(
+                            ValidationMessage(
+                                category=Category.CROSS_CHECK,
+                                message_type=MessageType.WARNING,
+                                message=f"metadata {indexed_field} item at index {idx} "
+                                f"has different id {item.id}",
+                            )
+                        )
+                else:
+                    messages.append(
+                        ValidationMessage(
+                            category=Category.CROSS_CHECK,
+                            message_type=MessageType.WARNING,
+                            message=f"metadata {indexed_field} item at index {idx} "
+                            f"is not valid {str(item)}",
+                        )
+                    )
+
+    for section, indexed_field in [
+        ("small_molecule_evidence", "sme_id"),
+        ("small_molecule_feature", "smf_id"),
+    ]:
+        references[section] = {}
+        items = getattr(model, section)
+        if not items:
+            continue
+
+        for item in items:
+            val = getattr(item, indexed_field)
+            references[section][val] = item
+    return references
+
+
+def _check_references(
+    references: Dict[str, Dict[int, Any]],
+    field_ref: str,
+    subfield: str,
+    referenced_field: str,
+    target: BaseModel,
+    reference_hits: Dict[str, Dict[int, Any]],
+    messages: List[ValidationMessage],
+):
+    subfield_vals = getattr(target, subfield)
+    indexed_items = references.get(referenced_field, {})
+    if isinstance(subfield_vals, list):
+        for i, idx in enumerate(subfield_vals):
+            if idx in indexed_items:
+                reference_hits[referenced_field][idx] += 1
+            else:
+                messages.append(
+                    ValidationMessage(
+                        category=Category.CROSS_CHECK,
+                        message_type=MessageType.WARNING,
+                        message=f"{field_ref} -> {subfield}[{i}] value "
+                        f"{referenced_field}[{idx}] is not defined.",
+                    )
+                )
+    elif isinstance(subfield_vals, int):
+        idx = subfield_vals
+        if idx in indexed_items:
+            reference_hits[referenced_field][idx] += 1
+        else:
+            messages.append(
+                ValidationMessage(
+                    category=Category.CROSS_CHECK,
+                    message_type=MessageType.WARNING,
+                    message=f"{field_ref} -> {subfield} value "
+                    f"{referenced_field}[{idx}] is not defined ",
+                )
+            )

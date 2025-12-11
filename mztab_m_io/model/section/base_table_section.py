@@ -1,12 +1,4 @@
-from typing import (
-    Annotated,
-    Any,
-    List,
-    Literal,
-    Optional,
-    OrderedDict,
-    Union,
-)
+from typing_extensions import Annotated, Any, List, Optional, OrderedDict, Union, Dict
 
 from pydantic import (
     Field,
@@ -17,28 +9,40 @@ from pydantic import (
 
 from mztab_m_io.model import CustomSerializer, MzTabBaseModel
 from mztab_m_io.model.field_utils import get_field_type_info
-from mztab_m_io.model.serialization import TableInfo, TableSerialization
+from mztab_m_io.model.serialization import (
+    TableInfo,
+    TableSerialization,
+    ValidationPolicy,
+)
 
 
 class BaseTableSection(MzTabBaseModel, CustomSerializer):
     prefix: Annotated[
-        Optional[Literal["SMF", "SME", "SML"]],
+        Optional[str],
         Field(
-            description="The table row prefix. SMF, SME or SML MUST be used for rows of the table.",
-            json_schema_extra=TableSerialization(ignore=True).model_dump(
-                exclude_unset=True, exclude_defaults=True
-            ),
+            description="The table row prefix. SMF, SME or SML MUST be used for rows "
+            "of the table.",
+            json_schema_extra=TableSerialization(
+                ignore=True,
+                validation_policy=ValidationPolicy(
+                    required=True, pattern=r"SMF|SME|SML"
+                ),
+            ).model_dump(),
         ),
-    ]
+    ] = None
     header_prefix: Annotated[
-        Literal["SFH", "SEH", "SMH"],
+        Optional[str],
         Field(
-            description="The table header prefix. SFH, SEH or SMH MUST be used for the table header line (the column labels).",
-            json_schema_extra=TableSerialization(ignore=True).model_dump(
-                exclude_unset=True, exclude_defaults=True
-            ),
+            description="The table header prefix. SFH, SEH or SMH MUST be used for "
+            "the table header line (the column labels).",
+            json_schema_extra=TableSerialization(
+                ignore=True,
+                validation_policy=ValidationPolicy(
+                    required=True, pattern=r"SFH|SEH|SMH"
+                ),
+            ).model_dump(),
         ),
-    ]
+    ] = None
 
     @classmethod
     def serialize_value(cls, val: Any):
@@ -61,7 +65,7 @@ class BaseTableSection(MzTabBaseModel, CustomSerializer):
     @model_serializer(mode="wrap")
     def serialize_model(
         self, handler: SerializerFunctionWrapHandler, info: SerializationInfo
-    ) -> Union[str, dict[str, Any]]:
+    ) -> Union[str, Dict[str, Any]]:
         default_success, result = self.serialize_to_json(handler, info)
         if default_success:
             return result

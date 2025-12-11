@@ -1,16 +1,16 @@
 import re
-from typing import (
+from typing_extensions import (
     Annotated,
     Any,
     List,
-    Literal,
     Optional,
     OrderedDict,
     Union,
+    Dict,
+    Tuple,
 )
 
 from pydantic import (
-    AnyUrl,
     Field,
     ModelWrapValidatorHandler,
     SerializationInfo,
@@ -43,37 +43,46 @@ from mztab_m_io.model.common import (
     Uri,
 )
 from mztab_m_io.model.field_utils import get_field_type_info
-from mztab_m_io.model.serialization import MetadataDictInfo, MetadataSerialization
+from mztab_m_io.model.serialization import (
+    MetadataDictInfo,
+    MetadataSerialization,
+    ValidationPolicy,
+)
 from mztab_m_io.model.validation import ValidationSummary
 
 
 class Metadata(MzTabBaseModel, CustomSerializer):
     prefix: Annotated[
-        Literal["MTD"],
+        Optional[str],
         Field(
             description="Metadata section prefix identifier.\n\n"
             "Value must be 'MTD'. Used to identify metadata lines in the mzTab-M file format.",
             examples=["MTD"],
             frozen=True,
-            json_schema_extra=MetadataSerialization(ignore=True).model_dump(
-                exclude_unset=True, exclude_defaults=True
-            ),
+            json_schema_extra=MetadataSerialization(
+                ignore=True,
+                validation_policy=ValidationPolicy(required=True, pattern=r"MTD"),
+            ).model_dump(),
         ),
     ] = "MTD"
     mztab_version: Annotated[
-        str,
+        Optional[str],
         Field(
             alias="mzTab-version",
             description="Version number of the mzTab format used.\n\n"
             "Format: `major.minor.patch-variant`\n"
             'Must end with "-M" suffix for metabolomics variant.\n\n'
             "Used to ensure compatibility and processing correctness.",
-            pattern=r"^\d{1}\.\d{1}\.\d{1}-[A-Z]{1}$",
             examples=["2.0.0-M", "2.1.0-M"],
+            json_schema_extra=MetadataSerialization(
+                validation_policy=ValidationPolicy(
+                    required=True, pattern=r"^\d{1}\.\d{1}\.\d{1}-[A-Z]{1}$"
+                )
+            ).model_dump(),
         ),
-    ]
+    ] = "2.1.0-M"
     mztab_id: Annotated[
-        str,
+        Optional[str],
         Field(
             alias="mzTab-ID",
             description="Unique identifier for the mzTab-M document.\n"
@@ -84,8 +93,11 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             "NOT intended as a globally unique identifier,\n"
             "but SHOULD have local meaning within its context.",
             examples=["MTBLS214", "LAB001_2023", "STUDY123_BATCH1"],
+            json_schema_extra=MetadataSerialization(
+                validation_policy=ValidationPolicy(required=True)
+            ).model_dump(),
         ),
-    ]
+    ] = None
     title: Annotated[
         Optional[str],
         Field(
@@ -98,6 +110,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
                 "Metabolomic Analysis of Human Plasma in Diabetes Type 2",
                 "Lipidomics Study of Brain Tissue in Alzheimer's Disease",
             ],
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     description: Annotated[
@@ -118,6 +131,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
                 "the relationship between specific lipid species and "
                 "Alzheimer's disease progression.",
             ],
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     contact: Annotated[
@@ -136,6 +150,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
                 "MTD\tcontact[1]-affiliation\tUniversity of Somewhere",
                 "MTD\tcontact[1]-email\tjohn.smith@university.edu",
             ],
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     publication: Annotated[
@@ -151,6 +166,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
                 "MTD\tpublication[1]\tdoi:10.1021/example.2023",
                 "MTD\tpublication[2]\tpubmed:12345678|doi:10.1021/another.2023",
             ],
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     uri: Annotated[
@@ -158,6 +174,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
         Field(
             description="A URI pointing to the file's source data "
             "(e.g., a MetaboLights records).",
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     external_study_uri: Annotated[
@@ -165,6 +182,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
         Field(
             description="A URI pointing to an external file with more details "
             "about the study design (e.g., an ISA-TAB file).",
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     instrument: Annotated[
@@ -182,12 +200,19 @@ class Metadata(MzTabBaseModel, CustomSerializer):
                 "MTD\tinstrument[1]-source\t[MS,MS:1000073,ESI,]",
                 "MTD\tinstrument[1]-analyzer[1]\t[MS,MS:1000084,TOF,]",
             ],
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     quantification_method: Annotated[
-        Parameter,
-        Field(),
-    ]
+        Optional[Parameter],
+        Field(
+            description="The quantification method used in the "
+            "experiment reported in the file.",
+            json_schema_extra=MetadataSerialization(
+                validation_policy=ValidationPolicy(required=True)
+            ).model_dump(),
+        ),
+    ] = None
     sample: Annotated[
         Optional[List[Sample]],
         Field(
@@ -198,13 +223,15 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             "(i.e. bio or tech replicates). "
             "If the type of replicates are not known, samples SHOULD NOT be reported. "
             "species: The respective species of the samples analysed. "
-            "For more complex cases, such as metagenomics, optional columns and userParams should be used."
+            "For more complex cases, such as metagenomics, optional columns and "
+            "userParams should be used."
             "tissue: The respective tissue(s) of the sample. "
             "cell_type: The respective cell type(s) of the sample. "
             "disease: The respective disease(s) of the sample. "
             "description: A human readable description of the sample. "
             "custom: Custom parameters describing the sample's additional properties. "
             "Dates MUST be provided in ISO-8601 format.",
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     sample_processing: Annotated[
@@ -221,13 +248,15 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             "Follows biological/analytical methods report format",
             examples=[
                 "MTD\tsample_processing[1]\t[SEP,SEP:00142,extraction,]",
-                "MTD\tsample_processing[2]\t[SEP,SEP:00210,centrifugation,]|[SEP,SEP:00211,13000g]",
+                "MTD\tsample_processing[2]\t[SEP,SEP:00210,centrifugation,]|"
+                "[SEP,SEP:00211,13000g]",
                 "MTD\tsample_processing[3]\t[MS,MS:1000085,silylation,]",
             ],
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     software: Annotated[
-        List[Software],
+        Optional[List[Software]],
         Field(
             description="Analysis software specifications.\n\n"
             "For each software entry:\n"
@@ -239,22 +268,29 @@ class Metadata(MzTabBaseModel, CustomSerializer):
                 "MTD\tsoftware[1]\t[MS,MS:1000532,Xcalibur,3.1]",
                 "MTD\tsoftware[2]\t[MS,MS:1002342,MetaboScape,2022b]",
             ],
+            json_schema_extra=MetadataSerialization(
+                validation_policy=ValidationPolicy(required=True, minimum=1)
+            ).model_dump(),
         ),
-    ]
+    ] = None
     derivatization_agent: Annotated[
         Optional[List[Parameter]],
         Field(
             description="A description of derivatization agents applied to small molecules, "
             "using userParams or CV terms where possible.",
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     ms_run: Annotated[
-        List[MsRun],
+        Optional[List[MsRun]],
         Field(
             description="Specification of ms_run. "
-            "location: Location of the external data file e.g. raw files on which analysis has been performed. "
-            "If the actual location of the MS run is unknown, a “null” MUST be used as a place holder value, "
-            "since the [1-n] cardinality is referenced elsewhere. If pre-fractionation has been performed, "
+            "location: Location of the external data file e.g. raw files on which "
+            "analysis has been performed. "
+            "If the actual location of the MS run is unknown, a “null” MUST be "
+            "used as a place holder value, "
+            "since the [1-n] cardinality is referenced elsewhere. "
+            "If pre-fractionation has been performed, "
             "then [1-n] ms_runs SHOULD be created per assay."
             "instrument_ref: If different instruments are used in different runs, "
             "instrument_ref can be used to link a specific instrument to a specific run. "
@@ -265,58 +301,77 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             "If ms_run[1-n]-id_format is present, ms_run[1-n]-format SHOULD also be present."
             "fragmentation_method: The type(s) of fragmentation used in a given ms run."
             "scan_polarity: The polarity mode of a given run. "
-            "Usually only one value SHOULD be given here except for the case of mixed polarity runs."
-            "hash: Hash value of the corresponding external MS data file defined in ms_run[1-n]-location. "
+            "Usually only one value SHOULD be given here except for "
+            "the case of mixed polarity runs."
+            "hash: Hash value of the corresponding external MS data f"
+            "ile defined in ms_run[1-n]-location. "
             "If ms_run[1-n]-hash is present, ms_run[1-n]-hash_method SHOULD also be present."
-            "hash_method: A parameter specifying the hash methods used to generate the String in ms_run[1-n]-hash. "
+            "hash_method: A parameter specifying the hash methods used to "
+            "generate the String in ms_run[1-n]-hash. "
             "Specifics of the hash method used MAY follow the definitions of the mzML format. "
             "If ms_run[1-n]-hash is present, ms_run[1-n]-hash_method SHOULD also be present.",
+            json_schema_extra=MetadataSerialization(
+                validation_policy=ValidationPolicy(required=True, minimum=1)
+            ).model_dump(),
         ),
-    ]
+    ] = None
     assay: Annotated[
-        List[Assay],
+        Optional[List[Assay]],
         Field(
             description="Specification of assay. "
-            "(empty) name: A name for each assay, to serve as a list of the assays that MUST be "
+            "(empty) name: A name for each assay, to serve as a list of "
+            "the assays that MUST be "
             "reported in the following tables. "
             "custom: Additional custom parameters or values for a given assay. "
             "external_uri: An external reference uri to further information about the assay, "
             "for example via a reference to an object within an ISA-TAB file. "
             "sample_ref: An association from a given assay to the sample analysed. "
             "ms_run_ref: An association from a given assay to the source MS run. "
-            "All assays MUST reference exactly one ms_run unless a workflow with pre-fractionation "
-            "is being encoded, in which case each assay MUST reference n ms_runs where n fractions "
-            "have been collected. "
-            "Multiple assays SHOULD reference the same ms_run to capture multiplexed experimental designs.",
+            "All assays MUST reference exactly one ms_run unless a workflow with "
+            "pre-fractionation "
+            "is being encoded, in which case each assay MUST reference n ms_runs "
+            "where n fractions have been collected. "
+            "Multiple assays SHOULD reference the same ms_run to capture "
+            "multiplexed experimental designs.",
+            json_schema_extra=MetadataSerialization(
+                validation_policy=ValidationPolicy(required=True, minimum=1)
+            ).model_dump(),
         ),
-    ]
+    ] = None
     study_variable: Annotated[
-        List[StudyVariable],
+        Optional[List[StudyVariable]],
         Field(
             description="Specification of study_variable. "
             "(empty) name: A name for each study variable (experimental condition or factor), "
-            "to serve as a list of the study variables that MUST be reported in the following tables. "
-            "For software that does not capture study variables, a single study variable MUST be reported, "
+            "to serve as a list of the study variables that MUST be "
+            "reported in the following tables. "
+            "For software that does not capture study variables, "
+            "a single study variable MUST be reported, "
             "linking to all assays. This single study variable MUST have the identifier “undefined“. "
             "assay_refs: Bar-separated references to the IDs of assays grouped in the study variable. "
             "average_function: The function used to calculate the study variable quantification value "
             "and the operation used is not arithmetic mean (default) e.g. “geometric mean”, “median”. "
             "The 1-n refers to different study variables. "
-            "variation_function: The function used to calculate the study variable quantification variation value "
+            "variation_function: The function used to calculate "
+            "the study variable quantification variation value "
             "if it is reported and the operation used is not coefficient of variation (default) e.g. "
             "“standard error”. description: A textual description of the study variable. "
             "factors: Additional parameters or factors, separated by bars, that are known "
             "about study variables allowing the capture of more complex, such as nested designs. ",
+            json_schema_extra=MetadataSerialization(
+                validation_policy=ValidationPolicy(required=True, minimum=1)
+            ).model_dump(),
         ),
-    ]
+    ] = None
     custom: Annotated[
         Optional[List[Parameter]],
         Field(
             description="Any additional parameters describing the analysis reported.",
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     cv: Annotated[
-        List[CV],
+        Optional[List[CV]],
         Field(
             description="Controlled vocabulary specifications.\n\n"
             "Fields\n"
@@ -330,28 +385,40 @@ class Metadata(MzTabBaseModel, CustomSerializer):
                 "MTD\tcv[1]-version\t4.1.0",
                 "MTD\tcv[1]-uri\thttp://purl.obolibrary.org/obo/ms.obo",
             ],
+            json_schema_extra=MetadataSerialization(
+                validation_policy=ValidationPolicy(required=True, minimum=1)
+            ).model_dump(),
         ),
     ]
     small_molecule_quantification_unit: Annotated[
-        Parameter,
+        Optional[Parameter],
         Field(
             alias="small_molecule-quantification_unit",
+            json_schema_extra=MetadataSerialization(
+                validation_policy=ValidationPolicy(required=True)
+            ).model_dump(),
         ),
-    ]
+    ] = None
     small_molecule_feature_quantification_unit: Annotated[
-        Parameter,
+        Optional[Parameter],
         Field(
             alias="small_molecule_feature-quantification_unit",
+            json_schema_extra=MetadataSerialization(
+                validation_policy=ValidationPolicy(required=True)
+            ).model_dump(),
         ),
-    ]
+    ] = None
     small_molecule_identification_reliability: Annotated[
         Optional[Parameter],
         Field(
             alias="small_molecule-identification_reliability",
+            json_schema_extra=MetadataSerialization(
+                validation_policy=ValidationPolicy(required=True)
+            ).model_dump(),
         ),
     ] = None
     database: Annotated[
-        List[Database],
+        Optional[List[Database]],
         Field(
             description="Specification of databases. "
             "(empty): The description of databases used. "
@@ -360,19 +427,24 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             "e.g. de novo. "
             "If no identification has been performed at all then 'no database' "
             "should be inserted followed by null. prefix: The prefix used in the "
-            "“identifier” column of data tables. For the 'no database' case 'null' must be used. "
-            "version: The database version is mandatory where identification has been performed. "
+            "“identifier” column of data tables. "
+            "For the 'no database' case 'null' must be used. "
+            "version: The database version is mandatory "
+            "where identification has been performed. "
             "This may be a formal version number e.g. “1.4.1”, "
             "a date of access “2016-10-27” (ISO-8601 format) or “Unknown” "
             "if there is no suitable version that can be annotated. "
             "uri: The URI to the database. "
             "For the 'no database' case, 'null' must be reported. ",
+            json_schema_extra=MetadataSerialization(
+                validation_policy=ValidationPolicy(required=True, minimum=1)
+            ).model_dump(),
         ),
-    ]
+    ] = None
     id_confidence_measure: Annotated[
-        List[Parameter],
+        Optional[List[Parameter]],
         Field(
-            description="Small molecule identification confidence metrics.\n\n"
+            description="Small molecule identification confidence metrics.<br/>"
             "Scoring System\n"
             "- Use CV parameters numbered `[1-n]`\n"
             "- Define score direction (high-to-low or low-to-high)\n"
@@ -382,8 +454,11 @@ class Metadata(MzTabBaseModel, CustomSerializer):
                 "MTD\tid_confidence_measure[1]\t[MS,MS:1002890,fragmentation score,]",
                 "MTD\tid_confidence_measure[2]\t[MS,MS:1002891,retention time score,]",
             ],
+            json_schema_extra=MetadataSerialization(
+                validation_policy=ValidationPolicy(required=True, minimum=1)
+            ).model_dump(),
         ),
-    ]
+    ] = None
     colunit_small_molecule: Annotated[
         Optional[List[ColumnParameterMapping]],
         Field(
@@ -401,7 +476,8 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             ],
             json_schema_extra=MetadataSerialization(
                 non_indexed_list_value=True,
-            ).model_dump(exclude_unset=True, exclude_defaults=True),
+                json_schema_extra=MetadataSerialization().model_dump(),
+            ).model_dump(),
         ),
     ] = None
     colunit_small_molecule_feature: Annotated[
@@ -415,7 +491,8 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             "in small_molecule_feature-quantification_unit.",
             json_schema_extra=MetadataSerialization(
                 non_indexed_list_value=True,
-            ).model_dump(exclude_unset=True, exclude_defaults=True),
+                json_schema_extra=MetadataSerialization().model_dump(),
+            ).model_dump(),
         ),
     ] = None
     colunit_small_molecule_evidence: Annotated[
@@ -426,12 +503,13 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             "The format of the value has to be {column name}={Parameter defining the unit}.",
             json_schema_extra=MetadataSerialization(
                 non_indexed_list_value=True,
-            ).model_dump(exclude_unset=True, exclude_defaults=True),
+                json_schema_extra=MetadataSerialization().model_dump(),
+            ).model_dump(),
         ),
     ] = None
 
     @classmethod
-    def parse_metadata_line(cls, line: str) -> tuple[str, str]:
+    def parse_metadata_line(cls, line: str) -> Tuple[str, str]:
         """Parse a metadata line into key and value."""
         parts = line.split("\t", 2)
         if len(parts) < 3:
@@ -441,7 +519,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
         return key, value
 
     @classmethod
-    def update_dict(cls, dict_info: MetadataDictInfo, item: dict[str, Any]):
+    def update_dict(cls, dict_info: MetadataDictInfo, item: Dict[str, Any]):
         if not item:
             return
         if dict_info.object_level_value_field:
@@ -473,9 +551,9 @@ class Metadata(MzTabBaseModel, CustomSerializer):
         value,
         data_dict,
         field: str,
-        field_index: Union[None, int],
+        field_index: Optional[int],
         sub_field: str,
-        sub_field_index: Union[None, int],
+        sub_field_index: Optional[int],
     ):
         if field not in data_dict:
             if field_index is not None:
@@ -507,7 +585,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             base_item[sub_field] = value
 
     @classmethod
-    def parse_metadata(cls, lines: List[str]) -> dict[str, Any]:
+    def parse_metadata(cls, lines: List[str]) -> Dict[str, Any]:
         """Parse metadata section of mzTab-M file."""
         pattern = re.compile(
             r"^(?P<field>[^\[\]]+)"
@@ -603,7 +681,9 @@ class Metadata(MzTabBaseModel, CustomSerializer):
                         str_val = val
                         if isinstance(val, (dict, OrderedDict)):
                             str_val = val.get(None)
-                        new_data[field_name] = field_type.model_validate(str_val, by_alias=True)
+                        new_data[field_name] = field_type.model_validate(
+                            str_val, by_alias=True
+                        )
             else:
                 if issubclass(field_type, int):
                     int_val = val
@@ -623,7 +703,9 @@ class Metadata(MzTabBaseModel, CustomSerializer):
                         else:
                             cls.update_dict(dict_info, item)
 
-                            new_list.append(field_type.model_validate(item, by_alias=True))
+                            new_list.append(
+                                field_type.model_validate(item, by_alias=True)
+                            )
                     new_data[field_name] = new_list or None
 
         return handler(new_data)
@@ -631,7 +713,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
     @model_serializer(mode="wrap")
     def serialize_model(
         self, handler: SerializerFunctionWrapHandler, info: SerializationInfo
-    ) -> Union[str, dict[str, Any]]:
+    ) -> Union[str, Dict[str, Any]]:
         default_success, result = self.serialize_to_json(handler, info)
         if default_success:
             return result
@@ -657,7 +739,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
 
             if value is None:
                 continue
-            elif isinstance(value, (str, AnyUrl)):
+            elif isinstance(value, str):
                 line = f"{section}\t{key_name}\t{value or ''}"
                 lines.append(line)
             elif isinstance(value, int):
@@ -679,7 +761,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             elif isinstance(value, list):
                 if not value:
                     continue
-                if isinstance(value[0], (str, AnyUrl)):
+                if isinstance(value[0], str):
                     separator = extra.list_concatenation_str
                     if separator:
                         line_value = separator.join([str(x) for x in value])

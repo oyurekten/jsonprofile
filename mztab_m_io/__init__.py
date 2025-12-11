@@ -1,10 +1,9 @@
 import json
 import pathlib
-from typing import Annotated, Any, Optional
 
 import yaml
 from pydantic import Field, ValidationError
-from typing_extensions import Literal
+from typing_extensions import Literal, Annotated, Any, Optional, Dict
 
 from mztab_m_io.model.mztabm import MzTabM
 from mztab_m_io.model.serialization import SerializationContext
@@ -100,6 +99,7 @@ def read(
                         category=Category.FORMAT,
                         message_type=MessageType.ERROR,
                         message=repr(x),
+                        source="",
                     )
                     for x in ex.errors()
                 ]
@@ -177,7 +177,7 @@ def write(
     return True
 
 
-def load_from_dict(data: dict[str, Any]) -> MzTabMLoadResult:
+def load_from_dict(data: Dict[str, Any]) -> MzTabMLoadResult:
     """Load and validate an MzTabM object from a dictionary.
 
     This function takes a dictionary representation of an mzTab-M file and attempts to
@@ -231,7 +231,7 @@ def load_from_dict(data: dict[str, Any]) -> MzTabMLoadResult:
     return result
 
 
-def convert_to_dict(mztabm: MzTabM) -> dict[str, Any]:
+def convert_to_dict(mztabm: MzTabM) -> Dict[str, Any]:
     """Convert an MzTabM object to a dictionary representation.
 
     This function converts an MzTabM object into a dictionary format suitable for
@@ -242,7 +242,7 @@ def convert_to_dict(mztabm: MzTabM) -> dict[str, Any]:
         mztabm: The MzTabM object to convert
 
     Returns:
-        dict[str, Any]: Dictionary representation of the MzTabM object
+        Dict[str, Any]: Dictionary representation of the MzTabM object
 
     Raises:
         ValueError: If mztabm is None

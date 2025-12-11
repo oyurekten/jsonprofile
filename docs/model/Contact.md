@@ -1,0 +1,9 @@
+# Contact
+
+|Name (Alias)|Type (Default)|Constraints|Description|
+|---|---|----|----------|
+id|<code>int</code>|-|
+name|<code>str</code>|-|The contact's name\.
+affiliation|<code>str</code>|-|The contact's affiliation\.
+email|<code>str</code>|pattern: <code>^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$</code><br/>Validation type: **<code>error</code>**|The contact's e\-mail address\.
+orcid|<code>str</code>|pattern: <code>^[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9X]{1}$</code><br/>Validation type: **<code>error</code>**|The contact's orcid id, without https prefix\.

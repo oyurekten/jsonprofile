@@ -1,7 +1,7 @@
 import abc
 import enum
-from typing import Annotated, Any, Optional, Union
-
+from typing_extensions import Dict, Tuple
+from typing_extensions import Annotated, Any, Optional, Union
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -15,7 +15,7 @@ from mztab_m_io.model.serialization import (
     MetadataSerialization,
     SerializationContext,
 )
-from pydantic.alias_generators import to_camel, to_pascal
+from pydantic.alias_generators import to_pascal
 
 
 class SerializationCategory(str, enum.Enum):
@@ -46,7 +46,7 @@ class MzTabBaseModel(BaseModel):
 
     def serialize_to_json(
         self, handler: SerializerFunctionWrapHandler, info: SerializationInfo
-    ) -> tuple[bool, dict[str, Any]]:
+    ) -> Tuple[bool, Dict[str, Any]]:
         if info and isinstance(info.context, SerializationContext):
             if info.context.convert_to and info.context.convert_to.lower() == "json":
                 return True, handler(self)
@@ -92,9 +92,7 @@ class IdentifiableModel(SerializableModel):
         Optional[int],
         Field(
             ge=1,
-            json_schema_extra=MetadataSerialization(ignore=True).model_dump(
-                exclude_unset=True, exclude_defaults=True
-            ),
+            json_schema_extra=MetadataSerialization(ignore=True).model_dump(),
         ),
     ] = None
 

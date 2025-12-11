@@ -1,10 +1,28 @@
 import re
-from typing import Annotated, Any, List, OrderedDict, Union, get_args, get_origin
+from typing_extensions import Type
+from typing_extensions import (
+    Annotated,
+    Any,
+    List,
+    Optional,
+    OrderedDict,
+    Union,
+    get_args,
+    get_origin,
+)
 
 from pydantic import BaseModel
 
+try:
+    import types
 
-def sanitize_str(val: Union[None, str]) -> str:
+    types.UnionType
+    TYPES_ENABLED = True
+except Exception:
+    TYPES_ENABLED = False
+
+
+def sanitize_str(val: Optional[str]) -> str:
     if not val:
         return ""
     if not isinstance(val, str):
@@ -21,11 +39,9 @@ def sanitize_str(val: Union[None, str]) -> str:
 def _is_union(t):
     """True for typing.Union[...] or PEP 604 T | U."""
     origin = get_origin(t)
-    try:
-        import types
+    if TYPES_ENABLED:
         return origin is Union or origin is types.UnionType
-    except Exception:
-        return origin is Union
+    return origin is Union
 
 
 def _unwrap_annotated(t):
@@ -91,7 +107,7 @@ def _resolve(annotation):
     return False, annotation if isinstance(annotation, type) else Any
 
 
-def get_field_type_info(model: type[BaseModel], field_name: str):
+def get_field_type_info(model: Type[BaseModel], field_name: str):
     field = model.model_fields[field_name]
     return _resolve(field.annotation)
 

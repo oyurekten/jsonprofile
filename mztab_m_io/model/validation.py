@@ -1,5 +1,5 @@
 import enum
-from typing import List, Literal, Optional
+from typing_extensions import List, Literal, Optional
 
 from mztab_m_io.model import MzTabBaseModel
 
@@ -27,6 +27,7 @@ class ValidationMessage(MzTabBaseModel):
     message_type: Optional[MessageType] = "info"
     message: str
     line_number: Optional[int] = None
+    source: Optional[str] = None
 
 
 class ValidationSummary(MzTabBaseModel):

@@ -1,0 +1,27 @@
+# mzTab-M Python Implementation
+
+|Model|Link|
+|---|---|
+Assay|[Link](model/Assay.md)
+CV|[Link](model/CV.md)
+ColumnParameterMapping|[Link](model/ColumnParameterMapping.md)
+Comment|[Link](model/Comment.md)
+Contact|[Link](model/Contact.md)
+Database|[Link](model/Database.md)
+Instrument|[Link](model/Instrument.md)
+Metadata|[Link](model/Metadata.md)
+MsRun|[Link](model/MsRun.md)
+MzTabM|[Link](model/MzTabM.md)
+OptColumnMapping|[Link](model/OptColumnMapping.md)
+Parameter|[Link](model/Parameter.md)
+Publication|[Link](model/Publication.md)
+PublicationItem|[Link](model/PublicationItem.md)
+Sample|[Link](model/Sample.md)
+SampleProcessing|[Link](model/SampleProcessing.md)
+SmallMoleculeEvidence|[Link](model/SmallMoleculeEvidence.md)
+SmallMoleculeFeature|[Link](model/SmallMoleculeFeature.md)
+SmallMoleculeSummary|[Link](model/SmallMoleculeSummary.md)
+Software|[Link](model/Software.md)
+SpectraRef|[Link](model/SpectraRef.md)
+StudyVariable|[Link](model/StudyVariable.md)
+Uri|[Link](model/Uri.md)
