@@ -1,9 +1,8 @@
 import pathlib
-from typing import Tuple
 
 from pydantic import ValidationError
 from pydantic.fields import Field
-from typing_extensions import Annotated, Any, Dict, Literal, Optional
+from typing_extensions import Annotated, Any, Dict, Literal, Optional, Tuple
 
 from mztab_m_io import model
 from mztab_m_io.model.mztabm import MzTabM

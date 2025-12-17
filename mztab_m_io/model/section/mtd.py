@@ -1,4 +1,3 @@
-from mztab_m_io.model.validation import ValidationContext
 import re
 
 from pydantic import (
@@ -45,7 +44,12 @@ from mztab_m_io.model.serialization import (
     SerializationContext,
     ValidationPolicy,
 )
-from mztab_m_io.model.validation import Category, MessageType, MzTabMessage
+from mztab_m_io.model.validation import (
+    Category,
+    MessageType,
+    MzTabMessage,
+    ValidationContext,
+)
 
 
 class Metadata(MzTabSerializableModel, CustomSerializer):

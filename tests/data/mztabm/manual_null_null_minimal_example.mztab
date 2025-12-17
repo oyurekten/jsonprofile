@@ -9,7 +9,7 @@ MTD	instrument[1]-analyzer[1]	[MS, MS:1000291, linear ion trap, ]
 MTD	instrument[1]-detector	[MS, MS:1000253, electron multiplier, ]
 MTD	instrument[2]-name	[MS, MS:1000031, Instrument model, name of the instrument not included in the CV]
 MTD	instrument[2]-source	[MS, MS:1000598, ETD, ]
-MTD	instrument[2]-analyzer	[MS, MS:1000484, orbitrap, ]
+MTD	instrument[2]-analyzer[1]	[MS, MS:1000484, orbitrap, ]
 MTD	instrument[2]-detector	[MS, MS:1000348, focal plane collector, ]
 MTD	software[1]	[MS, MS:1001207, Mascot, 2.3]
 MTD	software[1]-setting[1]	Fragment tolerance = 0.1Da
@@ -28,11 +28,11 @@ MTD	uri[2]	http://proteomecentral.proteomexchange.org/cgi/GetDataset
 MTD	quantification_method	[MS, MS:1001834, LC-MS label-free quantitation analysis, ]
 MTD	ms_run[1]-format	[MS, MS:1000584, mzML file, ]
 MTD	ms_run[1]-id_format	[MS, MS:1001530, mzML unique identifier, ]
-MTD	ms_run[1]-scan_polarity	[MS, MS:1000130, positive scan, ]
-MTD	ms_run[1]-fragmentation_method	[MS, MS:1000133, CID, ]
+MTD	ms_run[1]-scan_polarity[1]	[MS, MS:1000130, positive scan, ]
+MTD	ms_run[1]-fragmentation_method[1]	[MS, MS:1000133, CID, ]
 MTD	ms_run[1]-location	ftp://ftp.ebi.ac.uk/path/to/file
 MTD	ms_run[2]-format	[MS, MS:1001062, Mascot MGF file, ]
-MTD	ms_run[2]-scan_polarity	[MS, MS:1000130, positive scan, ]
+MTD	ms_run[2]-scan_polarity[1]	[MS, MS:1000130, positive scan, ]
 MTD	ms_run[2]-location	ftp://ftp.ebi.ac.uk/path/to/file
 MTD	ms_run[2]-hash	de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3
 MTD	ms_run[2]-hash_method	[MS, MS:1000569, SHA-1, ]
@@ -54,10 +54,10 @@ MTD	assay[2]-sample_ref	sample[2]
 MTD	assay[2]-ms_run_ref	ms_run[2]
 MTD	study_variable[1]	Group A
 MTD	study_variable[1]-description	Group B (spike-in 0.74 fmol/uL)
-MTD	study_variable[1]-assay_refs	assay[1], assay[2]
+MTD	study_variable[1]-assay_refs	assay[1]| assay[2]
 MTD	study_variable[2]	Group B
 MTD	study_variable[2]-description	Group B (spike-in 0.74 fmol/uL)
-MTD	study_variable[2]-assay_refs	assay[1], assay[2]
+MTD	study_variable[2]-assay_refs	assay[1]| assay[2]
 MTD	cv[1]-label	MS
 MTD	cv[1]-full_name	MS
 MTD	cv[1]-version	3.54.0
@@ -77,3 +77,7 @@ MTD	small_molecule_feature-quantification_unit	[MS, MS:1002887, Progenesis QI no
 MTD	id_confidence_measure[1]	[MS,MS:1002889,Progenesis MetaScope Score,]
 
 SMH	SML_ID	SMF_ID_REFS	chemical_name	database_identifier	chemical_formula	smiles	inchi	uri	theoretical_neutral_mass	adduct_ions	reliability	best_id_confidence_measure	best_id_confidence_value	abundance_assay[1]	abundance_study_variable[1]	abundance_variation_study_variable[1]	opt_global_lipid_category	opt_global_lipid_species	opt_global_lipid_best_id_level
+
+SFH	SMF_ID	SME_ID_REFS	SME_ID_REF_ambiguity_code	adduct_ion	isotopomer	exp_mass_to_charge	charge	retention_time_in_seconds	retention_time_in_seconds_start	retention_time_in_seconds_end	abundance_assay[1]	opt_global_quantifiers_SMF_ID_REFS									
+
+SEH	SME_ID	evidence_input_id	database_identifier	chemical_formula	smiles	inchi	chemical_name	uri	derivatized_form	adduct_ion	exp_mass_to_charge	charge	theoretical_mass_to_charge	opt_global_mass_error	spectra_ref	identification_method	ms_level	id_confidence_measure[1]	rank	opt_global_qualifiers_evidence_grouping_ID_REFS

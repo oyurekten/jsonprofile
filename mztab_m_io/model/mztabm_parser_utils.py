@@ -1,12 +1,16 @@
-from mztab_m_io.model.validation import Category
-from mztab_m_io.model.validation import MessageType
-from mztab_m_io.model.validation import MzTabMessage
-from typing import Optional
-from mztab_m_io.model.serialization import SerializationContext
 import re
 
 from pydantic import BaseModel, ValidationError
-from typing_extensions import Any, Dict, List, Mapping, OrderedDict, Type, Union
+from typing_extensions import (
+    Any,
+    Dict,
+    List,
+    Mapping,
+    Optional,
+    OrderedDict,
+    Type,
+    Union,
+)
 
 from mztab_m_io.model.base import MzTabBaseModel
 from mztab_m_io.model.section.base_table_section import BaseTableSection
@@ -14,7 +18,8 @@ from mztab_m_io.model.section.mtd import Metadata
 from mztab_m_io.model.section.sme import SmallMoleculeEvidence
 from mztab_m_io.model.section.smf import SmallMoleculeFeature
 from mztab_m_io.model.section.sml import SmallMoleculeSummary
-from mztab_m_io.model.serialization import IdentifiableModel
+from mztab_m_io.model.serialization import IdentifiableModel, SerializationContext
+from mztab_m_io.model.validation import Category, MessageType, MzTabMessage
 
 
 def parse_table_section(

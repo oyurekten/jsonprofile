@@ -10,7 +10,7 @@ MTD	sample_processing[5]	[OBI, OBI:0200000, data transform, "Peak areas of metab
 MTD	sample_processing[6]	[MI, MI:2131, metabolite identification, "Metabolites were identified by comparing their m/z values and retention times with authentic pure standards. If no standard was available, metabolites were assigned by analysis of MS/MS spectra (MS/MS), as described in the publication. In cases where no standard compound or MS/MS spectrum was available, compounds were identified by generating chemical formulae using m/z values in MZmine 2.10 module and given MS status."]																															
 MTD	instrument[1]-name	[MS, MS:1000449, LTQ Orbitrap,]																															
 MTD	instrument[1]-source	[MS, MS:1000073, ESI,]																															
-MTD	instrument[1]-analyzer	[MS, MS:1000484, orbitrap,]																															
+MTD	instrument[1]-analyzer[1]	[MS, MS:1000484, orbitrap,]																															
 MTD	software[1]	[MS,MS:1002342,mzmine,2.10]																															
 MTD	publication[1]	pubmed:27036001|doi:10.1073/pnas.1603023113																															
 MTD	contact[1]-name	Romanas Chaleckis																															

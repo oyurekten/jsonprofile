@@ -1,13 +1,23 @@
 import abc
 import json
-from typing import List, Mapping
 
 import yaml
 from pydantic import BaseModel
 from pydantic.fields import Field
 from pydantic.functional_validators import ModelWrapValidatorHandler, model_validator
 from pydantic_core.core_schema import ValidationInfo
-from typing_extensions import Annotated, Any, Dict, Literal, Optional, Set, Type, Union
+from typing_extensions import (
+    Annotated,
+    Any,
+    Dict,
+    List,
+    Literal,
+    Mapping,
+    Optional,
+    Set,
+    Type,
+    Union,
+)
 
 from mztab_m_io.model.base import MzTabBaseModel
 from mztab_m_io.model.field_utils import get_field_type_info

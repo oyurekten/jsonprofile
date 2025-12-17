@@ -1,9 +1,9 @@
 import decimal
 import pathlib
 import re
-from typing import List
 
 import pytest
+from typing_extensions import List
 
 import mztab_m_io
 from mztab_m_io.model.section.sme import SmallMoleculeEvidence
@@ -150,6 +150,9 @@ files_to_test = list(pathlib.Path("tests/data/mztabm").glob("*.[mM][zZ][tT][aA][
 
 @pytest.mark.parametrize("source_path", files_to_test)
 def test_mztab_roundtrip(source_path):
+    """
+    Test roundtrip for a given mztab file.
+    """
     print(f"Testing {source_path.name}")
 
     # 1. Read

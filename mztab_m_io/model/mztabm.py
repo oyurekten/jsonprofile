@@ -1,12 +1,10 @@
-from functools import partial
-from mztab_m_io.model.serialization import MzTabSerializableModel
 import json
 import pathlib
-from typing import Callable, Tuple
+from functools import partial
 
 import yaml
 from pydantic import Field
-from typing_extensions import Annotated, Any, List, Literal, Optional
+from typing_extensions import Annotated, Any, Callable, List, Literal, Optional, Tuple
 
 from mztab_m_io.model.common import Comment
 from mztab_m_io.model.mztabm_parser_utils import parse_tsv_file, update_ids
@@ -18,6 +16,7 @@ from mztab_m_io.model.section.sml import SmallMoleculeSummary
 from mztab_m_io.model.serialization import (
     CustomSerializer,
     MetadataSerialization,
+    MzTabSerializableModel,
     SerializationContext,
     ValidationPolicy,
 )

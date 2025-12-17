@@ -1,7 +1,6 @@
 import enum
-from typing import List
 
-from typing_extensions import Literal, Optional
+from typing_extensions import List, Literal, Optional
 
 from mztab_m_io.model.base import MzTabBaseModel
 

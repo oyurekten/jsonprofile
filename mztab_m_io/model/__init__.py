@@ -6,7 +6,9 @@ from mztab_m_io.model.common import (
     Assay,
     ColumnParameterMapping,
     Comment,
+    CompactObjectModel,
     Contact,
+    CustomSerializer,
     Database,
     Instrument,
     MsRun,
@@ -20,8 +22,6 @@ from mztab_m_io.model.common import (
     SpectraRef,
     StudyVariable,
     Uri,
-    CompactObjectModel,
-    CustomSerializer,
 )
 from mztab_m_io.model.mztabm import MzTabM
 from mztab_m_io.model.mztabm_validation import (
