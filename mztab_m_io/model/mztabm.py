@@ -1,16 +1,13 @@
-from typing_extensions import Annotated, Any, List, Optional, OrderedDict, Union, Dict
+from functools import partial
+from mztab_m_io.model.serialization import MzTabSerializableModel
+import json
+import pathlib
+from typing import Callable, Tuple
 
-from pydantic import (
-    Field,
-    ModelWrapValidatorHandler,
-    SerializationInfo,
-    SerializerFunctionWrapHandler,
-    ValidationInfo,
-    model_serializer,
-    model_validator,
-)
+import yaml
+from pydantic import Field
+from typing_extensions import Annotated, Any, List, Literal, Optional
 
-from mztab_m_io.model import MzTabBaseModel
 from mztab_m_io.model.common import Comment
 from mztab_m_io.model.mztabm_parser_utils import parse_tsv_file, update_ids
 from mztab_m_io.model.mztabm_validation import check_validation_policies, cross_check
@@ -19,16 +16,20 @@ from mztab_m_io.model.section.sme import SmallMoleculeEvidence
 from mztab_m_io.model.section.smf import SmallMoleculeFeature
 from mztab_m_io.model.section.sml import SmallMoleculeSummary
 from mztab_m_io.model.serialization import (
+    CustomSerializer,
     MetadataSerialization,
+    SerializationContext,
     ValidationPolicy,
 )
 from mztab_m_io.model.validation import (
-    ValidationMessage,
-    ValidationSummary,
+    Category,
+    MessageType,
+    MzTabMessage,
+    ValidationContext,
 )
 
 
-class MzTabM(MzTabBaseModel):
+class MzTabM(MzTabSerializableModel, CustomSerializer):
     metadata: Annotated[
         Optional[Metadata],
         Field(
@@ -41,7 +42,7 @@ class MzTabM(MzTabBaseModel):
     ] = None
 
     small_molecule_summary: Annotated[
-        List[SmallMoleculeSummary],
+        Optional[List[SmallMoleculeSummary]],
         Field(
             alias="smallMoleculeSummary",
             description="The small molecule section is table-based. "
@@ -93,7 +94,7 @@ class MzTabM(MzTabBaseModel):
         ),
     ] = None
     small_molecule_evidence: Annotated[
-        List[SmallMoleculeEvidence],
+        Optional[List[SmallMoleculeEvidence]],
         Field(
             alias="smallMoleculeEvidence",
             description="The small molecule evidence section is table-based, "
@@ -127,55 +128,172 @@ class MzTabM(MzTabBaseModel):
         ),
     ] = None
 
-    @model_serializer(mode="wrap")
-    def serialize_model(
-        self, handler: SerializerFunctionWrapHandler, info: SerializationInfo
-    ) -> Union[str, Dict[str, Any]]:
-        default_success, result = self.serialize_to_json(handler, info)
-        if default_success:
-            return result
-        summary = [x.model_dump(by_alias=True) for x in self.small_molecule_summary]
-        feature = [x.model_dump(by_alias=True) for x in self.small_molecule_feature]
-        evidence = [x.model_dump(by_alias=True) for x in self.small_molecule_evidence]
-        plain = [
-            self.metadata.model_dump(),
-            "\n",
-            SmallMoleculeSummary.get_table_header(self.small_molecule_summary),
-        ]
-        plain.extend(summary)
+    def to_tsv(self, context: SerializationContext) -> str:
+        plain = [self.metadata.to_tsv(context)]
+        plain.extend([x.to_tsv(context) for x in self.comment or []])
+        plain.append("\n")
+        plain.append(SmallMoleculeSummary.get_table_header(self.small_molecule_summary))
+        plain.extend([x.to_tsv(context) for x in self.small_molecule_summary or []])
+        plain.append("\n")
         plain.append(SmallMoleculeFeature.get_table_header(self.small_molecule_feature))
-        plain.extend(feature)
+        plain.extend([x.to_tsv(context) for x in self.small_molecule_feature or []])
+        plain.append("\n")
         plain.append(
-            SmallMoleculeEvidence.get_table_header(self.small_molecule_evidence),
+            SmallMoleculeEvidence.get_table_header(self.small_molecule_evidence)
         )
-        plain.extend(evidence)
-        return "\n".join(plain)
+        plain.extend([x.to_tsv(context) for x in self.small_molecule_evidence or []])
+        errors = [x for x in context.messages if x.message_type == MessageType.ERROR]
+        if not errors:
+            context.success = True
+        return "\n".join(plain) + "\n"
 
-    @model_validator(mode="wrap")
     @classmethod
-    def validate_model(
-        cls,
-        data: Any,
-        handler: ModelWrapValidatorHandler["MzTabM"],
-        info: ValidationInfo,
-    ) -> "MzTabM":
-        if isinstance(data, MzTabM):
-            return handler(data)
-        if isinstance(info.context, ValidationSummary):
-            if info.context.source_format == "json":
-                return handler(data)
-
-        if isinstance(data, (dict, OrderedDict)):
-            mztabm = data
-        else:
-            mztabm = parse_tsv_file(cls, data)
-
-        model = handler(mztabm)
+    def post_process_model(cls, model: "MzTabM", context: ValidationContext):
         update_ids(model)
-        messages: List[ValidationMessage] = []
-        if isinstance(info.context, ValidationSummary):
-            messages = info.context.messages
+        cross_check(model, context.messages)
+        check_validation_policies([], model, context.messages)
 
-        cross_check(model, messages)
-        check_validation_policies([], model, messages)
-        return model
+    @classmethod
+    def from_dict(
+        cls,
+        data: dict,
+        context: Optional[ValidationContext] = None,
+        source_format: Literal["tsv", "json", "yaml"] = "json",
+    ) -> Tuple["MzTabM", ValidationContext]:
+        if not context:
+            context = ValidationContext(source_format=source_format, messages=[])
+        model = cls.model_validate(data, context=context, by_alias=True)
+        cls.post_process_model(model, context)
+        return model, context
+
+    @classmethod
+    def from_tsv_file(
+        cls, io: Any, context: Optional[ValidationContext] = None
+    ) -> Tuple["MzTabM", ValidationContext]:
+        return cls._from_file(
+            io,
+            loader=partial(MzTabM._tsv_file_loader, context=context),
+            source_format="tsv",
+            context=context,
+        )
+
+    @classmethod
+    def from_json_file(
+        cls, io: Any, context: Optional[ValidationContext] = None
+    ) -> Tuple["MzTabM", ValidationContext]:
+        return cls._from_file(
+            io,
+            loader=json.load,
+            source_format="json",
+            context=context,
+        )
+
+    @classmethod
+    def from_yaml_file(
+        cls, io: Any, context: Optional[ValidationContext] = None
+    ) -> Tuple["MzTabM", ValidationContext]:
+        return cls._from_file(
+            io,
+            loader=yaml.safe_load,
+            source_format="yaml",
+            context=context,
+        )
+
+    def save(
+        self, file_path: str, format: Literal["tsv", "json", "yaml"] = "tsv"
+    ) -> SerializationContext:
+        if not format:
+            format = "tsv"
+        serializers = {
+            "tsv": self.to_tsv,
+            "json": self.to_json,
+            "yaml": self.to_yaml,
+        }
+        return self._to_file(file_path, serializers[format], format)
+
+    def to_yaml_file(
+        self, io: Any, context: Optional[SerializationContext] = None
+    ) -> SerializationContext:
+        return self._to_file(io, self.to_yaml, "yaml", context)
+
+    def to_json_file(
+        self, io: Any, context: Optional[SerializationContext] = None
+    ) -> SerializationContext:
+        return self._to_file(io, self.to_json, "json", context)
+
+    def to_tsv_file(
+        self, io: Any, context: Optional[SerializationContext] = None
+    ) -> SerializationContext:
+        return self._to_file(io, self.to_tsv, "tsv", context)
+
+    @staticmethod
+    def _to_file(
+        file_path: str,
+        serializer: Callable[[Any], Any],
+        source_format: Literal["tsv", "json", "yaml"] = "json",
+        context: Optional[SerializationContext] = None,
+    ) -> SerializationContext:
+        if not context:
+            context = SerializationContext(source_format=source_format, messages=[])
+        try:
+            with open(file_path, "w") as f:
+                f.write(serializer(context))
+            context.success = True
+        except Exception as e:
+            context.success = False
+            context.messages.append(
+                MzTabMessage(
+                    message_type=MessageType.ERROR,
+                    category=Category.FORMAT,
+                    source="output file",
+                    message=str(e),
+                )
+            )
+        return context
+
+    @staticmethod
+    def _tsv_file_loader(io: Any, context: Optional[ValidationContext] = None) -> str:
+        if isinstance(io, pathlib.Path):
+            content = io.read_text()
+        elif hasattr(io, "read"):
+            content = io.read()
+        elif isinstance(io, str) and len(io) < 1024 and "\n" not in io:
+            p = pathlib.Path(io)
+            if p.exists() and p.is_file():
+                content = p.read_text()
+
+        return parse_tsv_file(MzTabM, content, context=context)
+
+    @classmethod
+    def _from_file(
+        cls,
+        io: Any,
+        loader: Callable[[Any], Any],
+        source_format: Literal["tsv", "json", "yaml"] = "json",
+        context: Optional[ValidationContext] = None,
+    ) -> Tuple["MzTabM", ValidationContext]:
+        if not context:
+            context = ValidationContext(source_format=source_format, messages=[])
+
+        try:
+            if hasattr(io, "read"):
+                data = loader(io)
+            else:
+                with open(io) as f:
+                    data = loader(f)
+            model, context = cls.from_dict(
+                data,
+                context=context,
+                source_format=source_format,
+            )
+            return model, context
+        except Exception as e:
+            context.messages.append(
+                MzTabMessage(
+                    message_type=MessageType.ERROR,
+                    category=Category.FORMAT,
+                    source="input file",
+                    message=str(e),
+                )
+            )
+            return None, context

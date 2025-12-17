@@ -1,31 +1,23 @@
+from mztab_m_io.model.validation import ValidationContext
 import re
-from typing_extensions import (
-    Annotated,
-    Any,
-    List,
-    Optional,
-    OrderedDict,
-    Union,
-    Dict,
-    Tuple,
-)
 
 from pydantic import (
     Field,
-    ModelWrapValidatorHandler,
-    SerializationInfo,
-    SerializerFunctionWrapHandler,
     ValidationInfo,
-    model_serializer,
-    model_validator,
+)
+from pydantic.functional_validators import ModelWrapValidatorHandler, model_validator
+from typing_extensions import (
+    Annotated,
+    Any,
+    Dict,
+    List,
+    Mapping,
+    Optional,
+    OrderedDict,
+    Tuple,
 )
 
-from mztab_m_io.model import (
-    CustomSerializer,
-    IdentifiableModel,
-    MzTabBaseModel,
-    SerializableModel,
-)
+from mztab_m_io.model.base import MzTabBaseModel
 from mztab_m_io.model.common import (
     CV,
     Assay,
@@ -44,14 +36,19 @@ from mztab_m_io.model.common import (
 )
 from mztab_m_io.model.field_utils import get_field_type_info
 from mztab_m_io.model.serialization import (
-    MetadataDictInfo,
+    CompactObjectModel,
+    CustomSerializer,
+    IdentifiableModel,
+    MetadataInfo,
     MetadataSerialization,
+    MzTabSerializableModel,
+    SerializationContext,
     ValidationPolicy,
 )
-from mztab_m_io.model.validation import ValidationSummary
+from mztab_m_io.model.validation import Category, MessageType, MzTabMessage
 
 
-class Metadata(MzTabBaseModel, CustomSerializer):
+class Metadata(MzTabSerializableModel, CustomSerializer):
     prefix: Annotated[
         Optional[str],
         Field(
@@ -65,6 +62,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             ).model_dump(),
         ),
     ] = "MTD"
+
     mztab_version: Annotated[
         Optional[str],
         Field(
@@ -81,6 +79,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             ).model_dump(),
         ),
     ] = "2.1.0-M"
+
     mztab_id: Annotated[
         Optional[str],
         Field(
@@ -98,6 +97,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             ).model_dump(),
         ),
     ] = None
+
     title: Annotated[
         Optional[str],
         Field(
@@ -113,6 +113,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
+
     description: Annotated[
         Optional[str],
         Field(
@@ -134,6 +135,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
+
     contact: Annotated[
         Optional[List[Contact]],
         Field(
@@ -153,6 +155,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
+
     publication: Annotated[
         Optional[List[Publication]],
         Field(
@@ -169,6 +172,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
+
     uri: Annotated[
         Optional[List[Uri]],
         Field(
@@ -177,6 +181,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
+
     external_study_uri: Annotated[
         Optional[List[Uri]],
         Field(
@@ -185,6 +190,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
+
     instrument: Annotated[
         Optional[List[Instrument]],
         Field(
@@ -203,6 +209,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
+
     quantification_method: Annotated[
         Optional[Parameter],
         Field(
@@ -213,6 +220,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             ).model_dump(),
         ),
     ] = None
+
     sample: Annotated[
         Optional[List[Sample]],
         Field(
@@ -234,6 +242,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
+
     sample_processing: Annotated[
         Optional[List[SampleProcessing]],
         Field(
@@ -255,6 +264,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
+
     software: Annotated[
         Optional[List[Software]],
         Field(
@@ -273,6 +283,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             ).model_dump(),
         ),
     ] = None
+
     derivatization_agent: Annotated[
         Optional[List[Parameter]],
         Field(
@@ -281,6 +292,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
+
     ms_run: Annotated[
         Optional[List[MsRun]],
         Field(
@@ -315,6 +327,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             ).model_dump(),
         ),
     ] = None
+
     assay: Annotated[
         Optional[List[Assay]],
         Field(
@@ -338,6 +351,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             ).model_dump(),
         ),
     ] = None
+
     study_variable: Annotated[
         Optional[List[StudyVariable]],
         Field(
@@ -363,6 +377,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             ).model_dump(),
         ),
     ] = None
+
     custom: Annotated[
         Optional[List[Parameter]],
         Field(
@@ -370,6 +385,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
+
     cv: Annotated[
         Optional[List[CV]],
         Field(
@@ -390,33 +406,44 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             ).model_dump(),
         ),
     ]
+
     small_molecule_quantification_unit: Annotated[
         Optional[Parameter],
         Field(
+            description="Defines what type of units are reported "
+            "in the small molecule summary quantification / abundance fields",
             alias="small_molecule-quantification_unit",
             json_schema_extra=MetadataSerialization(
                 validation_policy=ValidationPolicy(required=True)
             ).model_dump(),
         ),
     ] = None
+
     small_molecule_feature_quantification_unit: Annotated[
         Optional[Parameter],
         Field(
+            description="Defines what type of units are reported in "
+            "the small molecule feature quantification / abundance fields.",
             alias="small_molecule_feature-quantification_unit",
             json_schema_extra=MetadataSerialization(
                 validation_policy=ValidationPolicy(required=True)
             ).model_dump(),
         ),
     ] = None
+
     small_molecule_identification_reliability: Annotated[
         Optional[Parameter],
         Field(
+            description="The system used for giving reliability / confidence codes "
+            "to small molecule identifications MUST be specified "
+            "if not using the default codes.",
             alias="small_molecule-identification_reliability",
             json_schema_extra=MetadataSerialization(
                 validation_policy=ValidationPolicy(required=True)
             ).model_dump(),
         ),
     ] = None
+
     database: Annotated[
         Optional[List[Database]],
         Field(
@@ -441,6 +468,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             ).model_dump(),
         ),
     ] = None
+
     id_confidence_measure: Annotated[
         Optional[List[Parameter]],
         Field(
@@ -459,6 +487,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             ).model_dump(),
         ),
     ] = None
+
     colunit_small_molecule: Annotated[
         Optional[List[ColumnParameterMapping]],
         Field(
@@ -480,6 +509,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             ).model_dump(),
         ),
     ] = None
+
     colunit_small_molecule_feature: Annotated[
         Optional[List[ColumnParameterMapping]],
         Field(
@@ -495,6 +525,7 @@ class Metadata(MzTabBaseModel, CustomSerializer):
             ).model_dump(),
         ),
     ] = None
+
     colunit_small_molecule_evidence: Annotated[
         Optional[List[ColumnParameterMapping]],
         Field(
@@ -508,8 +539,168 @@ class Metadata(MzTabBaseModel, CustomSerializer):
         ),
     ] = None
 
+    def to_tsv(self, context: SerializationContext) -> str:
+        lines = []
+        prefix = self.__class__.model_fields.get("prefix", "").default
+        self._serialize_object(prefix, "", self, lines, context)
+        return "\n".join(lines)
+
+    @model_validator(mode="wrap")
     @classmethod
-    def parse_metadata_line(cls, line: str) -> Tuple[str, str]:
+    def validate_model(
+        cls,
+        input_data: Any,
+        handler: ModelWrapValidatorHandler["Metadata"],
+        info: ValidationInfo,
+    ) -> "Metadata":
+        if isinstance(input_data, Metadata):
+            return handler(input_data)
+        if info and info.context and isinstance(info.context, ValidationContext):
+            if info.context.source_format in {"json", "yaml"}:
+                return handler(input_data)
+
+        data = input_data
+        new_data = OrderedDict()
+        for field, field_info in cls.model_fields.items():
+            metadata_info = cls.get_metadata_info()
+            json_extra: MetadataSerialization = (
+                metadata_info.metadata_serializations.get(
+                    field, cls.__default_serialization__
+                )
+            )
+            if json_extra.ignore:
+                continue
+            val = None
+            if field_info.validation_alias:
+                field_name = field_info.validation_alias
+                val = data.get(field_info.validation_alias)
+            else:
+                field_name = field
+            if val is None:
+                val = data.get(field)
+            is_list, field_type = get_field_type_info(cls, field)
+            if not is_list:
+                if issubclass(field_type, str):
+                    str_val = val
+                    if isinstance(val, Mapping):
+                        str_val = val.get(None)
+                    new_data[field_name] = str_val
+                elif issubclass(field_type, int):
+                    int_val = val
+                    if isinstance(val, Mapping):
+                        int_val = val.get(None)
+                    ref_match = re.match(r"(.+)\[(\d+)\]")
+                    if ref_match:
+                        int_val = ref_match.groups(1)
+                    new_data[field_name] = None if int_val is None else int(int_val)
+                elif issubclass(field_type, MzTabBaseModel):
+                    if isinstance(val, MzTabBaseModel):
+                        new_data[field_name] = val
+                    else:
+                        str_val = val
+                        if isinstance(val, Mapping):
+                            str_val = val.get(None)
+                        new_data[field_name] = field_type.model_validate(
+                            str_val, by_alias=True
+                        )
+            else:
+                if issubclass(field_type, int):
+                    int_val = val
+                    if isinstance(val, Mapping):
+                        int_val = val.get(None)
+                    ref_match = re.match(r"(.+)\[(\d+)\]")
+                    if ref_match:
+                        int_val = ref_match.groups(1)
+                    new_data[field_name] = None if int_val is None else int(int_val)
+                elif issubclass(field_type, MzTabSerializableModel):
+                    sub_field = val
+                    if not val:
+                        continue
+                    metadata_info = field_type.get_metadata_info()
+                    if json_extra.non_indexed_list_value:
+                        if field_name not in new_data:
+                            new_data[field_name] = []
+                        current_list = new_data[field_name]
+                        if isinstance(sub_field, MzTabBaseModel):
+                            current_list.append(sub_field)
+                        else:
+                            current_list.append(
+                                field_type.model_validate(val, by_alias=True)
+                            )
+                    else:
+                        new_list = []
+                        sub_field = sub_field or []
+                        for item in sub_field:
+                            if isinstance(item, MzTabBaseModel):
+                                new_list.append(item)
+                            else:
+                                cls._update_dict(metadata_info, item)
+                                new_list.append(
+                                    field_type.model_validate(item, by_alias=True)
+                                )
+                        new_data[field_name] = new_list or None
+
+        return handler(new_data)
+
+    @classmethod
+    def parse_metadata(
+        cls, lines: List[str], context: SerializationContext
+    ) -> Dict[str, Any]:
+        """Parse metadata section of mzTab-M file."""
+        pattern = re.compile(
+            r"^(?P<field>[^\[\]]+)"
+            r"(?:\[(?P<field_index>\d+)\])?"
+            r"(?:-(?P<subfield>[^\[\]]+)"
+            r"(?:\[(?P<subfield_index>\d+)\])?)?$"
+        )
+
+        metadata_dict = OrderedDict()
+        for line in lines:
+            if not line.startswith("MTD") and not line.startswith("COM"):
+                continue
+            if line.startswith("COM"):
+                if "comment" not in metadata_dict:
+                    metadata_dict["comment"] = []
+                parts = line.split("\t", maxsplit=1)
+                if len(parts) < 2 or not parts[1]:
+                    continue
+                metadata_dict["comment"].append(
+                    {"prefix": "COM", "msg": parts[1].strip()}
+                )
+                continue
+            key, value = cls._parse_metadata_line(line)
+
+            if not key:
+                continue
+            match = re.match(pattern, key)
+
+            if match:
+                parts = match.groups()
+                field = parts[0]
+                field_index = int(parts[1]) if parts[1] else None
+                sub_field = parts[2]
+                sub_field_index = int(parts[3]) if parts[3] else None
+                cls._set_dict_value(
+                    value=value,
+                    data_dict=metadata_dict,
+                    field=field,
+                    field_index=field_index,
+                    sub_field=sub_field,
+                    sub_field_index=sub_field_index,
+                )
+            else:
+                context.messages.append(
+                    MzTabMessage(
+                        message_type=MessageType.WARNING,
+                        category=Category.FORMAT,
+                        msg=f"unexpected line '{key}'",
+                    )
+                )
+
+        return metadata_dict
+
+    @classmethod
+    def _parse_metadata_line(cls, line: str) -> Tuple[str, str]:
         """Parse a metadata line into key and value."""
         parts = line.split("\t", 2)
         if len(parts) < 3:
@@ -519,18 +710,22 @@ class Metadata(MzTabBaseModel, CustomSerializer):
         return key, value
 
     @classmethod
-    def update_dict(cls, dict_info: MetadataDictInfo, item: Dict[str, Any]):
+    def _update_dict(cls, metadata_info: MetadataInfo, item: Dict[str, Any]):
         if not item:
             return
-        if dict_info.object_level_value_field:
-            item[dict_info.object_level_value_field] = item.get(None, None)
+
+        if metadata_info.object_level_value_field:
+            item[metadata_info.object_level_value_field] = item.get(None, None)
             if None in item:
                 del item[None]
-        for join_field, join_op in dict_info.list_concatenation_str_dict.items():
+        for join_field, join_op in metadata_info.list_concatenation_str_dict.items():
             if join_field in item:
                 item[join_field] = item[join_field] or ""
-                item[join_field] = [x.strip() for x in item[join_field].split(join_op)]
-        for ref_field, ref in dict_info.referenced_field_names.items():
+                if not isinstance(item[join_field], list):
+                    item[join_field] = [
+                        x.strip() for x in item[join_field].split(join_op)
+                    ]
+        for ref_field, ref in metadata_info.referenced_field_names.items():
             if ref_field in item:
                 val = item[ref_field]
                 if isinstance(val, list):
@@ -544,9 +739,12 @@ class Metadata(MzTabBaseModel, CustomSerializer):
                     ref_match = re.match(rf"{ref}\[(\d+)\]", item[ref_field])
                     if ref_match:
                         item[ref_field] = int(ref_match.groups()[0])
+        for k in item.keys():
+            if k in metadata_info.subfield_lists and not isinstance(item[k], list):
+                item[k] = [item[k]]
 
     @classmethod
-    def set_dict_value(
+    def _set_dict_value(
         cls,
         value,
         data_dict,
@@ -584,151 +782,19 @@ class Metadata(MzTabBaseModel, CustomSerializer):
         else:
             base_item[sub_field] = value
 
-    @classmethod
-    def parse_metadata(cls, lines: List[str]) -> Dict[str, Any]:
-        """Parse metadata section of mzTab-M file."""
-        pattern = re.compile(
-            r"^(?P<field>[^\[\]]+)"
-            r"(?:\[(?P<field_index>\d+)\])?"
-            r"(?:-(?P<subfield>[^\[\]]+)"
-            r"(?:\[(?P<subfield_index>\d+)\])?)?$"
-        )
-
-        metadata_dict = OrderedDict()
-        for line in lines:
-            if not line.startswith("MTD"):
-                continue
-            key, value = cls.parse_metadata_line(line)
-            if not key:
-                continue
-            match = re.match(pattern, key)
-
-            if match:
-                parts = match.groups()
-                field = parts[0]
-                field_index = int(parts[1]) if parts[1] else None
-                sub_field = parts[2]
-                sub_field_index = int(parts[3]) if parts[3] else None
-                cls.set_dict_value(
-                    value=value,
-                    data_dict=metadata_dict,
-                    field=field,
-                    field_index=field_index,
-                    sub_field=sub_field,
-                    sub_field_index=sub_field_index,
-                )
-            else:
-                print(f"unexpected line '{key}'")
-
-        return metadata_dict
-
-    @model_validator(mode="wrap")
-    @classmethod
-    def validate_model(
-        cls,
-        input_data: Any,
-        handler: ModelWrapValidatorHandler["Metadata"],
-        info: ValidationInfo,
-    ) -> "Metadata":
-        if isinstance(input_data, Metadata):
-            return handler(input_data)
-        if isinstance(info.context, ValidationSummary):
-            if info.context.source_format == "json":
-                return handler(input_data)
-        lines = []
-        if isinstance(input_data, str):
-            lines = input_data.split("\n")
-
-        if isinstance(input_data, list) and isinstance(input_data[0], str):
-            lines = input_data
-            data = cls.parse_metadata(lines)
-        elif isinstance(input_data, (dict, OrderedDict)):
-            data = input_data
-        new_data = OrderedDict()
-        for field, field_info in cls.model_fields.items():
-            extra = field_info.json_schema_extra or {}
-            json_extra = MetadataSerialization.model_validate(extra, by_alias=True)
-            if json_extra.ignore:
-                continue
-            val = None
-            if field_info.validation_alias:
-                field_name = field_info.validation_alias
-                val = data.get(field_info.validation_alias)
-            else:
-                field_name = field
-            if val is None:
-                val = data.get(field)
-
-            is_list, field_type = get_field_type_info(cls, field)
-            if not is_list:
-                if issubclass(field_type, str):
-                    str_val = val
-                    if isinstance(val, (dict, OrderedDict)):
-                        str_val = val.get(None)
-                    new_data[field_name] = str_val
-                elif issubclass(field_type, int):
-                    int_val = val
-                    if isinstance(val, (dict, OrderedDict)):
-                        int_val = val.get(None)
-                    ref_match = re.match(r"(.+)\[(\d+)\]")
-                    if ref_match:
-                        int_val = ref_match.groups(1)
-                    new_data[field_name] = None if int_val is None else int(int_val)
-                elif issubclass(field_type, MzTabBaseModel):
-                    if isinstance(val, MzTabBaseModel):
-                        new_data[field_name] = val
-                    else:
-                        str_val = val
-                        if isinstance(val, (dict, OrderedDict)):
-                            str_val = val.get(None)
-                        new_data[field_name] = field_type.model_validate(
-                            str_val, by_alias=True
-                        )
-            else:
-                if issubclass(field_type, int):
-                    int_val = val
-                    if isinstance(val, (dict, OrderedDict)):
-                        int_val = val.get(None)
-                    ref_match = re.match(r"(.+)\[(\d+)\]")
-                    if ref_match:
-                        int_val = ref_match.groups(1)
-                    new_data[field_name] = None if int_val is None else int(int_val)
-                elif issubclass(field_type, SerializableModel):
-                    new_list = []
-                    dict_info = field_type.get_dict_info()
-                    list_val = val or []
-                    for item in list_val:
-                        if isinstance(item, MzTabBaseModel):
-                            new_list.append(item)
-                        else:
-                            cls.update_dict(dict_info, item)
-
-                            new_list.append(
-                                field_type.model_validate(item, by_alias=True)
-                            )
-                    new_data[field_name] = new_list or None
-
-        return handler(new_data)
-
-    @model_serializer(mode="wrap")
-    def serialize_model(
-        self, handler: SerializerFunctionWrapHandler, info: SerializationInfo
-    ) -> Union[str, Dict[str, Any]]:
-        default_success, result = self.serialize_to_json(handler, info)
-        if default_success:
-            return result
-        lines = []
-        self.serialize_object(self.prefix, "", self, lines)
-        return "\n".join(lines)
-
-    def serialize_object(
-        self, section: str, prefix: str, model: MzTabBaseModel, lines: List[str]
+    def _serialize_object(
+        self,
+        section: str,
+        prefix: str,
+        model: MzTabBaseModel,
+        lines: List[str],
+        context: SerializationContext,
     ):
         for field, field_info in model.__class__.model_fields.items():
-            serializer_model = field_info.json_schema_extra
-            if field_info.json_schema_extra is None:
-                serializer_model = {}
-            extra = MetadataSerialization.model_validate(serializer_model)
+            metadata_info = model.__class__.get_metadata_info()
+            extra: MetadataInfo = metadata_info.metadata_serializations.get(
+                field, self.__default_serialization__
+            )
             if extra.ignore:
                 continue
             value = getattr(model, field, None)
@@ -752,12 +818,12 @@ class Metadata(MzTabBaseModel, CustomSerializer):
                     line = f"{section}\t{key_name}\t{value}"
                 lines.append(line)
             elif isinstance(value, MzTabBaseModel):
-                if isinstance(value, Parameter):
-                    line_value = value.model_dump(by_alias=True)
+                if isinstance(value, CompactObjectModel):
+                    line_value = value.to_tsv(context)
                     line = f"{section}\t{key_name}\t{line_value or ''}"
                     lines.append(line)
                 else:
-                    self.serialize_object(section, key_name, value, lines)
+                    self._serialize_object(section, key_name, value, line, context)
             elif isinstance(value, list):
                 if not value:
                     continue
@@ -784,11 +850,16 @@ class Metadata(MzTabBaseModel, CustomSerializer):
                 elif isinstance(value[0], MzTabBaseModel):
                     separator = extra.list_concatenation_str or None
                     if separator:
-                        line_value = separator.join(
-                            [x.model_dump(by_alias=True) for x in value]
-                        )
-                        line = f"{section}\t{key_name}\t{line_value or ''}"
-                        lines.append(line)
+                        if isinstance(value[0], CustomSerializer):
+                            line_value = separator.join(
+                                [x.to_tsv(context) for x in value]
+                            )
+                            line = f"{section}\t{key_name}\t{line_value or ''}"
+                            lines.append(line)
+                        else:
+                            line_value = separator.join([str(x) for x in value])
+                            line = f"{section}\t{key_name}\t{line_value or ''}"
+                            lines.append(line)
                     else:
                         for idx, item in enumerate(value, start=1):
                             indexed_key_name = f"{key_name}[{idx}]"
@@ -798,18 +869,29 @@ class Metadata(MzTabBaseModel, CustomSerializer):
                                 id_val = item.get_id()
                                 if id_val:
                                     indexed_key_name = f"{key_name}[{id_val}]"
-                            if isinstance(item, Parameter):
-                                line_value = item.model_dump(by_alias=True)
+                            if isinstance(item, CompactObjectModel):
+                                line_value = item.to_tsv(context)
                                 line = (
                                     f"{section}\t{indexed_key_name}\t{line_value or ''}"
                                 )
                                 lines.append(line)
                             else:
-                                self.serialize_object(
-                                    section, indexed_key_name, item, lines
+                                self._serialize_object(
+                                    section, indexed_key_name, item, lines, context
                                 )
                 else:
-                    print("not expected")
-
+                    context.messages.append(
+                        MzTabMessage(
+                            category=Category.WARNING,
+                            message_type=MessageType.INFO,
+                            message=f"not expected type: {type(value[0])} and value: {value[0]}",
+                        )
+                    )
             else:
-                print("Skipping unsupported value", key_name, extra)
+                context.messages.append(
+                    MzTabMessage(
+                        category=Category.WARNING,
+                        message_type=MessageType.INFO,
+                        message=f"Skipping unsupported value: key: {key_name} extra: {extra}",
+                    )
+                )

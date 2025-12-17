@@ -1,3 +1,4 @@
+import logging
 from mztab_m_io.model.common import (
     CV,
     Assay,
@@ -7,9 +8,11 @@ from mztab_m_io.model.common import (
     Software,
     StudyVariable,
 )
+from mztab_m_io.model.mztabm import MzTabM
 from mztab_m_io.model.section.mtd import Metadata
-from mztab_m_io.model.section.sml import SmallMoleculeSummary
-import mztab_m_io as mztabm
+from mztab_m_io.model.serialization import SerializationContext
+
+logger = logging.getLogger(__name__)
 
 MTD = Metadata(
     mztab_version="2.0.0-M",
@@ -65,11 +68,6 @@ MTD = Metadata(
     ],
 )
 
-mztabm_model = mztabm.MzTabM(
-    metadata=MTD,
-    small_molecule_summary=[
-        SmallMoleculeSummary(sml_id=1, database_identifier=["HMDB0002111"])
-    ],
-)
-
-mztabm.write(mztabm=mztabm_model, file_path="./output.mztab")
+mztabm = MzTabM(metadata=MTD)
+context = SerializationContext(convert_to="tsv")
+logger.info(mztabm.to_tsv(context))

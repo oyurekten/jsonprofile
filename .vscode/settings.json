@@ -11,5 +11,13 @@
         "tests"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "search.exclude": {
+        "**/__old*/**": true,
+        "**/.old*/**": true
+    },
+    "explorer.autoRevealExclude": {
+        "**/__old*/**": true,
+        "**/.temp*/**": true
+    }
 }

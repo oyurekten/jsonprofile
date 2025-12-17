@@ -1,32 +1,34 @@
-from typing import Dict
+from pydantic import (
+    Field,
+    ModelWrapValidatorHandler,
+    ValidationInfo,
+    model_validator,
+)
 from typing_extensions import (
     Annotated,
     Any,
     List,
+    Mapping,
     Optional,
     OrderedDict,
-    Union,
 )
 
-from pydantic import (
-    Field,
-    ModelWrapValidatorHandler,
-    SerializationInfo,
-    SerializerFunctionWrapHandler,
-    ValidationInfo,
-    model_serializer,
-    model_validator,
-)
-
-from mztab_m_io.model import CustomSerializer, IdentifiableModel, MzTabBaseModel
 from mztab_m_io.model.field_utils import sanitize_str
-from mztab_m_io.model.serialization import MetadataSerialization, ValidationPolicy
-from mztab_m_io.model.validation import ValidationSummary
+from mztab_m_io.model.serialization import (
+    CompactObjectModel,
+    CustomSerializer,
+    IdentifiableModel,
+    MetadataSerialization,
+    MzTabSerializableModel,
+    SerializationContext,
+    ValidationPolicy,
+)
+from mztab_m_io.model.validation import ValidationContext
 
 AdductIon = Annotated[str, Field(pattern=r"^\[\d*M([+-][\w\d]+)*\]\d*[+-]$")]
 
 
-class Parameter(IdentifiableModel, CustomSerializer):
+class Parameter(CompactObjectModel, IdentifiableModel, CustomSerializer):
     cv_label: Annotated[
         Optional[str],
         Field(
@@ -38,7 +40,9 @@ class Parameter(IdentifiableModel, CustomSerializer):
         Optional[str],
         Field(
             description="CV accession in CURIE format",
-            json_schema_extra=MetadataSerialization().model_dump(),
+            json_schema_extra=MetadataSerialization(
+                validation_policy=ValidationPolicy(value_constraint="curie")
+            ).model_dump(),
         ),
     ] = ""
     name: Annotated[
@@ -56,14 +60,7 @@ class Parameter(IdentifiableModel, CustomSerializer):
         ),
     ] = ""
 
-    @model_serializer(mode="wrap")
-    def serialize_model(
-        self, handler: SerializerFunctionWrapHandler, info: SerializationInfo
-    ) -> Union[str, Dict[str, Any]]:
-        default_success, result = self.serialize_to_json(handler, info)
-        if default_success:
-            return result
-
+    def to_tsv(self, context: SerializationContext) -> str:
         return (
             f"[{sanitize_str(self.cv_label)}, "
             f"{sanitize_str(self.cv_accession)}, "
@@ -83,11 +80,12 @@ class Parameter(IdentifiableModel, CustomSerializer):
             return None
         if isinstance(data, Parameter):
             return handler(data)
-        if isinstance(info.context, ValidationSummary):
-            if info.context.source_format == "json":
+        if info and isinstance(info.context, ValidationContext):
+            if info.context.source_format in {"json", "yaml"}:
                 return handler(data)
+
         val = data
-        if isinstance(val, (dict, OrderedDict)):
+        if isinstance(val, Mapping):
             if len(val) == 1 and None in val:
                 val = data[None]
         if isinstance(val, str):
@@ -136,6 +134,24 @@ class Instrument(IdentifiableModel):
         ),
     ] = None
 
+    @model_validator(mode="wrap")
+    @classmethod
+    def validate_model(
+        cls,
+        data: Any,
+        handler: ModelWrapValidatorHandler["Instrument"],
+        info: ValidationInfo,
+    ) -> "Instrument":
+        if info and isinstance(info.context, ValidationContext):
+            if info.context.source_format in {"json", "yaml"}:
+                return handler(data)
+        if isinstance(data, Mapping):
+            if "analyzer" in data:
+                val = data["analyzer"]
+                if isinstance(val, (str, Parameter)):
+                    data["analyzer"] = [val]
+        return handler(data)
+
 
 class SampleProcessing(IdentifiableModel):
     sample_processing: Annotated[
@@ -172,7 +188,7 @@ class Software(IdentifiableModel):
     ] = None
 
 
-class PublicationItem(MzTabBaseModel, CustomSerializer):
+class PublicationItem(MzTabSerializableModel, CustomSerializer):
     type: Annotated[
         Optional[str],
         Field(
@@ -193,13 +209,7 @@ class PublicationItem(MzTabBaseModel, CustomSerializer):
         ),
     ] = None
 
-    @model_serializer(mode="wrap")
-    def serialize_model(
-        self, handler: SerializerFunctionWrapHandler, info: SerializationInfo
-    ) -> Union[str, Dict[str, Any]]:
-        default_success, result = self.serialize_to_json(handler, info)
-        if default_success:
-            return result
+    def to_tsv(self, context: SerializationContext) -> str:
         return f"{sanitize_str(self.type)}:{sanitize_str(self.accession)}"
 
     @model_validator(mode="wrap")
@@ -212,8 +222,8 @@ class PublicationItem(MzTabBaseModel, CustomSerializer):
     ) -> "PublicationItem":
         if isinstance(data, PublicationItem):
             return handler(data)
-        if isinstance(info.context, ValidationSummary):
-            if info.context.source_format == "json":
+        if info and isinstance(info.context, ValidationContext):
+            if info.context.source_format in {"json", "yaml"}:
                 return handler(data)
         val = data
         if isinstance(data, (OrderedDict, dict)):
@@ -246,7 +256,7 @@ class Contact(IdentifiableModel):
             description="The contact's e-mail address.",
             json_schema_extra=MetadataSerialization(
                 validation_policy=ValidationPolicy(
-                    pattern=r"^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$",
+                    value_constraint="email",
                 )
             ).model_dump(),
         ),
@@ -616,12 +626,14 @@ class StudyVariable(IdentifiableModel):
         Field(
             description="Parameters indicating which factors were used "
             "for the assays referenced by this study variable, and at which levels.",
-            json_schema_extra=MetadataSerialization().model_dump(),
+            json_schema_extra=MetadataSerialization(
+                list_concatenation_str="|"
+            ).model_dump(),
         ),
     ] = None
 
 
-class SpectraRef(MzTabBaseModel, CustomSerializer):
+class SpectraRef(MzTabSerializableModel, CustomSerializer):
     ms_run: Annotated[
         Optional[int],
         Field(
@@ -644,13 +656,7 @@ class SpectraRef(MzTabBaseModel, CustomSerializer):
         ),
     ] = None
 
-    @model_serializer(mode="wrap")
-    def serialize_model(
-        self, handler: SerializerFunctionWrapHandler, info: SerializationInfo
-    ) -> Union[str, Dict[str, Any]]:
-        default_success, result = self.serialize_to_json(handler, info)
-        if default_success:
-            return result
+    def to_tsv(self, context: SerializationContext) -> str:
         return f"ms_run[{self.ms_run}]:{self.reference}"
 
     @model_validator(mode="wrap")
@@ -663,11 +669,11 @@ class SpectraRef(MzTabBaseModel, CustomSerializer):
     ) -> "SpectraRef":
         if isinstance(data, SpectraRef):
             return handler(data)
-        if isinstance(info.context, ValidationSummary):
-            if info.context.source_format == "json":
+        if info and isinstance(info.context, ValidationContext):
+            if info.context.source_format in {"json", "yaml"}:
                 return handler(data)
         val = data
-        if isinstance(val, (dict, OrderedDict)):
+        if isinstance(val, Mapping):
             if len(val) == 1 and None in val:
                 val = data[None]
 
@@ -684,7 +690,9 @@ class SpectraRef(MzTabBaseModel, CustomSerializer):
         return handler(val)
 
 
-class ColumnParameterMapping(MzTabBaseModel, CustomSerializer):
+class ColumnParameterMapping(
+    MzTabSerializableModel, CompactObjectModel, CustomSerializer
+):
     column_name: Annotated[
         Optional[str],
         Field(
@@ -705,19 +713,47 @@ class ColumnParameterMapping(MzTabBaseModel, CustomSerializer):
         ),
     ] = None
 
-    @model_serializer(mode="wrap")
-    def serialize_model(
-        self, handler: SerializerFunctionWrapHandler, info: SerializationInfo
-    ) -> Union[str, Dict[str, Any]]:
-        default_success, result = self.serialize_to_json(handler, info)
-        if default_success:
-            return result
-        return (
-            f"{sanitize_str(self.column_name)}={sanitize_str(self.param.serialize())}"
-        )
+    def to_tsv(self, context: SerializationContext) -> str:
+        if self.param:
+            return f"{self.column_name}={self.param.to_tsv(context)}"
+        return f"{self.column_name}=null"
+
+    @model_validator(mode="wrap")
+    @classmethod
+    def validate_model(
+        cls,
+        data: Any,
+        handler: ModelWrapValidatorHandler["OptColumnMapping"],
+        info: ValidationInfo,
+    ) -> "ColumnParameterMapping":
+        if not data:
+            return None
+        if isinstance(data, ColumnParameterMapping):
+            return handler(data)
+        if info and isinstance(info.context, ValidationContext):
+            if info.context.source_format in {"json", "yaml"}:
+                return handler(data)
+        val = data
+        if isinstance(val, Mapping):
+            if len(val) == 1 and None in val:
+                val = data[None]
+        if isinstance(val, str):
+            parts = val.split("=", maxsplit=1)
+
+            if len(parts) < 2:
+                return None
+            if parts[0]:
+                val = {
+                    "column_name": parts[0].strip() if parts[0] else None,
+                    "param": Parameter.model_validate(parts[1].strip())
+                    if parts[1]
+                    else None,
+                }
+
+        return handler(val)
 
 
-class OptColumnMapping(MzTabBaseModel):
+class OptColumnMapping(MzTabSerializableModel, CustomSerializer):
     identifier: Annotated[
         Optional[str],
         Field(
@@ -730,7 +766,7 @@ class OptColumnMapping(MzTabBaseModel):
     param: Annotated[
         Optional[Parameter],
         Field(
-            description="The fully qualified column name.",
+            description="The fully qualified column parameter.",
             json_schema_extra=MetadataSerialization(
                 validation_policy=ValidationPolicy(required=True)
             ).model_dump(),
@@ -744,8 +780,13 @@ class OptColumnMapping(MzTabBaseModel):
         ),
     ] = None
 
+    def to_tsv(self, context: SerializationContext) -> str:
+        if self.param:
+            return f"[{self.value}={self.param.to_tsv(context)}]"
+        return f"[{self.value}]=null"
 
-class Comment(MzTabBaseModel):
+
+class Comment(MzTabSerializableModel, CustomSerializer):
     prefix: Annotated[
         str,
         Field(
@@ -755,6 +796,7 @@ class Comment(MzTabBaseModel):
             ).model_dump(),
         ),
     ] = "COM"
+
     msg: Annotated[
         Optional[str],
         Field(
@@ -764,6 +806,7 @@ class Comment(MzTabBaseModel):
             ).model_dump(),
         ),
     ] = ""
+
     line_number: Annotated[
         Optional[int],
         Field(
@@ -773,3 +816,29 @@ class Comment(MzTabBaseModel):
             ).model_dump(),
         ),
     ] = None
+
+    def to_tsv(self, context: SerializationContext) -> str:
+        return f"{self.prefix}\t{self.msg}"
+
+
+__all__ = [
+    "AdductIon",
+    "Parameter",
+    "Instrument",
+    "SampleProcessing",
+    "Software",
+    "PublicationItem",
+    "Contact",
+    "Uri",
+    "Sample",
+    "MsRun",
+    "Assay",
+    "CV",
+    "Database",
+    "Publication",
+    "StudyVariable",
+    "SpectraRef",
+    "ColumnParameterMapping",
+    "OptColumnMapping",
+    "Comment",
+]

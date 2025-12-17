@@ -3,6 +3,7 @@
     "Assay": {
       "properties": {
         "id": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "minimum": 1,
@@ -29,6 +30,7 @@
           }
         },
         "name": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -55,6 +57,7 @@
           }
         },
         "custom": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -84,6 +87,7 @@
           }
         },
         "external_uri": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -110,6 +114,7 @@
           }
         },
         "sample_ref": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "integer"
@@ -136,6 +141,7 @@
           }
         },
         "ms_run_ref": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -172,6 +178,7 @@
     "CV": {
       "properties": {
         "id": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "minimum": 1,
@@ -198,6 +205,7 @@
           }
         },
         "label": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -224,6 +232,7 @@
           }
         },
         "full_name": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -250,6 +259,7 @@
           }
         },
         "version": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -276,6 +286,7 @@
           }
         },
         "uri": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -308,6 +319,7 @@
     "ColumnParameterMapping": {
       "properties": {
         "column_name": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -334,6 +346,7 @@
           }
         },
         "param": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "$ref": "#/$defs/Parameter"
@@ -366,7 +379,7 @@
     "Comment": {
       "properties": {
         "prefix": {
-          "const": "COM",
+          "allow_multiple": false,
           "default": "COM",
           "description": "Comment prefix",
           "ignore": false,
@@ -386,6 +399,7 @@
           }
         },
         "msg": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -412,6 +426,7 @@
           }
         },
         "line_number": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "integer"
@@ -444,6 +459,7 @@
     "Contact": {
       "properties": {
         "id": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "minimum": 1,
@@ -470,6 +486,7 @@
           }
         },
         "name": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -496,6 +513,7 @@
           }
         },
         "affiliation": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -522,6 +540,7 @@
           }
         },
         "email": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -542,12 +561,13 @@
             "enforcement_level": "required",
             "maximum": null,
             "minimum": null,
-            "pattern": "^\\w+([\\.-]?\\w+)*@\\w+([\\.-]?\\w+)*(\\.\\w{2,3})+$",
+            "pattern": null,
             "required": null,
-            "value_constraint": null
+            "value_constraint": "email"
           }
         },
         "orcid": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -580,6 +600,7 @@
     "Database": {
       "properties": {
         "id": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "minimum": 1,
@@ -607,6 +628,7 @@
         },
         "param": {
           "$ref": "#/$defs/Parameter",
+          "allow_multiple": false,
           "default": null,
           "description": "The database name.",
           "ignore": false,
@@ -625,6 +647,7 @@
           }
         },
         "prefix": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -651,6 +674,7 @@
           }
         },
         "version": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -677,6 +701,7 @@
           }
         },
         "uri": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -709,6 +734,7 @@
     "Instrument": {
       "properties": {
         "id": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "minimum": 1,
@@ -735,6 +761,7 @@
           }
         },
         "name": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "$ref": "#/$defs/Parameter"
@@ -761,6 +788,7 @@
           }
         },
         "source": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "$ref": "#/$defs/Parameter"
@@ -787,6 +815,7 @@
           }
         },
         "analyzer": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -816,6 +845,7 @@
           }
         },
         "detector": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "$ref": "#/$defs/Parameter"
@@ -848,6 +878,7 @@
     "Metadata": {
       "properties": {
         "prefix": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -877,6 +908,7 @@
           }
         },
         "mzTab-version": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -907,6 +939,7 @@
           }
         },
         "mzTab-ID": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -938,6 +971,7 @@
           }
         },
         "title": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -968,6 +1002,7 @@
           }
         },
         "description": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -998,6 +1033,7 @@
           }
         },
         "contact": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -1032,6 +1068,7 @@
           }
         },
         "publication": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -1065,6 +1102,7 @@
           }
         },
         "uri": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -1094,6 +1132,7 @@
           }
         },
         "external_study_uri": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -1123,6 +1162,7 @@
           }
         },
         "instrument": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -1157,6 +1197,7 @@
           }
         },
         "quantification_method": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "$ref": "#/$defs/Parameter"
@@ -1183,6 +1224,7 @@
           }
         },
         "sample": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -1212,6 +1254,7 @@
           }
         },
         "sample_processing": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -1246,6 +1289,7 @@
           }
         },
         "software": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -1279,6 +1323,7 @@
           }
         },
         "derivatization_agent": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -1308,6 +1353,7 @@
           }
         },
         "ms_run": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -1337,6 +1383,7 @@
           }
         },
         "assay": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -1366,6 +1413,7 @@
           }
         },
         "study_variable": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -1395,6 +1443,7 @@
           }
         },
         "custom": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -1424,6 +1473,7 @@
           }
         },
         "cv": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -1458,6 +1508,7 @@
           }
         },
         "small_molecule-quantification_unit": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "$ref": "#/$defs/Parameter"
@@ -1467,6 +1518,7 @@
             }
           ],
           "default": null,
+          "description": "Defines what type of units are reported in the small molecule summary quantification / abundance fields",
           "ignore": false,
           "list_concatenation_str": null,
           "non_indexed_list_value": false,
@@ -1483,6 +1535,7 @@
           }
         },
         "small_molecule_feature-quantification_unit": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "$ref": "#/$defs/Parameter"
@@ -1492,6 +1545,7 @@
             }
           ],
           "default": null,
+          "description": "Defines what type of units are reported in the small molecule feature quantification / abundance fields.",
           "ignore": false,
           "list_concatenation_str": null,
           "non_indexed_list_value": false,
@@ -1508,6 +1562,7 @@
           }
         },
         "small_molecule-identification_reliability": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "$ref": "#/$defs/Parameter"
@@ -1517,6 +1572,7 @@
             }
           ],
           "default": null,
+          "description": "The system used for giving reliability / confidence codes to small molecule identifications MUST be specified if not using the default codes.",
           "ignore": false,
           "list_concatenation_str": null,
           "non_indexed_list_value": false,
@@ -1533,6 +1589,7 @@
           }
         },
         "database": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -1562,6 +1619,7 @@
           }
         },
         "id_confidence_measure": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -1595,6 +1653,7 @@
           }
         },
         "colunit-small_molecule": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -1628,6 +1687,7 @@
           }
         },
         "colunit-small_molecule_feature": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -1657,6 +1717,7 @@
           }
         },
         "colunit-small_molecule_evidence": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -1695,6 +1756,7 @@
     "MsRun": {
       "properties": {
         "id": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "minimum": 1,
@@ -1721,6 +1783,7 @@
           }
         },
         "name": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -1747,6 +1810,7 @@
           }
         },
         "location": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -1773,6 +1837,7 @@
           }
         },
         "instrument_ref": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "integer"
@@ -1799,6 +1864,7 @@
           }
         },
         "format": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "$ref": "#/$defs/Parameter"
@@ -1825,6 +1891,7 @@
           }
         },
         "id_format": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "$ref": "#/$defs/Parameter"
@@ -1850,6 +1917,7 @@
           }
         },
         "fragmentation_method": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -1879,6 +1947,7 @@
           }
         },
         "scan_polarity": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -1908,6 +1977,7 @@
           }
         },
         "hash": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -1934,6 +2004,7 @@
           }
         },
         "hash_method": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "$ref": "#/$defs/Parameter"
@@ -1965,6 +2036,7 @@
     "OptColumnMapping": {
       "properties": {
         "identifier": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -1991,6 +2063,7 @@
           }
         },
         "param": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "$ref": "#/$defs/Parameter"
@@ -2000,7 +2073,7 @@
             }
           ],
           "default": null,
-          "description": "The fully qualified column name.",
+          "description": "The fully qualified column parameter.",
           "ignore": false,
           "list_concatenation_str": null,
           "non_indexed_list_value": false,
@@ -2017,6 +2090,7 @@
           }
         },
         "value": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -2049,6 +2123,7 @@
     "Parameter": {
       "properties": {
         "id": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "minimum": 1,
@@ -2075,6 +2150,7 @@
           }
         },
         "cv_label": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -2101,6 +2177,7 @@
           }
         },
         "cv_accession": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -2123,10 +2200,11 @@
             "minimum": null,
             "pattern": null,
             "required": null,
-            "value_constraint": null
+            "value_constraint": "curie"
           }
         },
         "name": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -2153,6 +2231,7 @@
           }
         },
         "value": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -2185,6 +2264,7 @@
     "Publication": {
       "properties": {
         "id": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "minimum": 1,
@@ -2211,6 +2291,7 @@
           }
         },
         "publicationItems": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -2246,6 +2327,7 @@
     "PublicationItem": {
       "properties": {
         "type": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -2277,6 +2359,7 @@
           }
         },
         "accession": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -2309,6 +2392,7 @@
     "Sample": {
       "properties": {
         "id": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "minimum": 1,
@@ -2335,6 +2419,7 @@
           }
         },
         "name": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -2361,6 +2446,7 @@
           }
         },
         "custom": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -2390,6 +2476,7 @@
           }
         },
         "species": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -2419,6 +2506,7 @@
           }
         },
         "tissue": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -2448,6 +2536,7 @@
           }
         },
         "cell_type": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -2477,6 +2566,7 @@
           }
         },
         "disease": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -2506,6 +2596,7 @@
           }
         },
         "description": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -2538,6 +2629,7 @@
     "SampleProcessing": {
       "properties": {
         "id": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "minimum": 1,
@@ -2564,6 +2656,7 @@
           }
         },
         "sampleProcessing": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -2601,7 +2694,6 @@
         "prefix": {
           "column_name_field": null,
           "column_value_field": null,
-          "const": "SME",
           "default": "SME",
           "description": "The small molecule evidence table row prefix. SME MUST be used for rows of the small molecule evidence table.",
           "ignore": true,
@@ -2623,7 +2715,6 @@
         "header_prefix": {
           "column_name_field": null,
           "column_value_field": null,
-          "const": "SEH",
           "default": "SEH",
           "description": "The small molecule evidence table header prefix. SEH MUST be used for the small molecule evidence table header line (the column labels).",
           "ignore": true,
@@ -2639,6 +2730,37 @@
             "minimum": null,
             "pattern": "SEH",
             "required": true,
+            "value_constraint": null
+          }
+        },
+        "comment": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Comment"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "column_name_field": null,
+          "column_value_field": null,
+          "default": null,
+          "description": "",
+          "ignore": true,
+          "list_concatenation_str": null,
+          "multiple_columns": false,
+          "referenced_field_name": null,
+          "referenced_section": null,
+          "title": "Comment",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": null,
             "value_constraint": null
           }
         },
@@ -3021,7 +3143,7 @@
           "column_name_field": null,
           "column_value_field": null,
           "default": null,
-          "description": "Reference to a spectrum in a spectrum file, for example a fragmentation spectrum has been used to support the identification. If a separate spectrum file has been used for fragmentation spectrum, this MUST be reported in the metadata section as additional ms_runs. The reference must be in the format ms_run[1-n]:{SPECTRA_REF} where SPECTRA_REF MUST follow the format defined in 5.2 (including references to chromatograms where these are used to inform identification). Multiple spectra MUST be referenced using a \u201c|\u201d delimited list for the (rare) cases in which search engines have combined or aggregated multiple spectra in advance of the search to make identifications.  If a fragmentation spectrum has not been used, the value should indicate the ms_run to which is identification is mapped e.g. \u201cms_run[1]\u201d. ",
+          "description": "Reference to a spectrum in a spectrum file, for example a fragmentation spectrum has been used to support the identification. If a separate spectrum file has been used for fragmentation spectrum, this MUST be reported in the metadata section as additional ms_runs. The reference must be in the format ms_run[1-n]:{SPECTRA_REF} where SPECTRA_REF MUST follow the format defined in 5.2 (including references to chromatograms where these are used to inform identification). Multiple spectra MUST be referenced using a | delimited list for the (rare) cases in which search engines have combined or aggregated multiple spectra in advance of the search to make identifications.  If a fragmentation spectrum has not been used, the value should indicate the ms_run to which is identification is mapped e.g. \u201cms_run[1]\u201d. ",
           "ignore": false,
           "list_concatenation_str": "|",
           "multiple_columns": false,
@@ -3189,6 +3311,61 @@
             "required": null,
             "value_constraint": null
           }
+        }
+      },
+      "title": "SmallMoleculeEvidence",
+      "type": "object"
+    },
+    "SmallMoleculeFeature": {
+      "properties": {
+        "prefix": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "column_name_field": null,
+          "column_value_field": null,
+          "default": "SMF",
+          "description": "The small molecule feature table row prefix. SMF MUST be used for rows of the small molecule feature table.",
+          "ignore": true,
+          "list_concatenation_str": null,
+          "multiple_columns": false,
+          "referenced_field_name": null,
+          "referenced_section": null,
+          "title": "Prefix",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": "SMF",
+            "required": true,
+            "value_constraint": null
+          }
+        },
+        "header_prefix": {
+          "column_name_field": null,
+          "column_value_field": null,
+          "default": "SFH",
+          "description": "The small molecule feature table header prefix. SFH MUST be used for the small molecule feature table header line (the column labels).",
+          "ignore": true,
+          "list_concatenation_str": null,
+          "multiple_columns": false,
+          "referenced_field_name": null,
+          "referenced_section": null,
+          "title": "Header Prefix",
+          "type": "string",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": "SFH",
+            "required": true,
+            "value_constraint": null
+          }
         },
         "comment": {
           "anyOf": [
@@ -3218,63 +3395,6 @@
             "minimum": null,
             "pattern": null,
             "required": null,
-            "value_constraint": null
-          }
-        }
-      },
-      "title": "SmallMoleculeEvidence",
-      "type": "object"
-    },
-    "SmallMoleculeFeature": {
-      "properties": {
-        "prefix": {
-          "anyOf": [
-            {
-              "const": "SMF",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "column_name_field": null,
-          "column_value_field": null,
-          "default": "SMF",
-          "description": "The small molecule feature table row prefix. SMF MUST be used for rows of the small molecule feature table.",
-          "ignore": true,
-          "list_concatenation_str": null,
-          "multiple_columns": false,
-          "referenced_field_name": null,
-          "referenced_section": null,
-          "title": "Prefix",
-          "validation_policy": {
-            "enforcement_level": "required",
-            "maximum": null,
-            "minimum": null,
-            "pattern": "SMF",
-            "required": true,
-            "value_constraint": null
-          }
-        },
-        "header_prefix": {
-          "column_name_field": null,
-          "column_value_field": null,
-          "const": "SFH",
-          "default": "SFH",
-          "description": "The small molecule feature table header prefix. SFH MUST be used for the small molecule feature table header line (the column labels).",
-          "ignore": true,
-          "list_concatenation_str": null,
-          "multiple_columns": false,
-          "referenced_field_name": null,
-          "referenced_section": null,
-          "title": "Header Prefix",
-          "type": "string",
-          "validation_policy": {
-            "enforcement_level": "required",
-            "maximum": null,
-            "minimum": null,
-            "pattern": "SFH",
-            "required": true,
             "value_constraint": null
           }
         },
@@ -3321,7 +3441,7 @@
           "column_name_field": null,
           "column_value_field": null,
           "default": null,
-          "description": "References to the identification evidence (SME elements) via referencing SME_ID values. Multiple values MAY be provided as a \u201c|\u201d separated list to indicate ambiguity in the identification or to indicate that different types of data supported the identification (see SME_ID_REF_ambiguity_code). For the case of a consensus approach where multiple adduct forms are used to infer the SML ID, different features should just reference the same SME_ID value(s).",
+          "description": "References to the identification evidence (SME elements) via referencing SME_ID values. Multiple values MAY be provided as a | separated list to indicate ambiguity in the identification or to indicate that different types of data supported the identification (see SME_ID_REF_ambiguity_code). For the case of a consensus approach where multiple adduct forms are used to infer the SML ID, different features should just reference the same SME_ID value(s).",
           "ignore": false,
           "list_concatenation_str": "|",
           "multiple_columns": false,
@@ -3629,6 +3749,68 @@
             "required": null,
             "value_constraint": null
           }
+        }
+      },
+      "title": "SmallMoleculeFeature",
+      "type": "object"
+    },
+    "SmallMoleculeSummary": {
+      "properties": {
+        "prefix": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "column_name_field": null,
+          "column_value_field": null,
+          "default": "SML",
+          "description": "The small molecule table row prefix. SML MUST be used for rows of the small molecule table.",
+          "ignore": true,
+          "list_concatenation_str": null,
+          "multiple_columns": false,
+          "referenced_field_name": null,
+          "referenced_section": null,
+          "title": "Prefix",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": "SML",
+            "required": true,
+            "value_constraint": null
+          }
+        },
+        "header_prefix": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "column_name_field": null,
+          "column_value_field": null,
+          "default": "SMH",
+          "description": "The small molecule table header prefix. SMH MUST be used for the small molecule table header line (the column labels).",
+          "ignore": true,
+          "list_concatenation_str": null,
+          "multiple_columns": false,
+          "referenced_field_name": null,
+          "referenced_section": null,
+          "title": "Header Prefix",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": "SMH",
+            "required": true,
+            "value_constraint": null
+          }
         },
         "comment": {
           "anyOf": [
@@ -3658,70 +3840,6 @@
             "minimum": null,
             "pattern": null,
             "required": null,
-            "value_constraint": null
-          }
-        }
-      },
-      "title": "SmallMoleculeFeature",
-      "type": "object"
-    },
-    "SmallMoleculeSummary": {
-      "properties": {
-        "prefix": {
-          "anyOf": [
-            {
-              "const": "SML",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "column_name_field": null,
-          "column_value_field": null,
-          "default": "SML",
-          "description": "The small molecule table row prefix. SML MUST be used for rows of the small molecule table.",
-          "ignore": true,
-          "list_concatenation_str": null,
-          "multiple_columns": false,
-          "referenced_field_name": null,
-          "referenced_section": null,
-          "title": "Prefix",
-          "validation_policy": {
-            "enforcement_level": "required",
-            "maximum": null,
-            "minimum": null,
-            "pattern": "SML",
-            "required": true,
-            "value_constraint": null
-          }
-        },
-        "header_prefix": {
-          "anyOf": [
-            {
-              "const": "SMH",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "column_name_field": null,
-          "column_value_field": null,
-          "default": "SMH",
-          "description": "The small molecule table header prefix. SMH MUST be used for the small molecule table header line (the column labels).",
-          "ignore": true,
-          "list_concatenation_str": null,
-          "multiple_columns": false,
-          "referenced_field_name": null,
-          "referenced_section": null,
-          "title": "Header Prefix",
-          "validation_policy": {
-            "enforcement_level": "required",
-            "maximum": null,
-            "minimum": null,
-            "pattern": "SMH",
-            "required": true,
             "value_constraint": null
           }
         },
@@ -3768,7 +3886,7 @@
           "column_name_field": null,
           "column_value_field": null,
           "default": null,
-          "description": "References to all the features on which quantitation has been based (SMF elements) via referencing SMF_ID values. Multiple values SHOULD be provided as a \u201c|\u201d separated list. This MAY be null only if this is a Summary file.",
+          "description": "References to all the features on which quantitation has been based (SMF elements) via referencing SMF_ID values. Multiple values SHOULD be provided as a | separated list. This MAY be null only if this is a Summary file.",
           "ignore": false,
           "list_concatenation_str": "|",
           "multiple_columns": false,
@@ -3799,7 +3917,7 @@
           "column_name_field": null,
           "column_value_field": null,
           "default": null,
-          "description": "A list of \u201c|\u201d separated possible identifiers for the small molecule; multiple values MUST only be provided to indicate ambiguity in the identification of the molecule and not to demonstrate different identifier types for the same molecule. Alternative identifiers for the same molecule MAY be provided as optional columns. The database identifier must be preceded by the resource description (prefix) followed by a colon, as specified in the metadata section. A null value MAY be provided if the identification is sufficiently ambiguous as to be meaningless for reporting or the small molecule has not been identified.",
+          "description": "A list of | separated possible identifiers for the small molecule; multiple values MUST only be provided to indicate ambiguity in the identification of the molecule and not to demonstrate different identifier types for the same molecule. Alternative identifiers for the same molecule MAY be provided as optional columns. The database identifier must be preceded by the resource description (prefix) followed by a colon, as specified in the metadata section. A null value MAY be provided if the identification is sufficiently ambiguous as to be meaningless for reporting or the small molecule has not been identified.",
           "ignore": false,
           "list_concatenation_str": "|",
           "multiple_columns": false,
@@ -3830,7 +3948,7 @@
           "column_name_field": null,
           "column_value_field": null,
           "default": null,
-          "description": "A list of \u201c|\u201d separated potential chemical formulae of the reported compound. The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, even if this leads to redundant reporting of information (i.e. if ambiguity can be resolved in the chemical formula), and the validation software will throw an error if the number of \u201c|\u201d symbols does not match. \u201cnull\u201d values between bars are allowed. This should be specified in Hill notation (EA Hill 1900), i.e. elements in the order C, H and then alphabetically all other elements. Counts of one may be omitted. Elements should be capitalized properly to avoid confusion (e.g., \u201cCO\u201d vs. \u201cCo\u201d). The chemical formula reported should refer to the neutral form.Example: N-acetylglucosamine would be encoded by the string \u201cC8H15NO6\u201d.",
+          "description": "A list of | separated potential chemical formulae of the reported compound. The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, even if this leads to redundant reporting of information (i.e. if ambiguity can be resolved in the chemical formula), and the validation software will throw an error if the number of | symbols does not match. \u201cnull\u201d values between bars are allowed. This should be specified in Hill notation (EA Hill 1900), i.e. elements in the order C, H and then alphabetically all other elements. Counts of one may be omitted. Elements should be capitalized properly to avoid confusion (e.g., \u201cCO\u201d vs. \u201cCo\u201d). The chemical formula reported should refer to the neutral form.Example: N-acetylglucosamine would be encoded by the string \u201cC8H15NO6\u201d.",
           "ignore": false,
           "list_concatenation_str": "|",
           "multiple_columns": false,
@@ -3861,7 +3979,7 @@
           "column_name_field": null,
           "column_value_field": null,
           "default": null,
-          "description": "A list of \u201c|\u201d separated potential molecule structures in the simplified molecular-input line-entry system (SMILES) for the small molecule. The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, and the validation software will throw an error if the number of \u201c|\u201d symbols does not match. \u201cnull\u201d values between bars are allowed.",
+          "description": "A list of | separated potential molecule structures in the simplified molecular-input line-entry system (SMILES) for the small molecule. The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, and the validation software will throw an error if the number of | symbols does not match. \u201cnull\u201d values between bars are allowed.",
           "ignore": false,
           "list_concatenation_str": "|",
           "multiple_columns": false,
@@ -3892,7 +4010,7 @@
           "column_name_field": null,
           "column_value_field": null,
           "default": null,
-          "description": "A list of \u201c|\u201d separated potential standard IUPAC International Chemical Identifier (InChI) of the given substance.  The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, even if this leads to redundant information being reported (i.e. if ambiguity can be resolved in the InChi), and the validation software will throw an error if the number of \u201c|\u201d symbols does not match. \u201cnull\u201d values between bars are allowed. ",
+          "description": "A list of | separated potential standard IUPAC International Chemical Identifier (InChI) of the given substance.  The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, even if this leads to redundant information being reported (i.e. if ambiguity can be resolved in the InChi), and the validation software will throw an error if the number of | symbols does not match. \u201cnull\u201d values between bars are allowed. ",
           "ignore": false,
           "list_concatenation_str": "|",
           "multiple_columns": false,
@@ -3923,7 +4041,7 @@
           "column_name_field": null,
           "column_value_field": null,
           "default": null,
-          "description": "A list of \u201c|\u201d separated possible chemical/common names for the small molecule, or general description if a chemical name is unavailable. Multiple names are only to demonstrate ambiguity in the identification. The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, and the validation software will throw an error if the number of \u201c|\u201d symbols does not match. \u201cnull\u201d values between bars are allowed. ",
+          "description": "A list of | separated possible chemical/common names for the small molecule, or general description if a chemical name is unavailable. Multiple names are only to demonstrate ambiguity in the identification. The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, and the validation software will throw an error if the number of | symbols does not match. \u201cnull\u201d values between bars are allowed. ",
           "ignore": false,
           "list_concatenation_str": "|",
           "multiple_columns": false,
@@ -3954,7 +4072,7 @@
           "column_name_field": null,
           "column_value_field": null,
           "default": null,
-          "description": "A URI pointing to the small molecule's entry in a reference database (e.g., the small molecule's HMDB or KEGG entry). The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, and the validation software will throw an error if the number of \u201c|\u201d symbols does not match. \u201cnull\u201d values between bars are allowed.",
+          "description": "A URI pointing to the small molecule's entry in a reference database (e.g., the small molecule's HMDB or KEGG entry). The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, and the validation software will throw an error if the number of | symbols does not match. \u201cnull\u201d values between bars are allowed.",
           "ignore": false,
           "list_concatenation_str": "|",
           "multiple_columns": false,
@@ -3992,7 +4110,7 @@
           "column_name_field": null,
           "column_value_field": null,
           "default": null,
-          "description": "The small molecule's precursor's theoretical neutral mass.  The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, and the validation software will throw an error if the number of \u201c|\u201d symbols does not match. \u201cnull\u201d values (in general and between bars) are allowed for molecules that have not been identified only, or for molecules where the neutral mass cannot be calculated. In these cases, the SML entry SHOULD reference features in which exp_mass_to_charge values are captured. ",
+          "description": "The small molecule's precursor's theoretical neutral mass.  The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, and the validation software will throw an error if the number of | symbols does not match. \u201cnull\u201d values (in general and between bars) are allowed for molecules that have not been identified only, or for molecules where the neutral mass cannot be calculated. In these cases, the SML entry SHOULD reference features in which exp_mass_to_charge values are captured. ",
           "ignore": false,
           "list_concatenation_str": "|",
           "multiple_columns": false,
@@ -4024,7 +4142,7 @@
           "column_name_field": null,
           "column_value_field": null,
           "default": null,
-          "description": "A \u201c|\u201d separated list of detected adducts for this this molecule, following the general style in the 2013 IUPAC recommendations on terms relating to MS e.g. [M+H]1+, [M+Na]1+, [M+NH4]1+, [M-H]1-, [M+Cl]1-, [M+H]1+. If the adduct classification is ambiguous with regards to identification evidence it MAY be null. ",
+          "description": "A | separated list of detected adducts for this this molecule, following the general style in the 2013 IUPAC recommendations on terms relating to MS e.g. [M+H]1+, [M+Na]1+, [M+NH4]1+, [M-H]1-, [M+Cl]1-, [M+H]1+. If the adduct classification is ambiguous with regards to identification evidence it MAY be null. ",
           "ignore": false,
           "list_concatenation_str": "|",
           "multiple_columns": false,
@@ -4268,37 +4386,6 @@
             "required": null,
             "value_constraint": null
           }
-        },
-        "comment": {
-          "anyOf": [
-            {
-              "items": {
-                "$ref": "#/$defs/Comment"
-              },
-              "type": "array"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "column_name_field": null,
-          "column_value_field": null,
-          "default": null,
-          "description": "",
-          "ignore": true,
-          "list_concatenation_str": null,
-          "multiple_columns": false,
-          "referenced_field_name": null,
-          "referenced_section": null,
-          "title": "Comment",
-          "validation_policy": {
-            "enforcement_level": "required",
-            "maximum": null,
-            "minimum": null,
-            "pattern": null,
-            "required": null,
-            "value_constraint": null
-          }
         }
       },
       "title": "SmallMoleculeSummary",
@@ -4307,6 +4394,7 @@
     "Software": {
       "properties": {
         "id": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "minimum": 1,
@@ -4333,6 +4421,7 @@
           }
         },
         "parameter": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "$ref": "#/$defs/Parameter"
@@ -4358,6 +4447,7 @@
           }
         },
         "setting": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -4393,6 +4483,7 @@
     "SpectraRef": {
       "properties": {
         "ms_run": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "integer"
@@ -4419,6 +4510,7 @@
           }
         },
         "reference": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -4451,6 +4543,7 @@
     "StudyVariable": {
       "properties": {
         "id": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "minimum": 1,
@@ -4477,6 +4570,7 @@
           }
         },
         "name": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -4503,6 +4597,7 @@
           }
         },
         "assay_refs": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -4532,6 +4627,7 @@
           }
         },
         "average_function": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "$ref": "#/$defs/Parameter"
@@ -4558,6 +4654,7 @@
           }
         },
         "variation_function": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "$ref": "#/$defs/Parameter"
@@ -4584,6 +4681,7 @@
           }
         },
         "description": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -4610,6 +4708,7 @@
           }
         },
         "factors": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "items": {
@@ -4624,7 +4723,7 @@
           "default": null,
           "description": "Parameters indicating which factors were used for the assays referenced by this study variable, and at which levels.",
           "ignore": false,
-          "list_concatenation_str": null,
+          "list_concatenation_str": "|",
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -4645,6 +4744,7 @@
     "Uri": {
       "properties": {
         "id": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "minimum": 1,
@@ -4671,6 +4771,7 @@
           }
         },
         "value": {
+          "allow_multiple": false,
           "anyOf": [
             {
               "type": "string"
@@ -4703,6 +4804,7 @@
   },
   "properties": {
     "metadata": {
+      "allow_multiple": false,
       "anyOf": [
         {
           "$ref": "#/$defs/Metadata"
@@ -4729,18 +4831,26 @@
       }
     },
     "smallMoleculeSummary": {
+      "allow_multiple": false,
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/SmallMoleculeSummary"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
       "default": null,
       "description": "The small molecule section is table-based. The small molecule section MUST always come after the metadata section. All table columns MUST be Tab separated. There MUST NOT be any empty cells; missing values MUST be reported using \u201cnull\u201d for columns where Is Nullable = \u201cTrue\u201d.  Each row of the small molecule section is intended to report one final result to be communicated in terms of a molecule that has been quantified. In many cases, this may be the molecule of biological interest, although in some cases, the final result could be a derivatized form as appropriate - although it is desirable for the database identifier(s) to reference to the biological (non-derivatized) form. In general, different adduct forms would generally be reported in the Small Molecule Feature section.  The order of columns MUST follow the order specified below.  All columns are MANDATORY except for \u201copt_\u201d columns. ",
       "ignore": false,
-      "items": {
-        "$ref": "#/$defs/SmallMoleculeSummary"
-      },
       "list_concatenation_str": null,
       "non_indexed_list_value": false,
       "object_level_value": false,
       "referenced_field_name": null,
       "title": "Small Molecule Summary",
-      "type": "array",
       "validation_policy": {
         "enforcement_level": "recommended",
         "maximum": null,
@@ -4751,6 +4861,7 @@
       }
     },
     "smallMoleculeFeature": {
+      "allow_multiple": false,
       "anyOf": [
         {
           "items": {
@@ -4780,18 +4891,26 @@
       }
     },
     "smallMoleculeEvidence": {
+      "allow_multiple": false,
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/SmallMoleculeEvidence"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
       "default": null,
       "description": "The small molecule evidence section is table-based, representing evidence for identifications of small molecules/features, from database search or any other process used to give putative identifications to molecules. In a typical case, each row represents one result from a single search or interpretation of a piece of evidence e.g. a database search with a fragmentation spectrum. Multiple results from a given input data item (e.g. one fragment spectrum) SHOULD share the same value under evidence_input_id.  The small molecule evidence section MUST always come after the Small Molecule Feature Table. All table columns MUST be Tab separated. There MUST NOT be any empty cells. Missing values MUST be reported using \u201cnull\u201d.  The order of columns MUST follow the order specified below.  All columns are MANDATORY except for \u201copt_\u201d columns. ",
       "ignore": false,
-      "items": {
-        "$ref": "#/$defs/SmallMoleculeEvidence"
-      },
       "list_concatenation_str": null,
       "non_indexed_list_value": false,
       "object_level_value": false,
       "referenced_field_name": null,
       "title": "Small Molecule Evidence",
-      "type": "array",
       "validation_policy": {
         "enforcement_level": "recommended",
         "maximum": null,
@@ -4802,6 +4921,7 @@
       }
     },
     "comment": {
+      "allow_multiple": false,
       "anyOf": [
         {
           "items": {

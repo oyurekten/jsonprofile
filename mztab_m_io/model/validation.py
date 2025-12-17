@@ -1,7 +1,9 @@
 import enum
-from typing_extensions import List, Literal, Optional
+from typing import List
 
-from mztab_m_io.model import MzTabBaseModel
+from typing_extensions import Literal, Optional
+
+from mztab_m_io.model.base import MzTabBaseModel
 
 
 class Error(MzTabBaseModel):
@@ -21,15 +23,15 @@ class MessageType(enum.Enum):
     INFO = "info"
 
 
-class ValidationMessage(MzTabBaseModel):
+class MzTabMessage(MzTabBaseModel):
     code: str = ""
     category: Category
-    message_type: Optional[MessageType] = "info"
+    message_type: Optional[MessageType] = MessageType.INFO
     message: str
     line_number: Optional[int] = None
     source: Optional[str] = None
 
 
-class ValidationSummary(MzTabBaseModel):
-    messages: Optional[List[ValidationMessage]] = None
-    source_format: Literal["tsv", "json"] = "tsv"
+class ValidationContext(MzTabBaseModel):
+    messages: Optional[List[MzTabMessage]] = None
+    source_format: Literal["tsv", "json", "yaml"] = "tsv"

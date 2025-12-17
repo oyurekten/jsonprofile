@@ -1,15 +1,13 @@
 import datetime
 import re
-from typing_extensions import Any, List, Union, Dict
 
-from pydantic import (
-    AnyUrl,
-    BaseModel,
-)
+import email_validator
+from pydantic import AnyUrl, BaseModel
+from typing_extensions import Any, Dict, List, Union
 
-from mztab_m_io.model import IdentifiableModel
 from mztab_m_io.model.serialization import (
     EnforcementLevel,
+    IdentifiableModel,
     MetadataSerialization,
     ValidationPolicy,
     ValueConstraint,
@@ -17,7 +15,7 @@ from mztab_m_io.model.serialization import (
 from mztab_m_io.model.validation import (
     Category,
     MessageType,
-    ValidationMessage,
+    MzTabMessage,
 )
 
 MessageTypeMap: Dict[EnforcementLevel, MessageType] = {
@@ -33,46 +31,11 @@ def to_jsonpath(reference: List[Union[str, int]]):
     return "$." + ".".join([str(x) for x in reference])
 
 
-def check_value_constraint(constraint: ValueConstraint, value: Union[str, int, float]):
-    if constraint == "any-url":
-        try:
-            AnyUrl(value)
-            return True
-        except Exception:
-            return False
-
-    if constraint == "positive-integer":
-        if isinstance(value, int) and value > 0:
-            return True
-        return False
-    if constraint == "non-negative-integer":
-        if isinstance(value, int) and value >= 0:
-            return True
-        return False
-    if constraint == "curie":
-        if isinstance(value, str) and len(value.split(":")) == 2:
-            return True
-        return False
-    if constraint == "datetime":
-        try:
-            datetime.datetime.fromisoformat(value)
-            return True
-        except Exception:
-            return False
-
-    if constraint == "date":
-        try:
-            datetime.datetime.strptime(value, "YYYY-MM-DD")
-            return True
-        except Exception:
-            return False
-
-
 def check_validation_policies(
     reference: List[Union[str, int]],
     model: BaseModel,
-    messages: List[ValidationMessage],
-) -> List[ValidationMessage]:
+    messages: List[MzTabMessage],
+) -> List[MzTabMessage]:
     if isinstance(model, str):
         pass
     for field, field_info in model.__class__.model_fields.items():
@@ -91,7 +54,7 @@ def check_validation_policies(
             if policy.required and not val:
                 item_ref = new_ref.copy()
                 messages.append(
-                    ValidationMessage(
+                    MzTabMessage(
                         code="",
                         category=Category.CROSS_CHECK,
                         message_type=MessageTypeMap.get(
@@ -104,12 +67,12 @@ def check_validation_policies(
             if policy.value_constraint and val is not None:
                 if isinstance(val, list):
                     for idx, item in enumerate(val):
-                        match = check_value_constraint(policy.value_constraint, item)
+                        match = _check_value_constraint(policy.value_constraint, item)
                         if not match:
                             list_ref = new_ref.copy()
                             list_ref.append(idx)
                             messages.append(
-                                ValidationMessage(
+                                MzTabMessage(
                                     code="",
                                     category=Category.CROSS_CHECK,
                                     message_type=MessageTypeMap.get(
@@ -121,11 +84,11 @@ def check_validation_policies(
                                 )
                             )
                 elif isinstance(val, str):
-                    match = check_value_constraint(policy.value_constraint, val)
+                    match = _check_value_constraint(policy.value_constraint, val)
                     if not match:
                         item_ref = new_ref.copy()
                         messages.append(
-                            ValidationMessage(
+                            MzTabMessage(
                                 code="",
                                 category=Category.CROSS_CHECK,
                                 message_type=MessageTypeMap.get(
@@ -144,7 +107,7 @@ def check_validation_policies(
                             list_ref = new_ref.copy()
                             list_ref.append(idx)
                             messages.append(
-                                ValidationMessage(
+                                MzTabMessage(
                                     code="",
                                     category=Category.CROSS_CHECK,
                                     message_type=MessageTypeMap.get(
@@ -160,7 +123,7 @@ def check_validation_policies(
                     if not match:
                         item_ref = new_ref.copy()
                         messages.append(
-                            ValidationMessage(
+                            MzTabMessage(
                                 code="",
                                 category=Category.CROSS_CHECK,
                                 message_type=MessageTypeMap.get(
@@ -182,7 +145,7 @@ def check_validation_policies(
             if minimum_violation:
                 item_ref = new_ref.copy()
                 messages.append(
-                    ValidationMessage(
+                    MzTabMessage(
                         code="",
                         category=Category.CROSS_CHECK,
                         message_type=MessageTypeMap.get(
@@ -204,7 +167,7 @@ def check_validation_policies(
             if maximum_violation:
                 item_ref = new_ref.copy()
                 messages.append(
-                    ValidationMessage(
+                    MzTabMessage(
                         code="",
                         category=Category.CROSS_CHECK,
                         message_type=MessageTypeMap.get(
@@ -226,9 +189,7 @@ def check_validation_policies(
                     check_validation_policies(list_ref.copy(), item, messages)
 
 
-def cross_check(
-    model: BaseModel, messages: List[ValidationMessage]
-) -> List[ValidationMessage]:
+def cross_check(model: BaseModel, messages: List[MzTabMessage]) -> List[MzTabMessage]:
     if messages is None:
         messages = []
     references = _get_reference_dict(model, messages)
@@ -239,10 +200,56 @@ def cross_check(
     return messages
 
 
+def _check_value_constraint(constraint: ValueConstraint, value: Union[str, int, float]):
+    if value is None or (isinstance(value, str) and not value):
+        return True
+    if constraint == "any-url":
+        try:
+            AnyUrl(value)
+            return True
+        except Exception:
+            return False
+
+    if constraint == "positive-integer":
+        if isinstance(value, int) and value > 0:
+            return True
+        return False
+    if constraint == "non-negative-integer":
+        if isinstance(value, int) and value >= 0:
+            return True
+        return False
+
+    if constraint == "curie":
+        if isinstance(value, str) and len(value.split(":")) == 2:
+            return True
+        return False
+
+    if constraint == "datetime":
+        try:
+            datetime.datetime.fromisoformat(value)
+            return True
+        except Exception:
+            return False
+
+    if constraint == "date":
+        try:
+            datetime.datetime.strptime(value, "YYYY-MM-DD")
+            return True
+        except Exception:
+            return False
+
+    if constraint == "email":
+        try:
+            email_validator.validate_email(value)
+            return True
+        except email_validator.EmailNotValidError:
+            return False
+
+
 def _check_referenced_items(
     model: BaseModel,
     references: Dict[str, Dict[int, Any]],
-    messages: List[ValidationMessage],
+    messages: List[MzTabMessage],
 ) -> Dict[str, Dict[int, int]]:
     reference_hits: Dict[str, Dict[int, int]] = {}
     for k, v in references.items():
@@ -316,13 +323,13 @@ def _check_referenced_items(
 
 def _check_unreferenced_items(
     reference_hits: Dict[str, Dict[int, int]],
-    messages: List[ValidationMessage],
+    messages: List[MzTabMessage],
 ):
     for k, v in reference_hits.items():
         for idx, hit in v.items():
             if hit < 1:
                 messages.append(
-                    ValidationMessage(
+                    MzTabMessage(
                         category=Category.CROSS_CHECK,
                         message_type=MessageType.WARNING,
                         message=f"{k}[{idx}] is not referenced in the file",
@@ -332,13 +339,13 @@ def _check_unreferenced_items(
 
 
 def _get_reference_dict(
-    model: BaseModel, messages: List[ValidationMessage], metadata_field_name="metadata"
+    model: BaseModel, messages: List[MzTabMessage], metadata_field_name="metadata"
 ) -> Dict[str, Dict[int, Any]]:
     references: Dict[str, Dict[int, Any]] = {}
     metadata = getattr(model, metadata_field_name)
     if not metadata:
         messages.append(
-            ValidationMessage(
+            MzTabMessage(
                 category=Category.CROSS_CHECK,
                 message_type=MessageType.ERROR,
                 message="metadata is not defined",
@@ -355,7 +362,7 @@ def _get_reference_dict(
                     references[indexed_field][item.id] = item
                     if item.id != idx + 1:
                         messages.append(
-                            ValidationMessage(
+                            MzTabMessage(
                                 category=Category.CROSS_CHECK,
                                 message_type=MessageType.WARNING,
                                 message=f"metadata {indexed_field} item at index {idx} "
@@ -364,7 +371,7 @@ def _get_reference_dict(
                         )
                 else:
                     messages.append(
-                        ValidationMessage(
+                        MzTabMessage(
                             category=Category.CROSS_CHECK,
                             message_type=MessageType.WARNING,
                             message=f"metadata {indexed_field} item at index {idx} "
@@ -394,7 +401,7 @@ def _check_references(
     referenced_field: str,
     target: BaseModel,
     reference_hits: Dict[str, Dict[int, Any]],
-    messages: List[ValidationMessage],
+    messages: List[MzTabMessage],
 ):
     subfield_vals = getattr(target, subfield)
     indexed_items = references.get(referenced_field, {})
@@ -404,7 +411,7 @@ def _check_references(
                 reference_hits[referenced_field][idx] += 1
             else:
                 messages.append(
-                    ValidationMessage(
+                    MzTabMessage(
                         category=Category.CROSS_CHECK,
                         message_type=MessageType.WARNING,
                         message=f"{field_ref} -> {subfield}[{i}] value "
@@ -417,7 +424,7 @@ def _check_references(
             reference_hits[referenced_field][idx] += 1
         else:
             messages.append(
-                ValidationMessage(
+                MzTabMessage(
                     category=Category.CROSS_CHECK,
                     message_type=MessageType.WARNING,
                     message=f"{field_ref} -> {subfield} value "

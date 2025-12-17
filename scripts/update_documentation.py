@@ -1,8 +1,9 @@
-from pathlib import Path
 import re
+from pathlib import Path
 from typing import Set
 
 from pydantic import BaseModel
+
 from mztab_m_io import MzTabM
 from mztab_m_io.model.field_utils import get_field_type_info
 from mztab_m_io.model.mztabm_validation import MessageTypeMap

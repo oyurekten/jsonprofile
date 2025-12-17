@@ -1,20 +1,21 @@
-import json
-from mztab_m_io import MzTabMLoadResult, convert_to_dict, read
-from mztab_m_io.model.mztabm import MzTabM
+import logging
+import traceback
 
+from mztab_m_io import MzTabMLoadResult, convert_to_dict, read
+
+logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
-    schema = MzTabM.model_json_schema(by_alias=True)
-    with open("mztabm.schema.json", "w") as f:
-        json.dump(schema, f, indent=2)
-    # file_path = "tests/data/mztabm/msdial_4_gcms_tms_height_mzTab.mztab"
-    # file_path = "tests/data/example/example.mztab"
-    file_path = "./output.mztab"
-
-    result: MzTabMLoadResult = read(file_path)
+    file_path = "tests/data/example/example.mztab"
+    try:
+        result: MzTabMLoadResult = read(file_path)
+    except Exception as e:
+        logger.error(e)
+        traceback.print_exc()
+        exit(1)
 
     for message in result.messages:
-        print(message.message_type.name, message.message)
+        logger.info(f"{message.message_type.name}: {message.message}")
     if not result.success:
         exit(1)
     mztabm_dict = convert_to_dict(result.mztabm)

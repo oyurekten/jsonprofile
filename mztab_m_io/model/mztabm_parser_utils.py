@@ -1,14 +1,20 @@
+from mztab_m_io.model.validation import Category
+from mztab_m_io.model.validation import MessageType
+from mztab_m_io.model.validation import MzTabMessage
+from typing import Optional
+from mztab_m_io.model.serialization import SerializationContext
 import re
-from typing_extensions import Any, List, OrderedDict, Union, Type, Dict
 
 from pydantic import BaseModel, ValidationError
+from typing_extensions import Any, Dict, List, Mapping, OrderedDict, Type, Union
 
-from mztab_m_io.model import IdentifiableModel, MzTabBaseModel
+from mztab_m_io.model.base import MzTabBaseModel
 from mztab_m_io.model.section.base_table_section import BaseTableSection
 from mztab_m_io.model.section.mtd import Metadata
 from mztab_m_io.model.section.sme import SmallMoleculeEvidence
 from mztab_m_io.model.section.smf import SmallMoleculeFeature
 from mztab_m_io.model.section.sml import SmallMoleculeSummary
+from mztab_m_io.model.serialization import IdentifiableModel
 
 
 def parse_table_section(
@@ -17,10 +23,20 @@ def parse_table_section(
     """Parse a table section (SML, SMF, or SME) of mzTab-M file."""
     headers = None
     data = []
-
     for line in lines:
         if line.startswith(header_prefix):
             headers = [x for x in line.split("\t")[1:] if x and x.strip()]
+        elif line.startswith("COM"):
+            parts = line.split("\t", maxsplit=1)
+            if len(parts) < 2:
+                continue
+            if parts[1].strip():
+                data.append(
+                    {
+                        "prefix": parts[0].strip(),
+                        "msg": parts[1].strip(),
+                    }
+                )
         elif line.startswith(data_prefix) and headers:
             values = [x for x in line.split("\t")[1:] if x and x.strip()]
             if len(values) == len(headers):
@@ -53,7 +69,9 @@ def parse_table_header(header: str) -> Dict[str, Any]:
     return column_map
 
 
-def split_file_sections(lines: List[str]) -> Dict[str, List[str]]:
+def split_file_sections(
+    lines: List[str], context: Optional[SerializationContext] = None
+) -> Dict[str, List[str]]:
     all_section_headers = {"SEH", "SME", "SFH", "SMF", "SMH", "SML", "MTD", "COM"}
     section_order: Dict[str, List[str]] = [
         ("MTD", [None, ("MTD", "COM"), ("SMH")]),
@@ -68,11 +86,25 @@ def split_file_sections(lines: List[str]) -> Dict[str, List[str]]:
         if not sanitized:
             continue
         if len(sanitized) < 4:
-            print(f"line error at {idx}: '{line}'")
+            if context:
+                context.messages.append(
+                    MzTabMessage(
+                        category=Category.FORMAT,
+                        type=MessageType.ERROR,
+                        message=f"line error at {idx}: '{line}'",
+                    )
+                )
             continue
         line_header = sanitized[:3]
         if line_header not in all_section_headers:
-            print(f"line error at {idx}: '{line}'")
+            if context:
+                context.messages.append(
+                    MzTabMessage(
+                        category=Category.FORMAT,
+                        type=MessageType.ERROR,
+                        message=f"line error at {idx}: '{line}'",
+                    )
+                )
             continue
         section, config = section_order[current_section]
         _, includes, terminators = config
@@ -93,15 +125,21 @@ def update_table_dict(
     rows: List[OrderedDict[str, Any]],
 ):
     new_table = []
-    table_info = field_type.get_table_info()
-
+    table_section_info = field_type.get_table_section_info()
+    latest_row = None
     for row in rows:
+        if row.get("prefix") == "COM" and latest_row:
+            if "comment" not in latest_row:
+                latest_row["comment"] = []
+            latest_row["comment"].append(row)
+            continue
+
         new_row = OrderedDict()
         for item, val in row.items():
             header, idx = summary_headers.get(item)
-            item_type = table_info.data_types.get(header, None)
-            is_list = table_info.list_fields.get(header, None)
-            join_op = table_info.list_concatenation_str_dict.get(header, None)
+            item_type = table_section_info.data_types.get(header, None)
+            is_list = table_section_info.list_fields.get(header, None)
+            join_op = table_section_info.list_concatenation_str_dict.get(header, None)
             new_cell_data = None
             if is_list:
                 if join_op:
@@ -111,36 +149,43 @@ def update_table_dict(
                             x if x and x != "null" else None for x in val.split(join_op)
                         ]
 
-                        if issubclass(item_type, int):
+                        if isinstance(item_type, type) and issubclass(item_type, int):
                             new_cell_data = [
                                 int(x) if x else None for x in new_cell_data
                             ]
-                        elif issubclass(item_type, float):
+                        elif isinstance(item_type, type) and issubclass(
+                            item_type, float
+                        ):
                             new_cell_data = [
                                 float(x) if x else None for x in new_cell_data
                             ]
                 else:
-                    if issubclass(item_type, MzTabBaseModel):
+                    if isinstance(item_type, type) and issubclass(
+                        item_type, MzTabBaseModel
+                    ):
                         new_cell_data = None
                         if val and val != "null":
                             new_cell_data = val
 
-                    elif issubclass(item_type, int):
+                    elif isinstance(item_type, type) and issubclass(item_type, int):
                         new_cell_data = [int(val) if val and val != "null" else None]
-                    elif issubclass(item_type, float):
+                    elif isinstance(item_type, type) and issubclass(item_type, float):
                         new_cell_data = [float(val) if val and val != "null" else None]
                     else:
                         new_cell_data = [val]
             else:
-                if issubclass(item_type, MzTabBaseModel):
+                if isinstance(item_type, type) and issubclass(
+                    item_type, MzTabBaseModel
+                ):
                     new_cell_data = None
                     if val and val != "null":
                         new_cell_data = val
-                elif issubclass(item_type, int):
+
+                elif isinstance(item_type, type) and issubclass(item_type, int):
                     new_cell_data = (
                         int(val) if val is not None and val != "null" else None
                     )
-                elif issubclass(item_type, float):
+                elif isinstance(item_type, type) and issubclass(item_type, float):
                     new_cell_data = None
                     if val and val.lower() != "null":
                         new_cell_data = (
@@ -176,11 +221,13 @@ def update_table_dict(
                         new_row[new_header] = []
                     new_row[new_header].append(
                         {
-                            table_info.column_name_fields.get(header): index,
-                            table_info.column_value_fields.get(header): new_cell_data,
+                            table_section_info.column_name_fields.get(header): index,
+                            table_section_info.column_value_fields.get(
+                                header
+                            ): new_cell_data,
                         }
                     )
-
+        latest_row = new_row
         new_table.append(new_row)
     return new_table
 
@@ -195,7 +242,7 @@ def update_ids(model: BaseModel, idx: Union[None, int] = None):
             for id, item in enumerate(val, start=1):
                 if isinstance(item, BaseModel):
                     update_ids(item, id)
-        if isinstance(val, (dict, OrderedDict)):
+        if isinstance(val, Mapping):
             for _, v in val.items():
                 if isinstance(v, list):
                     for id, item in enumerate(v, start=1):
@@ -206,7 +253,9 @@ def update_ids(model: BaseModel, idx: Union[None, int] = None):
 
 
 def parse_tsv_file(
-    model_class: Type[BaseModel], data: Union[str, List[str]]
+    model_class: Type[BaseModel],
+    data: Union[str, List[str]],
+    context: SerializationContext,
 ) -> OrderedDict[str, Any]:
     lines = data
     if isinstance(data, str):
@@ -217,9 +266,10 @@ def parse_tsv_file(
         raise ValidationError("input format is not valid")
     if not isinstance(lines[0], str):
         raise ValidationError(f"input data is not valid: {data[0].__class__}")
-    sections = split_file_sections(lines)
+    sections = split_file_sections(lines, context)
     mztabm = OrderedDict()
-    mztabm["metadata"] = Metadata.parse_metadata(sections["MTD"])
+    mztabm["metadata"] = Metadata.parse_metadata(sections["MTD"], context)
+    mztabm["comment"] = mztabm["metadata"].get("comment", None)
     section_inputs = [
         (SmallMoleculeSummary, "small_molecule_summary", "SMH", "SML"),
         (SmallMoleculeFeature, "small_molecule_feature", "SFH", "SMF"),

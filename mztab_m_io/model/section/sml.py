@@ -1,12 +1,11 @@
+from pydantic import Field
 from typing_extensions import (
     Annotated,
     List,
     Optional,
 )
 
-from pydantic import Field
-
-from mztab_m_io.model.common import AdductIon, Comment, OptColumnMapping, Parameter
+from mztab_m_io.model.common import AdductIon, OptColumnMapping, Parameter
 from mztab_m_io.model.section.base_table_section import BaseTableSection
 from mztab_m_io.model.serialization import TableSerialization, ValidationPolicy
 
@@ -300,15 +299,6 @@ class SmallMoleculeSummary(BaseTableSection):
                 multiple_columns=True,
                 column_name_field="identifier",
                 column_value_field="value",
-            ).model_dump(),
-        ),
-    ] = None
-    comment: Annotated[
-        Optional[List[Comment]],
-        Field(
-            description="",
-            json_schema_extra=TableSerialization(
-                ignore=True,
             ).model_dump(),
         ),
     ] = None

@@ -1,17 +1,17 @@
 import re
-from typing_extensions import Type
+
+from pydantic import BaseModel
 from typing_extensions import (
     Annotated,
     Any,
     List,
     Optional,
     OrderedDict,
+    Type,
     Union,
     get_args,
     get_origin,
 )
-
-from pydantic import BaseModel
 
 try:
     import types
@@ -84,7 +84,10 @@ def _resolve(annotation):
     # ---- List[T] ----
     origin = get_origin(annotation)
     if origin in (list, List):
-        (item,) = get_args(annotation)
+        args = get_args(annotation)
+        if not args:
+            return True, Any
+        (item,) = args
 
         item = _unwrap_annotated(item)
 
