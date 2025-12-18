@@ -1,11 +1,5 @@
 import re
-
-from pydantic import (
-    Field,
-    ValidationInfo,
-)
-from pydantic.functional_validators import ModelWrapValidatorHandler, model_validator
-from typing_extensions import (
+from typing import (
     Annotated,
     Any,
     Dict,
@@ -15,6 +9,12 @@ from typing_extensions import (
     OrderedDict,
     Tuple,
 )
+
+from pydantic import (
+    Field,
+    ValidationInfo,
+)
+from pydantic.functional_validators import ModelWrapValidatorHandler, model_validator
 
 from mztab_m_io.model.base import MzTabBaseModel
 from mztab_m_io.model.common import (
@@ -57,7 +57,8 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
         Optional[str],
         Field(
             description="Metadata section prefix identifier.\n\n"
-            "Value must be 'MTD'. Used to identify metadata lines in the mzTab-M file format.",
+            "Value must be 'MTD'. Used to identify metadata lines "
+            "in the mzTab-M file format.",
             examples=["MTD"],
             frozen=True,
             json_schema_extra=MetadataSerialization(
@@ -204,7 +205,8 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
             "- `source`: Ion source type (e.g., ESI, MALDI)\n"
             "- `analyzer`: Mass analyzer(s) used (e.g., quadrupole, TOF)\n"
             "- `detector`: Detector type\n\n"
-            "Multiple instruments are numbered `[1-n]`. Referenced by `instrument_ref` in `ms_run` entries.",
+            "Multiple instruments are numbered `[1-n]`. "
+            "Referenced by `instrument_ref` in `ms_run` entries.",
             examples=[
                 "MTD\tinstrument[1]-name\tThermo Fisher Q Exactive HF",
                 "MTD\tinstrument[1]-source\t[MS,MS:1000073,ESI,]",
@@ -291,7 +293,8 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
     derivatization_agent: Annotated[
         Optional[List[Parameter]],
         Field(
-            description="A description of derivatization agents applied to small molecules, "
+            description="A description of derivatization agents "
+            "applied to small molecules, "
             "using userParams or CV terms where possible.",
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
@@ -309,23 +312,32 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
             "If pre-fractionation has been performed, "
             "then [1-n] ms_runs SHOULD be created per assay."
             "instrument_ref: If different instruments are used in different runs, "
-            "instrument_ref can be used to link a specific instrument to a specific run. "
-            "format: Parameter specifying the data format of the external MS data file. "
-            "If ms_run[1-n]-format is present, ms_run[1-n]-id_format SHOULD also be present, "
+            "instrument_ref can be used to link a specific instrument "
+            "to a specific run. "
+            "format: Parameter specifying the data format of the "
+            "external MS data file. "
+            "If ms_run[1-n]-format is present, ms_run[1-n]-id_format "
+            "SHOULD also be present, "
             "following the parameters specified in Table 1. "
-            "id_format: Parameter specifying the id format used in the external data file. "
-            "If ms_run[1-n]-id_format is present, ms_run[1-n]-format SHOULD also be present."
-            "fragmentation_method: The type(s) of fragmentation used in a given ms run."
+            "id_format: Parameter specifying the id format used "
+            "in the external data file. "
+            "If ms_run[1-n]-id_format is present, ms_run[1-n]-format "
+            "SHOULD also be present."
+            "fragmentation_method: The type(s) of fragmentation "
+            "used in a given ms run."
             "scan_polarity: The polarity mode of a given run. "
             "Usually only one value SHOULD be given here except for "
             "the case of mixed polarity runs."
             "hash: Hash value of the corresponding external MS data f"
             "ile defined in ms_run[1-n]-location. "
-            "If ms_run[1-n]-hash is present, ms_run[1-n]-hash_method SHOULD also be present."
+            "If ms_run[1-n]-hash is present, ms_run[1-n]-hash_method "
+            "SHOULD also be present."
             "hash_method: A parameter specifying the hash methods used to "
             "generate the String in ms_run[1-n]-hash. "
-            "Specifics of the hash method used MAY follow the definitions of the mzML format. "
-            "If ms_run[1-n]-hash is present, ms_run[1-n]-hash_method SHOULD also be present.",
+            "Specifics of the hash method used MAY follow the definitions "
+            "of the mzML format. "
+            "If ms_run[1-n]-hash is present, ms_run[1-n]-hash_method "
+            "SHOULD also be present.",
             json_schema_extra=MetadataSerialization(
                 validation_policy=ValidationPolicy(required=True, minimum=1)
             ).model_dump(),
@@ -340,7 +352,8 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
             "the assays that MUST be "
             "reported in the following tables. "
             "custom: Additional custom parameters or values for a given assay. "
-            "external_uri: An external reference uri to further information about the assay, "
+            "external_uri: An external reference uri to further "
+            "information about the assay, "
             "for example via a reference to an object within an ISA-TAB file. "
             "sample_ref: An association from a given assay to the sample analysed. "
             "ms_run_ref: An association from a given assay to the source MS run. "
@@ -360,22 +373,31 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
         Optional[List[StudyVariable]],
         Field(
             description="Specification of study_variable. "
-            "(empty) name: A name for each study variable (experimental condition or factor), "
+            "(empty) name: A name for each study variable (experimental "
+            "condition or factor), "
             "to serve as a list of the study variables that MUST be "
             "reported in the following tables. "
             "For software that does not capture study variables, "
             "a single study variable MUST be reported, "
-            "linking to all assays. This single study variable MUST have the identifier “undefined“. "
-            "assay_refs: Bar-separated references to the IDs of assays grouped in the study variable. "
-            "average_function: The function used to calculate the study variable quantification value "
-            "and the operation used is not arithmetic mean (default) e.g. “geometric mean”, “median”. "
+            "linking to all assays. This single study variable MUST have "
+            "the identifier “undefined“. "
+            "assay_refs: Bar-separated references to the IDs of assays "
+            "grouped in the study variable. "
+            "average_function: The function used to calculate the study variable "
+            "quantification value "
+            "and the operation used is not arithmetic mean (default) "
+            "e.g. “geometric mean”, “median”. "
             "The 1-n refers to different study variables. "
             "variation_function: The function used to calculate "
             "the study variable quantification variation value "
-            "if it is reported and the operation used is not coefficient of variation (default) e.g. "
-            "“standard error”. description: A textual description of the study variable. "
-            "factors: Additional parameters or factors, separated by bars, that are known "
-            "about study variables allowing the capture of more complex, such as nested designs. ",
+            "if it is reported and the operation used is not coefficient "
+            "of variation (default) e.g. "
+            "“standard error”. description: A textual description of "
+            "the study variable. "
+            "factors: Additional parameters or factors, separated by bars, "
+            "that are known "
+            "about study variables allowing the capture of more complex, "
+            "such as nested designs. ",
             json_schema_extra=MetadataSerialization(
                 validation_policy=ValidationPolicy(required=True, minimum=1)
             ).model_dump(),
@@ -518,8 +540,10 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
         Optional[List[ColumnParameterMapping]],
         Field(
             alias="colunit-small_molecule_feature",
-            description="Defines the used unit for a column in the small molecule feature section. "
-            "The format of the value has to be {column name}={Parameter defining the unit}. "
+            description="Defines the used unit for a column in the "
+            "small molecule feature section. "
+            "The format of the value has to be {column name}="
+            "{Parameter defining the unit}. "
             "This field MUST NOT be used to define a unit for quantification columns. "
             "The unit used for small molecule quantification values MUST be set "
             "in small_molecule_feature-quantification_unit.",
@@ -534,8 +558,10 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
         Optional[List[ColumnParameterMapping]],
         Field(
             alias="colunit-small_molecule_evidence",
-            description="Defines the used unit for a column in the small molecule evidence section. "
-            "The format of the value has to be {column name}={Parameter defining the unit}.",
+            description="Defines the used unit for a column in the "
+            "small molecule evidence section. "
+            "The format of the value has to be {column name}="
+            "{Parameter defining the unit}.",
             json_schema_extra=MetadataSerialization(
                 non_indexed_list_value=True,
                 json_schema_extra=MetadataSerialization().model_dump(),
@@ -896,7 +922,8 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
                         MzTabMessage(
                             category=Category.WARNING,
                             message_type=MessageType.INFO,
-                            message=f"not expected type: {type(value[0])} and value: {value[0]}",
+                            message=f"not expected type: {type(value[0])} "
+                            f"and value: {value[0]}",
                         )
                     )
             else:
@@ -904,6 +931,7 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
                     MzTabMessage(
                         category=Category.WARNING,
                         message_type=MessageType.INFO,
-                        message=f"Skipping unsupported value: key: {key_name} extra: {extra}",
+                        message=f"Skipping unsupported value: key: {key_name} "
+                        f"extra: {extra}",
                     )
                 )

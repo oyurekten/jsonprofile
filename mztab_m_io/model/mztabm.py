@@ -2,13 +2,13 @@ import json
 import pathlib
 from functools import partial
 from pathlib import Path
+from typing import Annotated, Any, Callable, List, Literal, Optional, Tuple
 
 import yaml
 from pydantic import Field
-from typing_extensions import Annotated, Any, Callable, List, Literal, Optional, Tuple
 
 from mztab_m_io.model.common import Comment
-from mztab_m_io.model.mztabm_parser_utils import parse_tsv_file, update_ids
+from mztab_m_io.model.mztabm_parser_utils import check_ids, parse_tsv_file
 from mztab_m_io.model.mztabm_validation import check_validation_policies, cross_check
 from mztab_m_io.model.section.mtd import Metadata
 from mztab_m_io.model.section.sme import SmallMoleculeEvidence
@@ -50,8 +50,9 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
             "All table columns MUST be Tab separated. "
             "There MUST NOT be any empty cells; missing values MUST "
             "be reported using “null” for columns where Is Nullable = “True”.  "
-            "Each row of the small molecule section is intended to report one final "
-            "result to be communicated in terms of a molecule that has been quantified. "
+            "Each row of the small molecule section is intended to report "
+            "one final result to be communicated in terms of a molecule "
+            "that has been quantified. "
             "In many cases, this may be the molecule of biological interest, "
             "although in some cases, the final result could be a derivatized form "
             "as appropriate - although it is desirable for the database identifier(s) "
@@ -83,7 +84,8 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
             "of individual molecules should be reported as separate SMF rows. "
             "The small molecule feature section MUST always come after "
             "the Small Molecule Table. All table columns MUST be Tab separated. "
-            "There MUST NOT be any empty cells. Missing values MUST be reported using “null”.  "
+            "There MUST NOT be any empty cells. Missing values "
+            "MUST be reported using “null”.  "
             "The order of columns MUST follow the order specified below.  "
             "All columns are MANDATORY except for “opt_” columns. ",
             json_schema_extra=MetadataSerialization(
@@ -98,16 +100,20 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
         Field(
             alias="smallMoleculeEvidence",
             description="The small molecule evidence section is table-based, "
-            "representing evidence for identifications of small molecules/features, "
-            "from database search or any other process used to give putative identifications "
+            "representing evidence for identifications of small "
+            "molecules/features, from database search or any other process "
+            "used to give putative identifications "
             "to molecules. In a typical case, each row represents one result "
             "from a single search or interpretation of a piece of evidence "
             "e.g. a database search with a fragmentation spectrum. "
-            "Multiple results from a given input data item (e.g. one fragment spectrum) "
+            "Multiple results from a given input data item "
+            "(e.g. one fragment spectrum) "
             "SHOULD share the same value under evidence_input_id.  "
             "The small molecule evidence section MUST always come after "
-            "the Small Molecule Feature Table. All table columns MUST be Tab separated. "
-            "There MUST NOT be any empty cells. Missing values MUST be reported using “null”.  "
+            "the Small Molecule Feature Table. All table columns "
+            "MUST be Tab separated. "
+            "There MUST NOT be any empty cells. Missing values "
+            "MUST be reported using “null”.  "
             "The order of columns MUST follow the order specified below.  "
             "All columns are MANDATORY except for “opt_” columns. ",
             json_schema_extra=MetadataSerialization(
@@ -152,13 +158,14 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
     ) -> ValidationContext:
         if not context:
             context = ValidationContext(messages=[], source_format="json")
-        cross_check(self, context.messages)
-        check_validation_policies([], self, context.messages)
+        self.post_process_model(self, context)
+        # cross_check(self, context.messages)
+        # check_validation_policies([], self, context.messages)
         return context
 
     @classmethod
     def post_process_model(cls, model: "MzTabM", context: ValidationContext):
-        update_ids(model)
+        check_ids(model, [], context.messages)
         cross_check(model, context.messages)
         check_validation_policies([], model, context.messages)
 
@@ -269,7 +276,7 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
         if not context:
             context = SerializationContext(source_format=source_format, messages=[])
         try:
-            with open(file_path, "w") as f:
+            with Path(file_path).open("w") as f:
                 f.write(serializer(context))
             context.success = True
         except Exception as e:
@@ -312,7 +319,7 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
             if hasattr(io, "read"):
                 data = loader(io)
             else:
-                with open(io) as f:
+                with Path(io).open() as f:
                     data = loader(f)
             model, context = cls.from_dict(
                 data,

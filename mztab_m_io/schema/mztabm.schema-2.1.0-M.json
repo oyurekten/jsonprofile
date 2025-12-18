@@ -2057,7 +2057,7 @@
             "enforcement_level": "required",
             "maximum": null,
             "minimum": null,
-            "pattern": null,
+            "pattern": "^global|ms_run\\[\\d+\\]|assay\\[\\d+\\]|study_variable\\[\\d+\\]",
             "required": true,
             "value_constraint": null
           }
@@ -2692,7 +2692,6 @@
     "SmallMoleculeEvidence": {
       "properties": {
         "prefix": {
-          "column_name_field": null,
           "column_value_field": null,
           "default": "SME",
           "description": "The small molecule evidence table row prefix. SME MUST be used for rows of the small molecule evidence table.",
@@ -2713,7 +2712,6 @@
           }
         },
         "header_prefix": {
-          "column_name_field": null,
           "column_value_field": null,
           "default": "SEH",
           "description": "The small molecule evidence table header prefix. SEH MUST be used for the small molecule evidence table header line (the column labels).",
@@ -2745,7 +2743,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "",
@@ -2773,7 +2770,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "A within file unique identifier for the small molecule evidence result.",
@@ -2801,7 +2797,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "A within file unique identifier for the input data used to support this identification e.g. fragment spectrum, RT and m/z pair, isotope profile that was used for the identification process, to serve as a grouping mechanism, whereby multiple rows of results from the same input data share the same ID. The identifiers may be human readable but should not be assumed to be interpretable. For example, if fragmentation spectra have been searched then the ID may be the spectrum reference, or for accurate mass search, the ms_run[2]:458.75.",
@@ -2829,7 +2824,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "The putative identification for the small molecule sourced from an external database, using the same prefix specified in database[1-n]-prefix.  This could include additionally a chemical class or an identifier to a spectral library entity, even if its actual identity is unknown.  For the \u201cno database\u201d case, 'null' must be used. The unprefixed use of 'null' is prohibited for any other case. If no putative identification can be reported for a particular database, it MUST be reported as the database prefix followed by null.",
@@ -2857,7 +2851,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "The chemical formula of the identified compound e.g. in a database, assumed to match the theoretical mass to charge (in some cases this will be the derivatized form, including adducts and protons).  This should be specified in Hill notation (EA Hill 1900), i.e. elements in the order C, H and then alphabetically all other elements. Counts of one may be omitted. Elements should be capitalized properly to avoid confusion (e.g., \u201cCO\u201d vs. \u201cCo\u201d). The chemical formula reported should refer to the neutral form. Charge state is reported by the charge field.  Example N-acetylglucosamine would be encoded by the string \u201cC8H15NO6\u201d ",
@@ -2885,7 +2878,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "The potential molecule's structure in the simplified molecular-input line-entry system (SMILES) for the small molecule.",
@@ -2913,7 +2905,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "A standard IUPAC International Chemical Identifier (InChI) for the given substance.",
@@ -2941,7 +2932,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "The small molecule's chemical/common name, or general description if a chemical name is unavailable.",
@@ -2969,7 +2959,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "A URI pointing to the small molecule's entry in a database (e.g., the small molecule's HMDB, Chebi or KEGG entry).",
@@ -2997,7 +2986,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "Derivatization form",
@@ -3025,7 +3013,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "The assumed classification of this molecule's adduct ion after detection, following the general style in the 2013 IUPAC recommendations on terms relating to MS e.g. [M+H]+, [M+Na]1+, [M+NH4]1+, [M-H]1-, [M+Cl]1-. If the adduct classification is ambiguous with regards to identification evidence it MAY be null.",
@@ -3053,7 +3040,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "The experimental mass/charge value for the precursor ion. If multiple adduct forms have been combined into a single identification event/search, then a single value e.g. for the protonated form SHOULD be reported here.",
@@ -3081,7 +3067,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "The small molecule evidence's charge value using positive integers both for positive and negative polarity modes.",
@@ -3109,7 +3094,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "The theoretical mass/charge value for the small molecule or the database mass/charge value (for a spectral library match).",
@@ -3140,7 +3124,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "Reference to a spectrum in a spectrum file, for example a fragmentation spectrum has been used to support the identification. If a separate spectrum file has been used for fragmentation spectrum, this MUST be reported in the metadata section as additional ms_runs. The reference must be in the format ms_run[1-n]:{SPECTRA_REF} where SPECTRA_REF MUST follow the format defined in 5.2 (including references to chromatograms where these are used to inform identification). Multiple spectra MUST be referenced using a | delimited list for the (rare) cases in which search engines have combined or aggregated multiple spectra in advance of the search to make identifications.  If a fragmentation spectrum has not been used, the value should indicate the ms_run to which is identification is mapped e.g. \u201cms_run[1]\u201d. ",
@@ -3168,7 +3151,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "identification method",
@@ -3196,7 +3178,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "MS level",
@@ -3234,7 +3215,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "Any statistical value or score for the identification. The metadata section reports the type of score used, as id_confidence_measure[1-n] of type Param.",
@@ -3262,7 +3242,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "The rank of this identification from this approach as increasing integers from 1 (best ranked identification). Ties (equal score) are represented by using the same rank - defaults to 1 if there is no ranking system used.",
@@ -3293,10 +3272,9 @@
               "type": "null"
             }
           ],
-          "column_name_field": "identifier",
           "column_value_field": "value",
           "default": null,
-          "description": "Additional columns can be added to the end of the small molecule evidence table. These column headers MUST start with the prefix \u201copt_\u201d followed by the {identifier} of the object they reference: assay, study variable, MS run or \u201cglobal\u201d (if the value relates to all replicates). Column names MUST only contain the following characters: 'A'-'Z', 'a'-'z', '0'-'9', '', '-', '[', ']', and ':'. CV parameter accessions MAY be used for optional columns following the format: opt{identifier}_cv_{accession}_{parameter name}. Spaces within the parameter's name MUST be replaced by '_'. ",
+          "description": "Additional columns can be added to the end of the small molecule evidence table. These column headers MUST start with the prefix \u201copt_\u201d followed by the {identifier} of the object they reference: assay, study variable, MS run or \u201cglobal\u201d (if the value relates to all replicates). Column names MUST only contain the following characters: 'A'-'Z', 'a'-'z', '0'-'9', '_', '-', '[', ']', and ':'. CV parameter accessions MAY be used for optional columns following the format: opt{identifier}_cv_{accession}_{parameter name}. Spaces within the parameter's name MUST be replaced by '_'. ",
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": true,
@@ -3327,7 +3305,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": "SMF",
           "description": "The small molecule feature table row prefix. SMF MUST be used for rows of the small molecule feature table.",
@@ -3347,7 +3324,6 @@
           }
         },
         "header_prefix": {
-          "column_name_field": null,
           "column_value_field": null,
           "default": "SFH",
           "description": "The small molecule feature table header prefix. SFH MUST be used for the small molecule feature table header line (the column labels).",
@@ -3379,7 +3355,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "",
@@ -3407,7 +3382,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "A within file unique identifier for the small molecule feature.",
@@ -3438,7 +3412,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "References to the identification evidence (SME elements) via referencing SME_ID values. Multiple values MAY be provided as a | separated list to indicate ambiguity in the identification or to indicate that different types of data supported the identification (see SME_ID_REF_ambiguity_code). For the case of a consensus approach where multiple adduct forms are used to infer the SML ID, different features should just reference the same SME_ID value(s).",
@@ -3466,7 +3439,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "If multiple values are given under SME_ID_REFS, one of the following codes MUST be provided. 1=Ambiguous identification; 2=Only different evidence streams for the same molecule with no ambiguity; 3=Both ambiguous identification and multiple evidence streams. If there are no or one value under SME_ID_REFs, this MUST be reported as null.",
@@ -3494,7 +3466,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "The assumed classification of this molecule's adduct ion after detection, following the general style in the 2013 IUPAC recommendations on terms relating to MS e.g. [M+H]1+, [M+Na]1+, [M+NH4]1+, [M-H]1-, [M+Cl]1-, [M+H]1+.",
@@ -3522,7 +3493,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "If de-isotoping has not been performed, then the isotopomer quantified MUST be reported here e.g. \u201c+1\u201d, \u201c+2\u201d, \u201c13C peak\u201d using CV terms, otherwise (i.e. for approaches where SMF rows are de-isotoped features) this MUST be null.",
@@ -3550,7 +3520,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "The experimental mass/charge value for the feature, by default assumed to be the mean across assays or a representative value. For approaches that report isotopomers as SMF rows, then the m/z of the isotopomer MUST be reported here.",
@@ -3578,7 +3547,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "The feature's charge value using positive integers both for positive and negative polarity modes.",
@@ -3606,7 +3574,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "The apex of the feature on the retention time axis, in a Master or aggregate MS run. Retention time MUST be reported in seconds. Retention time values for individual MS runs (i.e. before alignment) MAY be reported as optional columns. Retention time SHOULD only be null in the case of direct infusion MS or other techniques where a retention time value is absent or unknown. Relative retention time or retention time index values MAY be reported as optional columns, and could be considered for inclusion in future versions of mzTab as appropriate.",
@@ -3634,7 +3601,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "The start time of the feature on the retention time axis, in a Master or aggregate MS run. Retention time MUST be reported in seconds. Retention time start and end SHOULD only be null in the case of direct infusion MS or other techniques where a retention time value is absent or unknown and MAY be reported in optional columns.",
@@ -3662,7 +3628,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "The end time of the feature on the retention time axis, in a Master or aggregate MS run. Retention time MUST be reported in seconds. Retention time start and end SHOULD only be null in the case of direct infusion MS or other techniques where a retention time value is absent or unknown and MAY be reported in optional columns.",
@@ -3700,7 +3665,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "The feature's abundance in every assay described in the metadata section MUST be reported. Null or zero values may be reported as appropriate.",
@@ -3731,7 +3695,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": "identifier",
           "column_value_field": "value",
           "default": null,
           "description": "Additional columns can be added to the end of the small molecule feature table. These column headers MUST start with the prefix \u201copt_\u201d followed by the {identifier} of the object they reference: assay, study variable, MS run or \u201cglobal\u201d (if the value relates to all replicates). Column names MUST only contain the following characters: 'A'-'Z', 'a'-'z', '0'-'9', '', '-', '[', ']', and ':'. CV parameter accessions MAY be used for optional columns following the format: opt{identifier}_cv_{accession}_parameter name}. Spaces within the parameter's name MUST be replaced by '_'. ",
@@ -3765,7 +3728,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": "SML",
           "description": "The small molecule table row prefix. SML MUST be used for rows of the small molecule table.",
@@ -3793,7 +3755,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": "SMH",
           "description": "The small molecule table header prefix. SMH MUST be used for the small molecule table header line (the column labels).",
@@ -3824,7 +3785,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "",
@@ -3852,7 +3812,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "A within file unique identifier for the small molecule.",
@@ -3883,7 +3842,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "References to all the features on which quantitation has been based (SMF elements) via referencing SMF_ID values. Multiple values SHOULD be provided as a | separated list. This MAY be null only if this is a Summary file.",
@@ -3914,7 +3872,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "A list of | separated possible identifiers for the small molecule; multiple values MUST only be provided to indicate ambiguity in the identification of the molecule and not to demonstrate different identifier types for the same molecule. Alternative identifiers for the same molecule MAY be provided as optional columns. The database identifier must be preceded by the resource description (prefix) followed by a colon, as specified in the metadata section. A null value MAY be provided if the identification is sufficiently ambiguous as to be meaningless for reporting or the small molecule has not been identified.",
@@ -3945,7 +3902,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "A list of | separated potential chemical formulae of the reported compound. The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, even if this leads to redundant reporting of information (i.e. if ambiguity can be resolved in the chemical formula), and the validation software will throw an error if the number of | symbols does not match. \u201cnull\u201d values between bars are allowed. This should be specified in Hill notation (EA Hill 1900), i.e. elements in the order C, H and then alphabetically all other elements. Counts of one may be omitted. Elements should be capitalized properly to avoid confusion (e.g., \u201cCO\u201d vs. \u201cCo\u201d). The chemical formula reported should refer to the neutral form.Example: N-acetylglucosamine would be encoded by the string \u201cC8H15NO6\u201d.",
@@ -3976,7 +3932,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "A list of | separated potential molecule structures in the simplified molecular-input line-entry system (SMILES) for the small molecule. The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, and the validation software will throw an error if the number of | symbols does not match. \u201cnull\u201d values between bars are allowed.",
@@ -4007,7 +3962,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "A list of | separated potential standard IUPAC International Chemical Identifier (InChI) of the given substance.  The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, even if this leads to redundant information being reported (i.e. if ambiguity can be resolved in the InChi), and the validation software will throw an error if the number of | symbols does not match. \u201cnull\u201d values between bars are allowed. ",
@@ -4038,7 +3992,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "A list of | separated possible chemical/common names for the small molecule, or general description if a chemical name is unavailable. Multiple names are only to demonstrate ambiguity in the identification. The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, and the validation software will throw an error if the number of | symbols does not match. \u201cnull\u201d values between bars are allowed. ",
@@ -4069,7 +4022,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "A URI pointing to the small molecule's entry in a reference database (e.g., the small molecule's HMDB or KEGG entry). The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, and the validation software will throw an error if the number of | symbols does not match. \u201cnull\u201d values between bars are allowed.",
@@ -4107,7 +4059,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "The small molecule's precursor's theoretical neutral mass.  The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, and the validation software will throw an error if the number of | symbols does not match. \u201cnull\u201d values (in general and between bars) are allowed for molecules that have not been identified only, or for molecules where the neutral mass cannot be calculated. In these cases, the SML entry SHOULD reference features in which exp_mass_to_charge values are captured. ",
@@ -4139,7 +4090,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "A | separated list of detected adducts for this this molecule, following the general style in the 2013 IUPAC recommendations on terms relating to MS e.g. [M+H]1+, [M+Na]1+, [M+NH4]1+, [M-H]1-, [M+Cl]1-, [M+H]1+. If the adduct classification is ambiguous with regards to identification evidence it MAY be null. ",
@@ -4167,7 +4117,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "The reliability of the given small molecule identification. This must be supplied by the resource and MUST be reported as an integer between 1-4: identified metabolite (1)      putatively annotated compound (2)      putatively characterized compound class (3)      unknown compound (4)  These MAY be replaced using a suitable CV term in the metadata section e.g. to use MSI recommendation levels (see Section 6.2.57 for details).  The following CV terms are already available within the PSI MS CV. Future schemes may be implemented by extending the PSI MS CV with new terms and associated levels.  The MSI has recently discussed an extension of the original four level scheme into a five level scheme MS:1002896 (compound identification confidence level) with levels isolated, pure compound, full stereochemistry (0)      reference standard match or full 2D structure (1)      unambiguous diagnostic evidence (literature, database) (2)      most likely structure, including isomers, substance class or substructure match (3) unknown compound (4)  For high-resolution MS, the following term and its levels may be used: MS:1002955 (hr-ms compound identification confidence level) with levels      confirmed structure (1)      probable structure (2)          unambiguous ms library match (2a)          diagnostic evidence (2b)      tentative candidates (3)      unequivocal molecular formula (4)      exact mass (5)  A String data type is set to allow for different systems to be specified in the metadata section. ",
@@ -4195,7 +4144,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "The approach or database search that identified this small molecule with highest confidence.",
@@ -4223,7 +4171,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "The best confidence measure in identification (for this type of score) for the given small molecule across all assays. The type of score MUST be defined in the metadata section. If the small molecule was not identified by the specified search engine, \u201cnull\u201d MUST be reported. If the confidence measure does not report a numerical confidence value, \u201cnull\u201d SHOULD be reported.",
@@ -4261,7 +4208,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "The small molecule's abundance in every assay described in the metadata section MUST be reported. Null or zero values may be reported as appropriate. 'null' SHOULD be used to report missing quantities, while zero SHOULD be used to indicate a present but not reliably quantifiable value (e.g. below a minimum noise threshold).",
@@ -4299,7 +4245,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "The small molecule's abundance in all the study variables described in the metadata section (study_variable[1-n]_average_function), calculated using the method as described in the Metadata section (default = arithmetic mean across assays). Null or zero values may be reported as appropriate. 'null' SHOULD be used to report missing quantities, while zero SHOULD be used to indicate a present but not reliably quantifiable value (e.g. below a minimum noise threshold).",
@@ -4337,7 +4282,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": null,
           "column_value_field": null,
           "default": null,
           "description": "A measure of the variability of the study variable abundance measurement, calculated using the method as described in the metadata section (study_variable[1-n]_average_function), with a default = arithmethic co-efficient of variation of the small molecule's abundance in the given study variable.",
@@ -4368,7 +4312,6 @@
               "type": "null"
             }
           ],
-          "column_name_field": "identifier",
           "column_value_field": "value",
           "default": null,
           "description": "Additional columns can be added to the end of the small molecule table. These column headers MUST start with the prefix \u201copt_\u201d followed by the {identifier} of the object they reference: assay, study variable, MS run or \u201cglobal\u201d (if the value relates to all replicates). Column names MUST only contain the following characters: 'A'-'Z', 'a'-'z', '0'-'9', '', '-', '[', ']', and ':'. CV parameter accessions MAY be used for optional columns following the format: opt{identifier}_cv_{accession}_{parameter name}. Spaces within the parameter's name MUST be replaced by '_'. ",

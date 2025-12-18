@@ -1,18 +1,18 @@
 import re
-
-from pydantic import BaseModel, ValidationError
-from typing_extensions import (
+from typing import (
     Any,
     Dict,
     List,
-    Mapping,
     Optional,
     OrderedDict,
     Type,
     Union,
 )
 
+from pydantic import BaseModel, ValidationError
+
 from mztab_m_io.model.base import MzTabBaseModel
+from mztab_m_io.model.mztabm_validation import to_jsonpath
 from mztab_m_io.model.section.base_table_section import BaseTableSection
 from mztab_m_io.model.section.mtd import Metadata
 from mztab_m_io.model.section.sme import SmallMoleculeEvidence
@@ -224,37 +224,81 @@ def update_table_dict(
                 else:
                     if new_header not in new_row:
                         new_row[new_header] = []
-                    new_row[new_header].append(
-                        {
-                            table_section_info.column_name_fields.get(header): index,
-                            table_section_info.column_value_fields.get(
-                                header
-                            ): new_cell_data,
-                        }
+                    match = re.match(
+                        r"^(global|ms_run\[\d+\]|assay\[\d+\]|study_variable\[\d+\])_(.+)",
+                        index,
                     )
+                    if match:
+                        identifier_parts = [match.group(1), match.group(2)]
+                        new_identifier = identifier_parts[0]
+                        accession = ""
+                        cv_label = ""
+                        term = ""
+                        if identifier_parts[1].startswith("cv_"):
+                            param_parts = identifier_parts[1].split("_", maxsplit=2)
+                            cv_label = (
+                                param_parts[1].split(":")[0]
+                                if ":" in param_parts[1]
+                                else ""
+                            )
+                            if len(param_parts) > 2:
+                                accession = param_parts[1]
+                                term = param_parts[2]
+                            else:
+                                accession = param_parts[1]
+                                term = ""
+                        else:
+                            cv_label = ""
+                            accession = ""
+                            term = identifier_parts[1]
+                        val = {}
+                        val["param"] = {
+                            "cv_label": cv_label,
+                            "cv_accession": accession,
+                            "name": term,
+                        }
+                        val["identifier"] = new_identifier
+                        val["value"] = new_cell_data
+
+                        new_row[new_header].append(val)
         latest_row = new_row
         new_table.append(new_row)
     return new_table
 
 
-def update_ids(model: BaseModel, idx: Union[None, int] = None):
-    if isinstance(model, IdentifiableModel):
-        if idx is not None:
-            model.id = idx
+def check_ids(
+    model: BaseModel,
+    source: List[str | int],
+    messages: List[MzTabMessage],
+    in_list: bool = False,
+):
+    if isinstance(model, IdentifiableModel) and in_list:
+        if model.id is None:
+            reference = source.copy()
+            reference.append("id")
+            jsonpath = to_jsonpath(reference)
+            messages.append(
+                MzTabMessage(
+                    message=f"{jsonpath} is missing",
+                    category=Category.CROSS_CHECK,
+                    message_type=MessageType.ERROR,
+                    source=jsonpath,
+                )
+            )
+            return
+
     for field in model.__class__.model_fields.keys():
+        reference = source.copy()
+        reference.append(field)
         val = getattr(model, field)
         if isinstance(val, list):
-            for id, item in enumerate(val, start=1):
-                if isinstance(item, BaseModel):
-                    update_ids(item, id)
-        if isinstance(val, Mapping):
-            for _, v in val.items():
-                if isinstance(v, list):
-                    for id, item in enumerate(v, start=1):
-                        if isinstance(item, BaseModel):
-                            update_ids(item, id)
+            for idx, item in enumerate(val):
+                sub_reference = reference.copy()
+                sub_reference.append(idx)
+                if isinstance(item, IdentifiableModel):
+                    check_ids(item, sub_reference, messages, True)
         elif isinstance(val, BaseModel):
-            update_ids(val, None)
+            check_ids(val, reference, messages, False)
 
 
 def parse_tsv_file(

@@ -1,8 +1,8 @@
 import pathlib
+from typing import Annotated, Any, Dict, Literal, Optional, Tuple
 
 from pydantic import ValidationError
 from pydantic.fields import Field
-from typing_extensions import Annotated, Any, Dict, Literal, Optional, Tuple
 
 from mztab_m_io import model
 from mztab_m_io.model.mztabm import MzTabM
@@ -128,7 +128,8 @@ def write(
 ) -> SerializationContext:
     """Write an MzTabM object to a file in TSV, JSON, or YAML format.
 
-    This function serializes an MzTabM object to the specified format and writes it to a file.
+    This function serializes an MzTabM object to the specified format
+    and writes it to a file.
     The target directory will be created if it doesn't exist.
 
     Args:
@@ -140,7 +141,8 @@ def write(
             - "yaml": YAML format
 
     Returns:
-        context: The serialization context containing the result and any validation messages
+        context: The serialization context containing the result
+            and any validation messages
 
     Raises:
         ValueError: If mztabm is None, file_path is empty, or format is invalid

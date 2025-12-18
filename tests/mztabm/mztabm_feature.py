@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from mztab_m_io.model.common import (
     CV,
     Assay,
@@ -33,21 +35,18 @@ def create_full_mztabm():
         description="Example metabolomics study from MS-DIAL export",
         cv=[
             CV(
-                id=1,
                 label="MS",
                 full_name="PSI Mass Spectrometry Ontology",
                 version="4.1.0",
                 uri="https://raw.githubusercontent.com/HUPO-PSI/psi-ms-CV/master/psi-ms.obo",
             ),
             CV(
-                id=2,
                 label="UO",
                 full_name="Unit Ontology",
                 version="14:07:2021",
                 uri="https://raw.githubusercontent.com/bio-ontology-research-group/unit-ontology/master/unit.obo",
             ),
             CV(
-                id=3,
                 label="NCIT",
                 full_name="NCI Thesaurus",
                 version="20.10d",
@@ -115,9 +114,7 @@ def create_full_mztabm():
                 id=1,
                 name=Parameter(name="Thermo Fisher Q Exactive HF"),
                 source=Parameter(cv_label="MS", accession="MS:1000073", name="ESI"),
-                analyzer=[
-                    Parameter(id=1, cv_label="MS", accession="MS:1000084", name="TOF")
-                ],
+                analyzer=[Parameter(cv_label="MS", accession="MS:1000084", name="TOF")],
                 detector=Parameter(
                     cv_label="MS",
                     accession="MS:1000114",
@@ -128,9 +125,7 @@ def create_full_mztabm():
                 id=2,
                 name=Parameter(name="Agilent 6550 iFunnel Q-TOF"),
                 source=Parameter(cv_label="MS", accession="MS:1000073", name="ESI"),
-                analyzer=[
-                    Parameter(id=1, cv_label="MS", accession="MS:1000084", name="TOF")
-                ],
+                analyzer=[Parameter(cv_label="MS", accession="MS:1000084", name="TOF")],
                 detector=Parameter(
                     cv_label="MS",
                     accession="MS:1000114",
@@ -142,8 +137,8 @@ def create_full_mztabm():
                 name=Parameter(name="Bruker impact II"),
                 source=Parameter(cv_label="MS", accession="MS:1000073", name="ESI"),
                 analyzer=[
-                    Parameter(id=1, cv_label="MS", accession="MS:1000084", name="TOF"),
-                    Parameter(id=2, cv_label="MS", accession="MS:1000084", name="TOF"),
+                    Parameter(cv_label="MS", accession="MS:1000084", name="TOF"),
+                    Parameter(cv_label="MS", accession="MS:1000084", name="TOF"),
                 ],
                 detector=Parameter(
                     cv_label="MS",
@@ -165,14 +160,11 @@ def create_full_mztabm():
                     cv_label="MS", accession="MS:1001530", name="mzML unique identifier"
                 ),
                 fragmentation_method=[
-                    Parameter(id=1, cv_label="MS", accession="MS:1000133", name="CID")
+                    Parameter(cv_label="MS", accession="MS:1000133", name="CID")
                 ],
                 scan_polarity=[
                     Parameter(
-                        id=1,
-                        cv_label="MS",
-                        accession="MS:1000130",
-                        name="positive scan",
+                        cv_label="MS", accession="MS:1000130", name="positive scan"
                     )
                 ],
                 hash="de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3",
@@ -192,14 +184,11 @@ def create_full_mztabm():
                     cv_label="MS", accession="MS:1001530", name="mzML unique identifier"
                 ),
                 fragmentation_method=[
-                    Parameter(id=1, cv_label="MS", accession="MS:1000133", name="CID")
+                    Parameter(cv_label="MS", accession="MS:1000133", name="CID")
                 ],
                 scan_polarity=[
                     Parameter(
-                        id=1,
-                        cv_label="MS",
-                        accession="MS:1000130",
-                        name="positive scan",
+                        cv_label="MS", accession="MS:1000130", name="positive scan"
                     )
                 ],
                 hash="de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3",
@@ -219,7 +208,7 @@ def create_full_mztabm():
                     cv_label="MS", accession="MS:1001530", name="mzML unique identifier"
                 ),
                 fragmentation_method=[
-                    Parameter(id=1, cv_label="MS", accession="MS:1000133", name="CID")
+                    Parameter(cv_label="MS", accession="MS:1000133", name="CID")
                 ],
                 scan_polarity=[
                     Parameter(
@@ -237,7 +226,6 @@ def create_full_mztabm():
         ],
         sample=[
             Sample(
-                id=1,
                 name="Sample 1",
                 description="Control sample 1",
                 species=[
@@ -257,27 +245,14 @@ def create_full_mztabm():
                     )
                 ],
                 cell_type=[
-                    Parameter(
-                        id=1,
-                        cv_label="CL",
-                        accession="CL:0000000",
-                        name="cell",
-                    )
+                    Parameter(id=1, cv_label="CL", accession="CL:0000000", name="cell")
                 ],
                 disease=[
-                    Parameter(
-                        id=1,
-                        cv_label="DOID",
-                        accession="DOID:4",
-                        name="disease",
-                    )
+                    Parameter(id=1, cv_label="DOID", accession="DOID:4", name="disease")
                 ],
                 custom=[
                     Parameter(
-                        id=1,
-                        cv_label="MS",
-                        accession="MS:1000000",
-                        name="custom param",
+                        id=1, cv_label="MS", accession="MS:1000000", name="custom param"
                     )
                 ],
             ),
@@ -322,109 +297,85 @@ def create_full_mztabm():
                 description="Control sample 3",
                 species=[
                     Parameter(
-                        id=1,
-                        cv_label="NCIT",
-                        accession="NCIT:C14175",
-                        name="Homo sapiens",
+                        cv_label="NCIT", accession="NCIT:C14175", name="Homo sapiens"
                     )
                 ],
                 tissue=[
                     Parameter(
-                        id=1,
-                        cv_label="BTO",
-                        accession="BTO:0000131",
-                        name="blood plasma",
+                        cv_label="BTO", accession="BTO:0000131", name="blood plasma"
                     )
                 ],
                 cell_type=[
-                    Parameter(id=1, cv_label="CL", accession="CL:0000000", name="cell")
+                    Parameter(cv_label="CL", accession="CL:0000000", name="cell")
                 ],
                 disease=[
-                    Parameter(id=1, cv_label="DOID", accession="DOID:4", name="disease")
+                    Parameter(cv_label="DOID", accession="DOID:4", name="disease")
                 ],
                 custom=[
                     Parameter(
-                        id=1,
-                        cv_label="MS",
-                        accession="MS:1000000",
-                        name="custom param",
+                        cv_label="MS", accession="MS:1000000", name="custom param"
                     )
                 ],
             ),
         ],
         assay=[
             Assay(
-                id=1,
                 name="Cont13_1",
                 ms_run_ref=[1],
                 sample_ref=1,
                 external_uri="http://example.com/assay1",
                 custom=[
                     Parameter(
-                        id=1,
-                        cv_label="MS",
-                        accession="MS:1000000",
-                        name="custom param",
+                        cv_label="MS", accession="MS:1000000", name="custom param"
                     )
                 ],
             ),
             Assay(
-                id=2,
                 name="Cont14_1",
                 ms_run_ref=[2],
                 sample_ref=2,
                 external_uri="http://example.com/assay2",
                 custom=[
                     Parameter(
-                        id=1,
-                        cv_label="MS",
-                        accession="MS:1000000",
-                        name="custom param",
+                        cv_label="MS", accession="MS:1000000", name="custom param"
                     )
                 ],
             ),
             Assay(
-                id=3,
                 name="Cont16_1",
                 ms_run_ref=[3],
                 sample_ref=3,
                 external_uri="http://example.com/assay3",
                 custom=[
                     Parameter(
-                        id=1,
-                        cv_label="MS",
-                        accession="MS:1000000",
-                        name="custom param",
+                        cv_label="MS", accession="MS:1000000", name="custom param"
                     )
                 ],
             ),
         ],
         study_variable=[
             StudyVariable(
-                id=1, name="cont", description="Control group", assay_refs=[1, 2, 3]
+                name="cont", description="Control group", assay_refs=[1, 2, 3]
             ),
             StudyVariable(
-                id=2, name="treated", description="Treated group", assay_refs=[]
+                name="treated", description="Treated group", assay_refs=[]
             ),  # Example with no assays
             StudyVariable(
-                id=3, name="blank", description="Blank samples", assay_refs=[]
+                name="blank", description="Blank samples", assay_refs=[]
             ),  # Example with no assays
         ],
         contact=[
             Contact(
-                id=1,
                 name="John Doe",
                 affiliation="University of Example",
                 email="john.doe@example2.com",
             ),
             Contact(
-                id=2,
                 name="Jane Smith",
                 affiliation="Institute of Science",
                 email="jane.smith@example2.com",
             ),
             Contact(
-                id=3,
                 name="Bob Johnson",
                 affiliation="Research Lab",
                 email="bob.johnson@example2.com",
@@ -432,22 +383,13 @@ def create_full_mztabm():
         ],
         publication=[
             Publication(
-                id=1,
-                publication_items=[
-                    PublicationItem(type="doi", accession="10.1000/182")
-                ],
+                publication_items=[PublicationItem(type="doi", accession="10.1000/182")]
             ),
             Publication(
-                id=2,
-                publication_items=[
-                    PublicationItem(type="pubmed", accession="21345678")
-                ],
+                publication_items=[PublicationItem(type="pubmed", accession="21345678")]
             ),
             Publication(
-                id=3,
-                publication_items=[
-                    PublicationItem(type="doi", accession="10.1000/183")
-                ],
+                publication_items=[PublicationItem(type="doi", accession="10.1000/183")]
             ),
         ],
         quantification_method=Parameter(name="Label-free raw feature quantitation"),
@@ -463,9 +405,9 @@ def create_full_mztabm():
             name="compound identification confidence code in MS-DIAL",
         ),
         id_confidence_measure=[
-            Parameter(id=1, name="MS-DIAL algorithm matching score"),
-            Parameter(id=2, name="Retention time similarity"),
-            Parameter(id=3, name="Dot product"),
+            Parameter(name="MS-DIAL algorithm matching score"),
+            Parameter(name="Retention time similarity"),
+            Parameter(name="Dot product"),
         ],
         colunit_small_molecule=[
             ColumnParameterMapping(
@@ -477,7 +419,7 @@ def create_full_mztabm():
                 param=Parameter(cv_label="UO", accession="UO:0000221", name="dalton"),
             ),
             ColumnParameterMapping(
-                column_name="opt_global_other_attribute",
+                column_name="opt_assay[2]_other_attribute",
                 param=Parameter(
                     cv_label="UO", accession="UO:0000186", name="dimensionless unit"
                 ),
@@ -493,7 +435,7 @@ def create_full_mztabm():
                 param=Parameter(cv_label="UO", accession="UO:0000221", name="dalton"),
             ),
             ColumnParameterMapping(
-                column_name="opt_global_other_attribute",
+                column_name="opt_assay[2]_other_attribute",
                 param=Parameter(
                     cv_label="UO", accession="UO:0000186", name="dimensionless unit"
                 ),
@@ -509,13 +451,10 @@ def create_full_mztabm():
                 param=Parameter(cv_label="UO", accession="UO:0000221", name="dalton"),
             ),
         ],
-        uri=[Uri(id=1, value="http://www.ebi.ac.uk/metabolights/MTBLS1")],
-        external_study_uri=[
-            Uri(id=1, value="http://www.ebi.ac.uk/metabolights/MTBLS1")
-        ],
+        uri=[Uri(value="http://www.ebi.ac.uk/metabolights/MTBLS1")],
+        external_study_uri=[Uri(value="http://www.ebi.ac.uk/metabolights/MTBLS1")],
         custom=[
             Parameter(
-                id=1,
                 cv_label="MS",
                 accession="MS:1000000",
                 name="custom param",
@@ -524,30 +463,21 @@ def create_full_mztabm():
         ],
         sample_processing=[
             SampleProcessing(
-                id=1,
                 sample_processing=[
+                    Parameter(cv_label="SEP", accession="SEP:00142", name="extraction"),
                     Parameter(
-                        id=1, cv_label="SEP", accession="SEP:00142", name="extraction"
+                        cv_label="SEP", accession="SEP:00210", name="centrifugation"
                     ),
-                    Parameter(
-                        id=2,
-                        cv_label="SEP",
-                        accession="SEP:00210",
-                        name="centrifugation",
-                    ),
-                ],
+                ]
             ),
             SampleProcessing(
-                id=2,
                 sample_processing=[
-                    Parameter(
-                        id=1, cv_label="MS", accession="MS:1000085", name="silylation"
-                    )
-                ],
+                    Parameter(cv_label="MS", accession="MS:1000085", name="silylation")
+                ]
             ),
         ],
         derivatization_agent=[
-            Parameter(id=1, cv_label="MS", accession="MS:1000085", name="silylation")
+            Parameter(cv_label="MS", accession="MS:1000085", name="silylation")
         ],
     )
 
@@ -643,7 +573,7 @@ def create_full_mztabm():
                     value="0",
                 ),
                 OptColumnMapping(
-                    identifier="global_other_attribute",
+                    identifier="assay[2]_other_attribute",
                     param=Parameter(
                         cv_label="MS", accession="MS:1000000", name="other attribute"
                     ),
@@ -674,7 +604,7 @@ def create_full_mztabm():
                     value="0",
                 ),
                 OptColumnMapping(
-                    identifier="global_other_attribute",
+                    identifier="assay[2]_other_attribute",
                     param=Parameter(
                         cv_label="MS", accession="MS:1000000", name="other attribute"
                     ),
@@ -705,7 +635,7 @@ def create_full_mztabm():
                     value="0",
                 ),
                 OptColumnMapping(
-                    identifier="global_other_attribute",
+                    identifier="assay[2]_other_attribute",
                     param=Parameter(
                         cv_label="MS", accession="MS:1000000", name="other attribute"
                     ),
@@ -745,7 +675,7 @@ def create_full_mztabm():
                     value="0",
                 ),
                 OptColumnMapping(
-                    identifier="global_other_attribute",
+                    identifier="assay[2]_other_attribute",
                     param=Parameter(
                         cv_label="MS", accession="MS:1000000", name="other attribute"
                     ),
@@ -781,7 +711,7 @@ def create_full_mztabm():
                     value="0",
                 ),
                 OptColumnMapping(
-                    identifier="global_other_attribute",
+                    identifier="assay[2]_other_attribute",
                     param=Parameter(
                         cv_label="MS", accession="MS:1000000", name="other attribute"
                     ),
@@ -817,7 +747,7 @@ def create_full_mztabm():
                     value="0",
                 ),
                 OptColumnMapping(
-                    identifier="global_other_attribute",
+                    identifier="assay[2]_other_attribute",
                     param=Parameter(
                         cv_label="MS", accession="MS:1000000", name="other attribute"
                     ),
@@ -839,7 +769,8 @@ def create_full_mztabm():
     mztabm.validate()
 
     # Optional: save to file to inspect results
-    # mztabm.save("tests/mztabm/generated_full_example.mztab")
+    Path(".temp").mkdir(parents=True, exist_ok=True)
+    mztabm.save(".temp/generated_full_example.mztab")
 
     return mztabm
 

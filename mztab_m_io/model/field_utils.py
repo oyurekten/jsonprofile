@@ -1,7 +1,5 @@
 import re
-
-from pydantic import BaseModel
-from typing_extensions import (
+from typing import (
     Annotated,
     Any,
     List,
@@ -12,6 +10,8 @@ from typing_extensions import (
     get_args,
     get_origin,
 )
+
+from pydantic import BaseModel
 
 try:
     import types

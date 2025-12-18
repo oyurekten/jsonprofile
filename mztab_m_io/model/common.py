@@ -1,16 +1,11 @@
+import abc
+from typing import Annotated, Any, List, Mapping, Optional, OrderedDict, Union
+
 from pydantic import (
     Field,
     ModelWrapValidatorHandler,
     ValidationInfo,
     model_validator,
-)
-from typing_extensions import (
-    Annotated,
-    Any,
-    List,
-    Mapping,
-    Optional,
-    OrderedDict,
 )
 
 from mztab_m_io.model.field_utils import sanitize_str
@@ -753,13 +748,30 @@ class ColumnParameterMapping(
         return handler(val)
 
 
-class OptColumnMapping(MzTabSerializableModel, CustomSerializer):
+class OptionalTableColumn(abc.ABC):
+    """
+    An abstract base class to show that a model is a optional table column.
+    """
+
+    @abc.abstractmethod
+    def get_header(self) -> str:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_value(self) -> Union[int, float, bool, str, MzTabSerializableModel, None]:
+        raise NotImplementedError
+
+
+class OptColumnMapping(MzTabSerializableModel, OptionalTableColumn):
     identifier: Annotated[
         Optional[str],
         Field(
             description="The fully qualified column name.",
             json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(required=True)
+                validation_policy=ValidationPolicy(
+                    required=True,
+                    pattern=r"^global|ms_run\[\d+\]|assay\[\d+\]|study_variable\[\d+\]",
+                )
             ).model_dump(),
         ),
     ] = None
@@ -780,10 +792,17 @@ class OptColumnMapping(MzTabSerializableModel, CustomSerializer):
         ),
     ] = None
 
-    def to_tsv(self, context: SerializationContext) -> str:
-        if self.param:
-            return f"[{self.value}={self.param.to_tsv(context)}]"
-        return f"[{self.value}]=null"
+    def get_header(self) -> str:
+        if self.param and self.param.cv_accession:
+            return (
+                f"opt_{self.identifier}_cv_{self.param.cv_accession}_{self.param.name}"
+            )
+        elif self.param and self.param.name:
+            return f"opt_{self.identifier}_{self.param.name}"
+        return f"opt_{self.identifier}"
+
+    def get_value(self) -> str:
+        return self.value
 
 
 class Comment(MzTabSerializableModel, CustomSerializer):

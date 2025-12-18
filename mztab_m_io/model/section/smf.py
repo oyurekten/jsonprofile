@@ -1,9 +1,10 @@
-from pydantic import Field
-from typing_extensions import (
+from typing import (
     Annotated,
     List,
     Optional,
 )
+
+from pydantic import Field
 
 from mztab_m_io.model.common import OptColumnMapping, Parameter
 from mztab_m_io.model.section.base_table_section import BaseTableSection
@@ -41,7 +42,8 @@ class SmallMoleculeFeature(BaseTableSection):
         Optional[int],
         Field(
             alias="SMF_ID",
-            description="A within file unique identifier for the small molecule feature.",
+            description="A within file unique identifier "
+            "for the small molecule feature.",
             json_schema_extra=TableSerialization(
                 validation_policy=ValidationPolicy(
                     required=True, value_constraint="non-negative-integer"
@@ -75,9 +77,11 @@ class SmallMoleculeFeature(BaseTableSection):
             description="If multiple values are given under SME_ID_REFS, "
             "one of the following codes MUST be provided. "
             "1=Ambiguous identification; "
-            "2=Only different evidence streams for the same molecule with no ambiguity; "
+            "2=Only different evidence streams for the same "
+            "molecule with no ambiguity; "
             "3=Both ambiguous identification and multiple evidence streams. "
-            "If there are no or one value under SME_ID_REFs, this MUST be reported as null.",
+            "If there are no or one value under SME_ID_REFs, "
+            "this MUST be reported as null.",
             json_schema_extra=TableSerialization(
                 validation_policy=ValidationPolicy(minimum=1, maximum=3)
             ).model_dump(),
@@ -132,8 +136,10 @@ class SmallMoleculeFeature(BaseTableSection):
         Optional[float],
         Field(
             description="The apex of the feature on the retention time axis, "
-            "in a Master or aggregate MS run. Retention time MUST be reported in seconds. "
-            "Retention time values for individual MS runs (i.e. before alignment) MAY be "
+            "in a Master or aggregate MS run. Retention time MUST "
+            "be reported in seconds. "
+            "Retention time values for individual MS runs "
+            "(i.e. before alignment) MAY be "
             "reported as optional columns. Retention time SHOULD only be null "
             "in the case of direct infusion MS or other techniques "
             "where a retention time value is absent or unknown. "
@@ -147,8 +153,10 @@ class SmallMoleculeFeature(BaseTableSection):
         Optional[float],
         Field(
             description="The start time of the feature on the retention time axis, "
-            "in a Master or aggregate MS run. Retention time MUST be reported in seconds. "
-            "Retention time start and end SHOULD only be null in the case of direct infusion MS "
+            "in a Master or aggregate MS run. Retention time "
+            "MUST be reported in seconds. "
+            "Retention time start and end SHOULD only be null "
+            "in the case of direct infusion MS "
             "or other techniques where a retention time value is absent or unknown "
             "and MAY be reported in optional columns.",
             json_schema_extra=TableSerialization().model_dump(),
@@ -158,8 +166,10 @@ class SmallMoleculeFeature(BaseTableSection):
         Optional[float],
         Field(
             description="The end time of the feature on the retention time axis, "
-            "in a Master or aggregate MS run. Retention time MUST be reported in seconds. "
-            "Retention time start and end SHOULD only be null in the case of direct infusion MS "
+            "in a Master or aggregate MS run. Retention time "
+            "MUST be reported in seconds. "
+            "Retention time start and end SHOULD only be null "
+            "in the case of direct infusion MS "
             "or other techniques where a retention time value is absent or unknown "
             "and MAY be reported in optional columns.",
             json_schema_extra=TableSerialization().model_dump(),
@@ -191,7 +201,6 @@ class SmallMoleculeFeature(BaseTableSection):
             "Spaces within the parameter's name MUST be replaced by '_'. ",
             json_schema_extra=TableSerialization(
                 multiple_columns=True,
-                column_name_field="identifier",
                 column_value_field="value",
             ).model_dump(),
         ),

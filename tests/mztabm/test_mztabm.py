@@ -9,10 +9,10 @@ def test_read_01():
     """
     tsv file read
     """
-    file_path = "tests/data/example/example.mztab"
+    file_path = "tests/data/example/example2.mztab"
     result: mztabm.MzTabMLoadResult = mztabm.read(file_path)
-    for message in result.messages:
-        print(message.message_type.name, message.message)
+    # for message in result.messages:
+    #     print(message.message_type.name, message.message)
 
     assert result.success
     assert result.mztabm
@@ -27,8 +27,8 @@ def test_read_02():
     file_path = "tests/data/example/example.json"
 
     result: mztabm.MzTabMLoadResult = mztabm.read(file_path, format="json")
-    for message in result.messages:
-        print(message.message_type.name, message.message)
+    # for message in result.messages:
+    #     print(message.message_type.name, message.message)
     assert result.success
     assert result.mztabm
     mztabm_dict = mztabm.convert_to_dict(result.mztabm)
@@ -42,8 +42,8 @@ def test_read_03():
     file_path = "tests/data/example/example.yaml"
 
     result: mztabm.MzTabMLoadResult = mztabm.read(file_path, format="yaml")
-    for message in result.messages:
-        print(message.message_type.name, message.message)
+    # for message in result.messages:
+    #     print(message.message_type.name, message.message)
     assert result.success
     assert result.mztabm
     mztabm_dict = mztabm.convert_to_dict(result.mztabm)
@@ -55,7 +55,7 @@ def test_load_from_dict():
     Load from dict
     """
     file_path = "tests/data/example/example.json"
-    with open(file_path) as f:
+    with Path(file_path).open() as f:
         mztabm_dict = json.load(f)
     mztabm_model = mztabm.load_from_dict(mztabm_dict)
     assert mztabm_model
@@ -68,8 +68,8 @@ def test_write_01():
     file_path = "tests/data/example/example.mztab"
 
     result: mztabm.MzTabMLoadResult = mztabm.read(file_path)
-    for message in result.messages:
-        print(message.message_type.name, message.message)
+    # for message in result.messages:
+    #     print(message.message_type.name, message.message)
     temp_folder = Path(".temp/mztabm")
     target_path = temp_folder / Path("example.mztab")
     try:
@@ -86,8 +86,8 @@ def test_write_02():
     file_path = "tests/data/example/example.json"
 
     result: mztabm.MzTabMLoadResult = mztabm.read(file_path, format="json")
-    for message in result.messages:
-        print(message.message_type.name, message.message)
+    # for message in result.messages:
+    #     print(message.message_type.name, message.message)
     temp_folder = Path(".temp/mztabm")
     target_path = temp_folder / Path("example.json")
     try:
@@ -103,8 +103,8 @@ def test_write_03():
     file_path = "tests/data/example/example.yaml"
 
     result: mztabm.MzTabMLoadResult = mztabm.read(file_path, format="yaml")
-    for message in result.messages:
-        print(message.message_type.name, message.message)
+    # for message in result.messages:
+    #     print(message.message_type.name, message.message)
     temp_folder = Path(".temp/mztabm")
     target_path = temp_folder / Path("example.yaml")
     try:

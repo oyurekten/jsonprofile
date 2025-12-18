@@ -15,7 +15,7 @@ if __name__ == "__main__":
         exit(1)
 
     for message in result.messages:
-        logger.info(f"{message.message_type.name}: {message.message}")
+        logger.info("%s: %s", message.message_type.name, message.message)
     if not result.success:
         exit(1)
     mztabm_dict = convert_to_dict(result.mztabm)

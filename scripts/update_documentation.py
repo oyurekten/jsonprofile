@@ -1,8 +1,8 @@
 import re
 from pathlib import Path
+from typing import Set
 
 from pydantic import BaseModel
-from typing_extensions import Set
 
 from mztab_m_io import MzTabM
 from mztab_m_io.model.field_utils import get_field_type_info
@@ -116,5 +116,4 @@ if __name__ == "__main__":
         f.write("|" + "|".join(["Model", "Link"]) + "|\n")
         f.write("|" + "|".join(["---", "---"]) + "|\n")
         for model in models:
-            print(f"  - {model}: model/{model}.md")
             f.write("|".join([model, f"[Link](model/{model}.md)"]) + "\n")

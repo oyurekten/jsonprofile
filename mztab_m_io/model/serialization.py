@@ -1,12 +1,6 @@
 import abc
 import json
-
-import yaml
-from pydantic import BaseModel
-from pydantic.fields import Field
-from pydantic.functional_validators import ModelWrapValidatorHandler, model_validator
-from pydantic_core.core_schema import ValidationInfo
-from typing_extensions import (
+from typing import (
     Annotated,
     Any,
     Dict,
@@ -18,6 +12,12 @@ from typing_extensions import (
     Type,
     Union,
 )
+
+import yaml
+from pydantic import BaseModel
+from pydantic.fields import Field
+from pydantic.functional_validators import ModelWrapValidatorHandler, model_validator
+from pydantic_core.core_schema import ValidationInfo
 
 from mztab_m_io.model.base import MzTabBaseModel
 from mztab_m_io.model.field_utils import get_field_type_info
@@ -80,7 +80,6 @@ class TableSerialization(ValidationProfile):
     ignore: bool = False
     list_concatenation_str: Optional[str] = None
     multiple_columns: bool = False
-    column_name_field: Optional[str] = None
     column_value_field: Optional[str] = None
     referenced_section: Optional[str] = None
     referenced_field_name: Optional[str] = None
@@ -89,7 +88,6 @@ class TableSerialization(ValidationProfile):
 class TableSectionInfo(MzTabBaseModel):
     list_concatenation_str_dict: Dict[str, str] = {}
     multi_column_fields: Dict[str, str] = {}
-    column_name_fields: Dict[str, str] = {}
     column_value_fields: Dict[str, str] = {}
     data_types: Dict[str, Any] = {}
     list_fields: Dict[str, bool] = {}

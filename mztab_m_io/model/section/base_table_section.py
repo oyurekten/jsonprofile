@@ -1,7 +1,8 @@
+from typing import Annotated, Any, List, Optional, OrderedDict, Union
+
 from pydantic import (
     Field,
 )
-from typing_extensions import Annotated, Any, List, Optional, OrderedDict, Union
 
 from mztab_m_io.model.base import MzTabBaseModel
 from mztab_m_io.model.common import Comment
@@ -71,24 +72,22 @@ class BaseTableSection(MzTabBaseModel, CustomSerializer):
             )
             if not json_extra or json_extra.ignore:
                 continue
-            if json_extra.multiple_columns and not json_extra.column_name_field:
+            if json_extra.multiple_columns and not json_extra.column_value_field:
                 vals = self._serialize_value(getattr(self, field), context)
                 if isinstance(vals, list):
                     row.extend(vals)
                 else:
                     row.append(vals)
 
-            elif json_extra.column_name_field:
+            elif json_extra.column_value_field:
                 custom = OrderedDict()
                 item = self
                 if getattr(item, field):
                     for cust_item in getattr(item, field):
-                        if hasattr(cust_item, json_extra.column_name_field):
-                            col = getattr(cust_item, json_extra.column_name_field)
-                            custom_header = f"{field_name}_{col}"
-                            custom[custom_header] = getattr(
-                                cust_item, json_extra.column_value_field
-                            )
+                        header = cust_item.get_header()
+                        custom[header] = getattr(
+                            cust_item, json_extra.column_value_field
+                        )
                 vals = list(custom.values())
                 if vals:
                     row.extend(self._serialize_value(vals, context))
@@ -108,7 +107,7 @@ class BaseTableSection(MzTabBaseModel, CustomSerializer):
                     else:
                         row.append(self._serialize_value(val, context))
         row_data = [self.prefix]
-        row_data.extend([x for x in row])
+        row_data.extend(row)
         data = "\t".join(row_data)
         if self.comment:
             data += "\n" + "\n".join(
@@ -147,10 +146,6 @@ class BaseTableSection(MzTabBaseModel, CustomSerializer):
                 table_section_info.multi_column_fields[field_name] = (
                     json_extra.multiple_columns
                 )
-            if json_extra.column_name_field:
-                table_section_info.column_name_fields[field_name] = (
-                    json_extra.column_name_field
-                )
             if json_extra.column_value_field:
                 table_section_info.column_value_fields[field_name] = (
                     json_extra.column_value_field
@@ -172,7 +167,7 @@ class BaseTableSection(MzTabBaseModel, CustomSerializer):
             )
             if not json_extra or json_extra.ignore:
                 continue
-            if json_extra.multiple_columns and not json_extra.column_name_field:
+            if json_extra.multiple_columns and not json_extra.column_value_field:
                 if data and data[0]:
                     example = data[0]
                     if hasattr(example, field):
@@ -184,23 +179,21 @@ class BaseTableSection(MzTabBaseModel, CustomSerializer):
                 else:
                     header = f"{field_name}[1]"
                     columns[header] = field_name
-            elif json_extra.column_name_field:
+            elif json_extra.column_value_field:
                 custom = OrderedDict()
                 if data and data[0]:
                     item = data[0]
                     if getattr(item, field_name):
                         for cust_item in getattr(item, field_name):
-                            if hasattr(cust_item, json_extra.column_name_field):
-                                col = getattr(cust_item, json_extra.column_name_field)
-                                custom_header = f"{field_name}_{col}"
-                                custom[custom_header] = col
+                            custom_header = cust_item.get_header()
+                            custom[custom_header] = field_name
                 for item, val in custom.items():
                     columns[item] = val
             else:
                 columns[field_name] = field_name
         header_prefix = cls.model_fields["header_prefix"].get_default()
         headers = [header_prefix]
-        headers.extend([x for x in columns])
+        headers.extend(columns)
         return "\t".join(headers)
 
     @classmethod

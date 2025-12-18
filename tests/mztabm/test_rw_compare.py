@@ -1,15 +1,18 @@
 import decimal
+import logging
 import pathlib
 import re
+from typing import List
 
 import pytest
-from typing_extensions import List
 
 import mztab_m_io
 from mztab_m_io.model.section.sme import SmallMoleculeEvidence
 from mztab_m_io.model.section.smf import SmallMoleculeFeature
 from mztab_m_io.model.section.sml import SmallMoleculeSummary
 from mztab_m_io.model.serialization import TableSerialization
+
+logger = logging.getLogger(__name__)
 
 
 def is_ignored_table_field(field: str):
@@ -100,8 +103,8 @@ def normalize_mztab_content(content: str) -> List[str]:
                 and x != parts[0]
                 and x.strip().split("[")[0] not in default_column_headers
             }
-            if extra_columns:
-                print("Extra columns:", extra_columns)
+            # if extra_columns:
+            # print("Extra columns:", extra_columns)
             sorted = [x for x in base if x not in extra_columns]
             sorted.sort()
 
@@ -153,10 +156,11 @@ def test_mztab_roundtrip(source_path):
     """
     Test roundtrip for a given mztab file.
     """
-    print(f"Testing {source_path.name}")
+    # print(f"Testing {source_path.name}")
 
     # 1. Read
-    # Default format is TSV if not specified, but these are mztab files which are TSV based.
+    # Default format is TSV if not specified, but these are mztab files
+    # which are TSV based.
     # We use from_tsv_file explicitly or read()
     result = mztab_m_io.read(str(source_path))
 
@@ -197,7 +201,11 @@ def test_mztab_roundtrip(source_path):
             val1 = line[cell]
             val2 = target_content[i][cell]
             matched = False
-            if is_scientific_number(val1) or is_scientific_number(val2):
+            if (
+                not line[0].startswith("COM")
+                and (is_scientific_number(val1)
+                or is_scientific_number(val2))
+            ):
                 try:
                     v1 = decimal.Decimal(float(val1)).quantize(
                         decimal.Decimal("1." + "0" * 5),
@@ -210,8 +218,11 @@ def test_mztab_roundtrip(source_path):
                     # compare first 4 digits
                     matched = str(v1)[:4] == str(v2)[:4]
                 except Exception as e:
-                    print(f"Numeric comparison failed: {val1} {val2}: {e}")
                     matched = str(val1) == str(val2)
+                    if not matched:
+                        inconsistencies.append(
+                            f"Numeric comparison failed: {val1} {val2}: {e}"
+                        )
             else:
                 matched = str(val1) == str(val2)
             if not matched:

@@ -54,7 +54,7 @@ def test_from_yaml_file(yaml_example):
 
 
 def test_from_dict(json_example):
-    with open(json_example) as f:
+    with json_example.open() as f:
         data = json.load(f)
 
     model, context = MzTabM.from_dict(data)
@@ -140,7 +140,7 @@ def test_to_json_file(json_example, tmp_path):
     context = model.to_json_file(str(output_file))
     assert context.success
     assert output_file.exists()
-    with open(output_file) as f:
+    with output_file.open() as f:
         data = json.load(f)
     assert isinstance(data, dict)
 
@@ -153,6 +153,6 @@ def test_to_yaml_file(yaml_example, tmp_path):
     assert context.success
     assert output_file.exists()
 
-    with open(output_file) as f:
+    with output_file.open() as f:
         data = yaml.safe_load(f)
     assert isinstance(data, dict)

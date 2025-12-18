@@ -1,9 +1,9 @@
 import datetime
 import re
+from typing import Any, Dict, List, Union
 
 import email_validator
 from pydantic import AnyUrl, BaseModel
-from typing_extensions import Any, Dict, List, Union
 
 from mztab_m_io.model.serialization import (
     EnforcementLevel,
@@ -78,8 +78,10 @@ def check_validation_policies(
                                     message_type=MessageTypeMap.get(
                                         policy.enforcement_level, "required"
                                     ),
-                                    message=f"'{to_jsonpath(list_ref)}' value constraint violation. "
-                                    f"Expected value format {policy.value_constraint}. Current value: {item}",
+                                    message=f"'{to_jsonpath(list_ref)}' value "
+                                    f"constraint violation. "
+                                    f"Expected value format {policy.value_constraint}. "
+                                    f"Current value: {item}",
                                     source=to_jsonpath(list_ref),
                                 )
                             )
@@ -94,8 +96,10 @@ def check_validation_policies(
                                 message_type=MessageTypeMap.get(
                                     policy.enforcement_level, "required"
                                 ),
-                                message=f"'{to_jsonpath(item_ref)}' value constraint violation. "
-                                f"Expected value format {policy.value_constraint}. Current value: {val}",
+                                message=f"'{to_jsonpath(item_ref)}' value "
+                                f"constraint violation. "
+                                f"Expected value format {policy.value_constraint}. "
+                                f"Current value: {val}",
                                 source=to_jsonpath(item_ref),
                             )
                         )
@@ -113,7 +117,8 @@ def check_validation_policies(
                                     message_type=MessageTypeMap.get(
                                         policy.enforcement_level, "required"
                                     ),
-                                    message=f"'{to_jsonpath(list_ref)}' pattern match violation. "
+                                    message=f"'{to_jsonpath(list_ref)}' pattern "
+                                    f"match violation. "
                                     f"Expected pattern {policy.pattern}",
                                     source=to_jsonpath(list_ref),
                                 )
@@ -129,7 +134,8 @@ def check_validation_policies(
                                 message_type=MessageTypeMap.get(
                                     policy.enforcement_level, "required"
                                 ),
-                                message=f"'{to_jsonpath(item_ref)}' pattern match violation."
+                                message=f"'{to_jsonpath(item_ref)}' pattern "
+                                f"match violation."
                                 f"Expected pattern is {policy.pattern}",
                                 source=to_jsonpath(item_ref),
                             )
@@ -192,6 +198,7 @@ def check_validation_policies(
 def cross_check(model: BaseModel, messages: List[MzTabMessage]) -> List[MzTabMessage]:
     if messages is None:
         messages = []
+
     references = _get_reference_dict(model, messages)
 
     reference_hits = _check_referenced_items(model, references, messages)
@@ -253,7 +260,7 @@ def _check_referenced_items(
 ) -> Dict[str, Dict[int, int]]:
     reference_hits: Dict[str, Dict[int, int]] = {}
     for k, v in references.items():
-        reference_hits[k] = {key: 0 for key in v.keys()}
+        reference_hits[k] = dict.fromkeys(v.keys(), 0)
 
     for section, field, subfield, referenced_field in [
         ("metadata", "ms_run", "instrument_ref", "instrument"),
@@ -263,6 +270,15 @@ def _check_referenced_items(
         ("small_molecule_summary", None, "smf_id_refs", "small_molecule_feature"),
         ("small_molecule_feature", None, "sme_id_refs", "small_molecule_evidence"),
         ("small_molecule_evidence", "spectra_ref", "ms_run", "ms_run"),
+        ("small_molecule_summary", "opt", "identifier", "assay"),
+        ("small_molecule_summary", "opt", "identifier", "ms_run"),
+        ("small_molecule_summary", "opt", "identifier", "study_variable"),
+        ("small_molecule_feature", "opt", "identifier", "assay"),
+        ("small_molecule_feature", "opt", "identifier", "ms_run"),
+        ("small_molecule_feature", "opt", "identifier", "study_variable"),
+        ("small_molecule_evidence", "opt", "identifier", "assay"),
+        ("small_molecule_evidence", "opt", "identifier", "ms_run"),
+        ("small_molecule_evidence", "opt", "identifier", "study_variable"),
     ]:
         section_data = getattr(model, section, {})
         if not section_data:
@@ -287,11 +303,14 @@ def _check_referenced_items(
         for target_idx, target in targets:
             if isinstance(target, list):
                 for idx, list_item in enumerate(target):
-                    field_ref_name = (
-                        f"{field_ref}[{idx}]"
-                        if target_idx is None
-                        else f"{field}[{target_idx}] {field_ref}[{idx}]"
-                    )
+                    if field == "opt":
+                        field_ref_name = getattr(list_item, subfield)
+                    else:
+                        field_ref_name = (
+                            f"{field_ref}[{idx}]"
+                            if target_idx is None
+                            else f"{field}[{target_idx}] {field_ref}[{idx}]"
+                        )
                     _check_references(
                         references,
                         field_ref_name,
@@ -352,7 +371,13 @@ def _get_reference_dict(
             )
         )
     if metadata:
-        for indexed_field in ["assay", "instrument", "sample", "ms_run"]:
+        for indexed_field in [
+            "assay",
+            "instrument",
+            "sample",
+            "ms_run",
+            "study_variable",
+        ]:
             vals = getattr(metadata, indexed_field)
             if not vals:
                 continue
@@ -360,15 +385,6 @@ def _get_reference_dict(
             for idx, item in enumerate(vals):
                 if isinstance(item, IdentifiableModel):
                     references[indexed_field][item.id] = item
-                    if item.id != idx + 1:
-                        messages.append(
-                            MzTabMessage(
-                                category=Category.CROSS_CHECK,
-                                message_type=MessageType.WARNING,
-                                message=f"metadata {indexed_field} item at index {idx} "
-                                f"has different id {item.id}",
-                            )
-                        )
                 else:
                     messages.append(
                         MzTabMessage(
@@ -416,6 +432,21 @@ def _check_references(
                         message_type=MessageType.WARNING,
                         message=f"{field_ref} -> {subfield}[{i}] value "
                         f"{referenced_field}[{idx}] is not defined.",
+                    )
+                )
+    elif isinstance(subfield_vals, str) and subfield_vals.startswith(referenced_field):
+        match = re.match(referenced_field + r"\[(\d+)\]", subfield_vals)
+        if match:
+            idx = int(match.group(1))
+            if idx in indexed_items:
+                reference_hits[referenced_field][idx] += 1
+            else:
+                messages.append(
+                    MzTabMessage(
+                        category=Category.CROSS_CHECK,
+                        message_type=MessageType.WARNING,
+                        message=f"{field_ref} -> {subfield} value "
+                        f"{referenced_field}[{idx}] is not defined ",
                     )
                 )
     elif isinstance(subfield_vals, int):
