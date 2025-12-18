@@ -79,7 +79,7 @@ def check_validation_policies(
                                         policy.enforcement_level, "required"
                                     ),
                                     message=f"'{to_jsonpath(list_ref)}' value constraint violation. "
-                                    f"Expected value format {policy.value_constraint}",
+                                    f"Expected value format {policy.value_constraint}. Current value: {item}",
                                     source=to_jsonpath(list_ref),
                                 )
                             )
@@ -95,7 +95,7 @@ def check_validation_policies(
                                     policy.enforcement_level, "required"
                                 ),
                                 message=f"'{to_jsonpath(item_ref)}' value constraint violation. "
-                                f"Expected value format {policy.value_constraint}",
+                                f"Expected value format {policy.value_constraint}. Current value: {val}",
                                 source=to_jsonpath(item_ref),
                             )
                         )

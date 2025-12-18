@@ -1,6 +1,7 @@
 import json
 import pathlib
 from functools import partial
+from pathlib import Path
 
 import yaml
 from pydantic import Field
@@ -146,6 +147,15 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
             context.success = True
         return "\n".join(plain) + "\n"
 
+    def validate(
+        self, context: Optional[ValidationContext] = None
+    ) -> ValidationContext:
+        if not context:
+            context = ValidationContext(messages=[], source_format="json")
+        cross_check(self, context.messages)
+        check_validation_policies([], self, context.messages)
+        return context
+
     @classmethod
     def post_process_model(cls, model: "MzTabM", context: ValidationContext):
         update_ids(model)
@@ -201,6 +211,8 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
     def save(
         self, file_path: str, format: Literal["tsv", "json", "yaml"] = "tsv"
     ) -> SerializationContext:
+        if not file_path:
+            raise ValueError("file_path is required")
         if not format:
             format = "tsv"
         serializers = {
@@ -209,6 +221,28 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
             "yaml": self.to_yaml,
         }
         return self._to_file(file_path, serializers[format], format)
+
+    def load(
+        self,
+        file_path: str,
+        format: Literal["tsv", "json", "yaml"] = "tsv",
+        context: Optional[ValidationContext] = None,
+    ) -> Tuple["MzTabM", ValidationContext]:
+        if not file_path:
+            raise ValueError("file_path is required")
+        if not Path(file_path).exists():
+            raise ValueError("file_path does not exist")
+
+        if not format:
+            format = "tsv"
+        if format == "tsv":
+            return self.from_tsv_file(file_path, context)
+        elif format == "json":
+            return self.from_json_file(file_path, context)
+        elif format == "yaml":
+            return self.from_yaml_file(file_path, context)
+        else:
+            raise ValueError(f"Unknown format: {format}")
 
     def to_yaml_file(
         self, io: Any, context: Optional[SerializationContext] = None

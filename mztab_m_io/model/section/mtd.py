@@ -625,7 +625,15 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
                         if field_name not in new_data:
                             new_data[field_name] = []
                         current_list = new_data[field_name]
-                        if isinstance(sub_field, MzTabBaseModel):
+                        if isinstance(sub_field, list):
+                            for item in sub_field:
+                                if isinstance(item, MzTabBaseModel):
+                                    current_list.append(item)
+                                else:
+                                    current_list.append(
+                                        field_type.model_validate(item, by_alias=True)
+                                    )
+                        elif isinstance(sub_field, MzTabBaseModel):
                             current_list.append(sub_field)
                         else:
                             current_list.append(
