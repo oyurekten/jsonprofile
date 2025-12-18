@@ -171,4 +171,4 @@ mztabm.write(mztabm=mztabm_model, file_path="./output.mztab")
 
 ## Authors
 
-ozgury@ebi.ac.uk, nils.hoffmann@isas.de
+ozgury@ebi.ac.uk, n.hoffmann@fz-juelich.de
