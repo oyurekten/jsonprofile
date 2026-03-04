@@ -296,6 +296,10 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
             description="A description of derivatization agents "
             "applied to small molecules, "
             "using userParams or CV terms where possible.",
+            examples=[
+                "MTD\tderivatization_agent[1]\t[XLMOD, XLMOD:07014, "
+                "N-methyl-N-t-butyldimethylsilyltrifluoroacetamide, ]"
+            ],
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
@@ -408,6 +412,7 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
         Optional[List[Parameter]],
         Field(
             description="Any additional parameters describing the analysis reported.",
+            examples=["MTD\tcustom\t[MS, MS:1000001, custom param, value]"],
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
@@ -439,6 +444,9 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
             description="Defines what type of units are reported "
             "in the small molecule summary quantification / abundance fields",
             alias="small_molecule-quantification_unit",
+            examples=[
+                "MTD\tsmall_molecule-quantification_unit\t[MS, MS:1001113, peak area, ]"
+            ],
             json_schema_extra=MetadataSerialization(
                 validation_policy=ValidationPolicy(required=True)
             ).model_dump(),
@@ -451,6 +459,10 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
             description="Defines what type of units are reported in "
             "the small molecule feature quantification / abundance fields.",
             alias="small_molecule_feature-quantification_unit",
+            examples=[
+                "MTD\tsmall_molecule_feature-quantification_unit\t"
+                "[MS, MS:1001113, peak area, ]"
+            ],
             json_schema_extra=MetadataSerialization(
                 validation_policy=ValidationPolicy(required=True)
             ).model_dump(),
@@ -464,6 +476,10 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
             "to small molecule identifications MUST be specified "
             "if not using the default codes.",
             alias="small_molecule-identification_reliability",
+            examples=[
+                "MTD\tsmall_molecule-identification_reliability\t"
+                "[MS, MS:1000932, identification reliability, ]"
+            ],
             json_schema_extra=MetadataSerialization(
                 validation_policy=ValidationPolicy(required=True)
             ).model_dump(),
@@ -489,6 +505,11 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
             "if there is no suitable version that can be annotated. "
             "uri: The URI to the database. "
             "For the 'no database' case, 'null' must be reported. ",
+            examples=[
+                "MTD\tdatabase[1]\t[MS, MS:1002992, HMDB, 4.0]",
+                "MTD\tdatabase[1]-prefix\tHMDB",
+                "MTD\tdatabase[1]-uri\thttp://www.hmdb.ca/metabolites/",
+            ],
             json_schema_extra=MetadataSerialization(
                 validation_policy=ValidationPolicy(required=True, minimum=1)
             ).model_dump(),
@@ -547,6 +568,10 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
             "This field MUST NOT be used to define a unit for quantification columns. "
             "The unit used for small molecule quantification values MUST be set "
             "in small_molecule_feature-quantification_unit.",
+            examples=[
+                "MTD\tcolunit-small_molecule_feature\tretention_time="
+                "[UO, UO:0000031, minute, ]"
+            ],
             json_schema_extra=MetadataSerialization(
                 non_indexed_list_value=True,
                 json_schema_extra=MetadataSerialization().model_dump(),
@@ -562,6 +587,10 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
             "small molecule evidence section. "
             "The format of the value has to be {column name}="
             "{Parameter defining the unit}.",
+            examples=[
+                "MTD\tcolunit-small_molecule_evidence\tretention_time="
+                "[UO, UO:0000031, minute, ]"
+            ],
             json_schema_extra=MetadataSerialization(
                 non_indexed_list_value=True,
                 json_schema_extra=MetadataSerialization().model_dump(),

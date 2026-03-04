@@ -43,14 +43,14 @@ class Parameter(CompactObjectModel, IdentifiableModel, CustomSerializer):
     name: Annotated[
         Optional[str],
         Field(
-            description="name",
+            description="The name of the parameter term.",
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = ""
     value: Annotated[
         Optional[str],
         Field(
-            description="value",
+            description="The user value for the parameter.",
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = ""
@@ -166,6 +166,7 @@ class Software(IdentifiableModel):
     parameter: Annotated[
         Optional[Parameter],
         Field(
+            description="The software utilized.",
             json_schema_extra=MetadataSerialization(
                 object_level_value=True,
             ).model_dump(),
@@ -366,13 +367,14 @@ class MsRun(IdentifiableModel):
     format: Annotated[
         Optional[Parameter],
         Field(
-            description="",
+            description="The format of the MS run file.",
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     id_format: Annotated[
         Optional[Parameter],
         Field(
+            description="The format of the IDs in the MS run file.",
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
@@ -400,6 +402,7 @@ class MsRun(IdentifiableModel):
     hash_method: Annotated[
         Optional[Parameter],
         Field(
+            description="The method used to calculate the hash.",
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
@@ -700,7 +703,7 @@ class ColumnParameterMapping(
     param: Annotated[
         Optional[Parameter],
         Field(
-            description="The database name.",
+            description="The parameter defining the unit.",
             json_schema_extra=MetadataSerialization(
                 object_level_value=True,
                 validation_policy=ValidationPolicy(required=True),

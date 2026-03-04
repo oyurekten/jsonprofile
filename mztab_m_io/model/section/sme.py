@@ -45,6 +45,7 @@ class SmallMoleculeEvidence(BaseTableSection):
             alias="SME_ID",
             description="A within file unique identifier for the small "
             "molecule evidence result.",
+            examples=[1],
             json_schema_extra=TableSerialization(
                 validation_policy=ValidationPolicy(required=True),
             ).model_dump(),
@@ -63,6 +64,7 @@ class SmallMoleculeEvidence(BaseTableSection):
             "For example, if fragmentation spectra have been searched "
             "then the ID may be the spectrum reference, "
             "or for accurate mass search, the ms_run[2]:458.75.",
+            examples=["ms_run[1]:mass=278.65;rt=376.5"],
             json_schema_extra=TableSerialization(
                 validation_policy=ValidationPolicy(required=True),
             ).model_dump(),
@@ -83,6 +85,7 @@ class SmallMoleculeEvidence(BaseTableSection):
             "If no putative identification can be reported for a "
             "particular database, "
             "it MUST be reported as the database prefix followed by null.",
+            examples=["CID:00027395"],
             json_schema_extra=TableSerialization(
                 validation_policy=ValidationPolicy(required=True),
             ).model_dump(),
@@ -104,6 +107,7 @@ class SmallMoleculeEvidence(BaseTableSection):
             "reported should "
             "refer to the neutral form. Charge state is reported by the charge field.  "
             "Example N-acetylglucosamine would be encoded by the string “C8H15NO6” ",
+            examples=["C17H20N4O2"],
             json_schema_extra=TableSerialization().model_dump(),
         ),
     ] = None
@@ -113,6 +117,7 @@ class SmallMoleculeEvidence(BaseTableSection):
             description="The potential molecule's structure in the "
             "simplified molecular-input "
             "line-entry system (SMILES) for the small molecule.",
+            examples=["C1=CC=C(C=C1)CCNC(=O)CCNNC(=O)C2=CC=NC=C2"],
             json_schema_extra=TableSerialization().model_dump(),
         ),
     ] = None
@@ -121,6 +126,11 @@ class SmallMoleculeEvidence(BaseTableSection):
         Field(
             description="A standard IUPAC International Chemical Identifier (InChI) "
             "for the given substance.",
+            examples=[
+                "InChI=1S/C17H20N4O2/c22-16(19-12-6-14-4-2-1-3-5-14)9-13-"
+                "20-21-17(23)15-7-10-18-11-8-15/h1-5,7-8,10-11,20H,6,9,"
+                "12-13H2,(H,19,22)(H,21,23)"
+            ],
             json_schema_extra=TableSerialization().model_dump(),
         ),
     ] = None
@@ -130,6 +140,9 @@ class SmallMoleculeEvidence(BaseTableSection):
             description="The small molecule's chemical/common name, "
             "or general description "
             "if a chemical name is unavailable.",
+            examples=[
+                "N-(2-phenylethyl)-3-[2-(pyridine-4-carbonyl)hydrazinyl]propanamide"
+            ],
             json_schema_extra=TableSerialization().model_dump(),
         ),
     ] = None
@@ -138,6 +151,7 @@ class SmallMoleculeEvidence(BaseTableSection):
         Field(
             description="A URI pointing to the small molecule's entry in a database "
             "(e.g., the small molecule's HMDB, Chebi or KEGG entry).",
+            examples=["http://www.hmdb.ca/metabolites/HMDB00054"],
             json_schema_extra=TableSerialization(
                 validation_policy=ValidationPolicy(value_constraint="any-url"),
             ).model_dump(),
@@ -146,21 +160,23 @@ class SmallMoleculeEvidence(BaseTableSection):
     derivatized_form: Annotated[
         Optional[Parameter],
         Field(
-            description="Derivatization form",
+            description="The derivatized form of the small molecule, if the "
+            "identification was based on a specific derivative (e.g. 2 TMS). "
+            "This MUST be specified using CV terms (where possible) otherwise “null”.",
+            examples=["[CHEBI, CHEBI:51088, trimethylsilyl group, 3]"],
             json_schema_extra=TableSerialization().model_dump(),
         ),
     ] = None
     adduct_ion: Annotated[
         Optional[str],
         Field(
-            description="The assumed classification of this molecule's "
-            "adduct ion after detection, "
-            "following the general style in the 2013 IUPAC "
-            "recommendations on terms relating to MS "
-            "e.g. [M+H]+, [M+Na]1+, [M+NH4]1+, [M-H]1-, [M+Cl]1-. "
-            "If the adduct classification is ambiguous with regards "
-            "to identification evidence "
-            "it MAY be null.",
+            description="The assumed classification of this molecule’s adduct "
+            "ion after detection, following the general style in the 2013 "
+            "IUPAC recommendations on terms relating to MS e.g. [M+H]1+, "
+            "[M+Na]1+, [M+NH4]1+, [M-H]1-, [M+Cl]1-. If the adduct "
+            "classification is ambiguous with regards to identification "
+            "evidence it MAY be null.",
+            examples=["[M+H]+"],
             json_schema_extra=TableSerialization(
                 validation_policy=ValidationPolicy(
                     pattern=r"^\[\d*M([+-][\w\d]+)*\]\d*[+-]$"
@@ -171,10 +187,10 @@ class SmallMoleculeEvidence(BaseTableSection):
     exp_mass_to_charge: Annotated[
         Optional[float],
         Field(
-            description="The experimental mass/charge value for the "
-            "precursor ion. If multiple adduct forms have been combined "
-            "into a single identification event/search, then a single value "
-            "e.g. for the protonated form SHOULD be reported here.",
+            "ion. If multiple adduct forms have been combined into a "
+            "single identification event/search, then a single value e.g. "
+            "for the protonated form SHOULD be reported here.",
+            examples=[1234.5],
             json_schema_extra=TableSerialization(
                 validation_policy=ValidationPolicy(required=True),
             ).model_dump(),
@@ -186,6 +202,7 @@ class SmallMoleculeEvidence(BaseTableSection):
             description="The small molecule evidence's charge value "
             "using positive integers "
             "both for positive and negative polarity modes.",
+            examples=[1],
             json_schema_extra=TableSerialization(
                 validation_policy=ValidationPolicy(required=True),
             ).model_dump(),
@@ -196,6 +213,7 @@ class SmallMoleculeEvidence(BaseTableSection):
         Field(
             description="The theoretical mass/charge value for the small molecule or "
             "the database mass/charge value (for a spectral library match).",
+            examples=[1234.71],
             json_schema_extra=TableSerialization(
                 validation_policy=ValidationPolicy(required=True),
             ).model_dump(),
@@ -222,6 +240,7 @@ class SmallMoleculeEvidence(BaseTableSection):
             "If a fragmentation spectrum has not been used, the value should indicate "
             "the ms_run to which "
             "is identification is mapped e.g. “ms_run[1]”. ",
+            examples=[["ms_run[1]:index=5"]],
             json_schema_extra=TableSerialization(
                 list_concatenation_str="|",
                 validation_policy=ValidationPolicy(required=True, minimum=1),
@@ -231,7 +250,9 @@ class SmallMoleculeEvidence(BaseTableSection):
     identification_method: Annotated[
         Optional[Parameter],
         Field(
-            description="identification method",
+            description="The search engine or algorithm used for the "
+            "identification. This SHOULD be specified using CV terms.",
+            examples=["[MS, MS:1001477, SpectraST,]"],
             json_schema_extra=TableSerialization(
                 validation_policy=ValidationPolicy(required=True),
             ).model_dump(),
@@ -240,7 +261,9 @@ class SmallMoleculeEvidence(BaseTableSection):
     ms_level: Annotated[
         Optional[Parameter],
         Field(
-            description="MS level",
+            description="The MS level of the spectrum used for the identification. "
+            "This SHOULD be specified using CV terms.",
+            examples=["[MS, MS:1000511, ms level, 2]"],
             json_schema_extra=TableSerialization(
                 validation_policy=ValidationPolicy(required=True),
             ).model_dump(),
@@ -252,6 +275,7 @@ class SmallMoleculeEvidence(BaseTableSection):
             description="Any statistical value or score for the identification. "
             "The metadata section reports the type of score used, "
             "as id_confidence_measure[1-n] of type Param.",
+            examples=[[0.7]],
             json_schema_extra=TableSerialization(
                 multiple_columns=True,
                 json_schema_extra=TableSerialization().model_dump(),
@@ -261,11 +285,11 @@ class SmallMoleculeEvidence(BaseTableSection):
     rank: Annotated[
         Optional[int],
         Field(
-            description="The rank of this identification from this approach as "
-            "increasing integers "
-            "from 1 (best ranked identification). Ties (equal score) are "
-            "represented by using the same rank "
-            "- defaults to 1 if there is no ranking system used.",
+            description="The rank of this identification from this approach "
+            "as increasing integers from 1 (best ranked identification). "
+            "Ties (equal score) are represented by using the same rank - "
+            "defaults to 1 if there is no ranking system used.",
+            examples=[1],
             json_schema_extra=TableSerialization(
                 validation_policy=ValidationPolicy(
                     required=True, value_constraint="positive-integer"
@@ -287,6 +311,10 @@ class SmallMoleculeEvidence(BaseTableSection):
             "CV parameter accessions MAY be used for optional columns following "
             "the format: opt{identifier}_cv_{accession}_{parameter name}. "
             "Spaces within the parameter's name MUST be replaced by '_'. ",
+            examples=[
+                "opt_assay[1]_my_value=My value",
+                "opt_global_another_value=some other value",
+            ],
             json_schema_extra=TableSerialization(
                 multiple_columns=True,
                 column_value_field="value",

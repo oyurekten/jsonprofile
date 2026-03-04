@@ -201,10 +201,8 @@ def test_mztab_roundtrip(source_path):
             val1 = line[cell]
             val2 = target_content[i][cell]
             matched = False
-            if (
-                not line[0].startswith("COM")
-                and (is_scientific_number(val1)
-                or is_scientific_number(val2))
+            if not line[0].startswith("COM") and (
+                is_scientific_number(val1) or is_scientific_number(val2)
             ):
                 try:
                     v1 = decimal.Decimal(float(val1)).quantize(

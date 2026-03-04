@@ -39,7 +39,9 @@ class SmallMoleculeSummary(BaseTableSection):
         Optional[int],
         Field(
             alias="SML_ID",
-            description="A within file unique identifier for the small molecule.",
+            description="A within file unique identifier "
+            "for the small molecule summary.",
+            examples=[1],
             json_schema_extra=TableSerialization(
                 validation_policy=ValidationPolicy(
                     required=True, value_constraint="non-negative-integer"
@@ -51,15 +53,15 @@ class SmallMoleculeSummary(BaseTableSection):
         Optional[List[int]],
         Field(
             alias="SMF_ID_REFS",
-            description="References to all the features "
-            "on which quantitation has been based (SMF elements) "
-            "via referencing SMF_ID values. "
-            "Multiple values SHOULD be provided as a | separated list. "
-            "This MAY be null only if this is a Summary file.",
+            description="References to the small molecule features (SMF elements) "
+            "via referencing SMF_ID values. Multiple values MAY be provided "
+            "as a | separated list to indicate which features were used "
+            "to aggregate the SML row.",
+            examples=[[2, 3, 11]],
             json_schema_extra=TableSerialization(
                 list_concatenation_str="|",
                 validation_policy=ValidationPolicy(
-                    minimum=1, value_constraint="non-negative-integer"
+                    value_constraint="non-negative-integer"
                 ),
             ).model_dump(),
         ),
@@ -77,9 +79,9 @@ class SmallMoleculeSummary(BaseTableSection):
             "by the resource description (prefix) followed by a colon, "
             "as specified in the metadata section. "
             "A null value MAY be provided if the identification "
-            "is sufficiently ambiguous "
-            "as to be meaningless for reporting or "
+            "is sufficiently ambiguous as to be meaningless for reporting or "
             "the small molecule has not been identified.",
+            examples=[["CID:00027395"], ["HMDB:HMDB0001847"], ["null"]],
             json_schema_extra=TableSerialization(
                 list_concatenation_str="|",
             ).model_dump(),
@@ -88,22 +90,18 @@ class SmallMoleculeSummary(BaseTableSection):
     chemical_formula: Annotated[
         Optional[List[str]],
         Field(
-            description="A list of | separated potential chemical formulae "
-            "of the reported compound. "
-            "The number of values provided MUST match the number of entities "
-            "reported under “database_identifier”, "
-            "even if this leads to redundant reporting of information "
-            "(i.e. if ambiguity can be resolved in the chemical formula), "
-            "and the validation software will throw an error "
-            "if the number of | symbols does not match. “null” values "
-            "between bars are allowed. "
-            "This should be specified in Hill notation (EA Hill 1900), "
-            "i.e. elements in the order C, H and then alphabetically "
-            "all other elements. Counts of one may be omitted. "
-            "Elements should be capitalized properly to "
-            "avoid confusion (e.g., “CO” vs. “Co”). "
-            "The chemical formula reported should refer to the neutral form."
-            "Example: N-acetylglucosamine would be encoded by the string “C8H15NO6”.",
+            description="The chemical formula of the identified compound e.g. "
+            "in a database, assumed to match the theoretical mass to charge "
+            "(in some cases this will be the derivatized form, including "
+            "adducts and protons). This should be specified in Hill notation "
+            "(EA Hill 1900), i.e. elements in the order C, H and then "
+            "alphabetically all other elements. Counts of one may be omitted. "
+            "Elements should be capitalized properly to avoid confusion "
+            "(e.g., “CO” vs. “Co”). The chemical formula reported should "
+            "refer to the neutral form. Charge state is reported by the "
+            "charge field in the SME and SMF section.\n"
+            "Example N-acetylglucosamine would be encoded by the string “C8H15NO6”",
+            examples=[["C17H20N4O2"]],
             json_schema_extra=TableSerialization(
                 list_concatenation_str="|",
             ).model_dump(),
@@ -112,15 +110,9 @@ class SmallMoleculeSummary(BaseTableSection):
     smiles: Annotated[
         Optional[List[str]],
         Field(
-            description="A list of | separated potential molecule structures "
-            "in the simplified molecular-input line-entry system (SMILES) "
-            "for the small molecule. "
-            "The number of values provided MUST match the number "
-            "of entities reported "
-            "under “database_identifier”, and the validation software "
-            "will throw an error "
-            "if the number of | symbols does not match. "
-            "“null” values between bars are allowed.",
+            description="The potential molecule’s structure in the simplified "
+            "molecular-input line-entry system (SMILES) for the small molecule.",
+            examples=[["C1=CC=C(C=C1)CCNC(=O)CCNNC(=O)C2=CC=NC=C2"]],
             json_schema_extra=TableSerialization(
                 list_concatenation_str="|",
             ).model_dump(),
@@ -129,15 +121,15 @@ class SmallMoleculeSummary(BaseTableSection):
     inchi: Annotated[
         Optional[List[str]],
         Field(
-            description="A list of | separated potential standard "
-            "IUPAC International Chemical Identifier (InChI) "
-            "of the given substance.  The number of values provided "
-            "MUST match the number of entities reported under "
-            "“database_identifier”, even if this leads to redundant information "
-            "being reported (i.e. if ambiguity can be resolved in the InChi), "
-            "and the validation software will throw an error "
-            "if the number of | symbols does not match. "
-            "“null” values between bars are allowed. ",
+            description="A standard IUPAC International Chemical Identifier "
+            "(InChI) for the given substance.",
+            examples=[
+                [
+                    "InChI=1S/C17H20N4O2/c22-16(19-12-6-14-4-2-1-3-5-14)9-13-20-"
+                    "21-17(23)15-7-10-18-11-8-15/h1-5,7-8,10-11,20H,6,9,12-13H2,"
+                    "(H,19,22)(H,21,23)"
+                ]
+            ],
             json_schema_extra=TableSerialization(
                 list_concatenation_str="|",
             ).model_dump(),
@@ -146,14 +138,11 @@ class SmallMoleculeSummary(BaseTableSection):
     chemical_name: Annotated[
         Optional[List[str]],
         Field(
-            description="A list of | separated possible chemical/common names "
-            "for the small molecule, or general description if a chemical name "
-            "is unavailable. Multiple names are only to demonstrate ambiguity "
-            "in the identification. The number of values provided MUST match "
-            "the number of entities reported under “database_identifier”, "
-            "and the validation software will throw an error "
-            "if the number of | symbols does not match. "
-            "“null” values between bars are allowed. ",
+            description="The small molecule’s chemical/common name, or "
+            "general description if a chemical name is unavailable.",
+            examples=[
+                ["N-(2-phenylethyl)-3-[2-(pyridine-4-carbonyl)hydrazinyl]propanamide"]
+            ],
             json_schema_extra=TableSerialization(
                 list_concatenation_str="|",
             ).model_dump(),
@@ -162,13 +151,13 @@ class SmallMoleculeSummary(BaseTableSection):
     uri: Annotated[
         Optional[List[str]],
         Field(
-            description="A URI pointing to the small molecule's entry "
-            "in a reference database (e.g., the small molecule's HMDB "
-            "or KEGG entry). The number of values provided MUST match "
-            "the number of entities reported under “database_identifier”, "
-            "and the validation software will throw an error "
-            "if the number of | symbols does not match. "
-            "“null” values between bars are allowed.",
+            description="A URI pointing to the small molecule’s entry in a "
+            "database (e.g., the small molecule’s HMDB, Chebi or KEGG entry).",
+            examples=[
+                ["http://www.genome.jp/dbget-bin/www_bget?cpd:C00031"],
+                ["http://www.hmdb.ca/metabolites/HMDB0001847"],
+                ["http://identifiers.org/hmdb/HMDB0001847"],
+            ],
             json_schema_extra=TableSerialization(
                 list_concatenation_str="|",
                 validation_policy=ValidationPolicy(
@@ -180,17 +169,9 @@ class SmallMoleculeSummary(BaseTableSection):
     theoretical_neutral_mass: Annotated[
         Optional[List[Optional[float]]],
         Field(
-            description="The small molecule's precursor's theoretical neutral mass.  "
-            "The number of values provided MUST match the number of entities "
-            "reported under “database_identifier”, and the validation software will "
-            "throw an error if the number of | symbols does not match. "
-            "“null” values "
-            "(in general and between bars) are allowed for molecules "
-            "that have not been "
-            "identified only, or for molecules where the neutral mass "
-            "cannot be calculated. "
-            "In these cases, the SML entry SHOULD reference features "
-            "in which exp_mass_to_charge values are captured. ",
+            description="The theoretical neutral mass of the small molecule. "
+            "This should be calculated from the chemical formula.",
+            examples=[[1234.5]],
             json_schema_extra=TableSerialization(
                 list_concatenation_str="|",
             ).model_dump(),
@@ -199,13 +180,12 @@ class SmallMoleculeSummary(BaseTableSection):
     adduct_ions: Annotated[
         Optional[List[AdductIon]],
         Field(
-            description="A | separated list of detected adducts "
-            "for this this molecule, "
-            "following the general style in the 2013 IUPAC recommendations "
-            "on terms relating to MS "
-            "e.g. [M+H]1+, [M+Na]1+, [M+NH4]1+, [M-H]1-, [M+Cl]1-, [M+H]1+. "
-            "If the adduct classification is ambiguous with regards to "
-            "identification evidence it MAY be null. ",
+            description="A | separated list of the detected adduct ion "
+            "forms for this small molecule. The terms should follow the "
+            "general style in the 2013 IUPAC recommendations on terms "
+            "relating to MS e.g. [M+H]1+, [M+Na]1+, [M+NH4]1+, "
+            "[M-H]1-, [M+Cl]1-.",
+            examples=[["[M+H]1+", "[M+Na]1+"]],
             json_schema_extra=TableSerialization(
                 list_concatenation_str="|",
             ).model_dump(),
@@ -215,58 +195,33 @@ class SmallMoleculeSummary(BaseTableSection):
         Optional[str],
         Field(
             description="The reliability of the given small molecule identification. "
-            "This must be supplied by the resource "
-            "and MUST be reported as an integer between 1-4: "
-            "identified metabolite (1)      "
-            "putatively annotated compound (2)      "
-            "putatively characterized compound class (3)      "
-            "unknown compound (4)  "
-            "These MAY be replaced using a suitable CV term in the metadata section "
-            "e.g. to use MSI recommendation levels (see Section 6.2.57 for details).  "
-            "The following CV terms are already available within the PSI MS CV. "
-            "Future schemes may be implemented by extending the PSI MS CV with "
-            "new terms and associated levels.  "
-            "The MSI has recently discussed an extension of the original "
-            "four level scheme into a five level scheme MS:1002896 "
-            "(compound identification confidence level) with levels isolated, "
-            "pure compound, full stereochemistry (0)      "
-            "reference standard match or full 2D structure (1)      "
-            "unambiguous diagnostic evidence (literature, database) (2)      "
-            "most likely structure, including isomers, "
-            "substance class or substructure match (3) "
-            "unknown compound (4)  "
-            "For high-resolution MS, the following term and its levels may be used: "
-            "MS:1002955 (hr-ms compound identification confidence level) "
-            "with levels      "
-            "confirmed structure (1)      "
-            "probable structure (2)          "
-            "unambiguous ms library match (2a)          "
-            "diagnostic evidence (2b)      "
-            "tentative candidates (3)      "
-            "unequivocal molecular formula (4)      "
-            "exact mass (5)  "
-            "A String data type is set to allow for different systems "
-            "to be specified in the metadata section. ",
+            "This must be supplied by the resource and should be reported as an "
+            "integer between 1-4:\n\n"
+            "1: identified, rigorous. ...\n"
+            "2: identified. ...\n"
+            "3: putatively characterized class. ...\n"
+            "4: unknown. ...",
+            examples=["3", "0", "2a"],
             json_schema_extra=TableSerialization().model_dump(),
         ),
     ] = None
     best_id_confidence_measure: Annotated[
         Optional[Parameter],
         Field(
-            description="The approach or database search that identified "
-            "this small molecule with highest confidence.",
+            description="The small molecule confidence measure/score of the "
+            "best identification for this small molecule summary. The type "
+            "of the value is defined by the best_id_confidence_measure CV "
+            "parameter. The value is reported in the best_id_confidence_value column.",
+            examples=["[MS, MS:1001477, SpectraST,,]"],
             json_schema_extra=TableSerialization().model_dump(),
         ),
     ] = None
     best_id_confidence_value: Annotated[
         Optional[float],
         Field(
-            description="The best confidence measure in identification "
-            "(for this type of score) for the given small molecule across all assays. "
-            "The type of score MUST be defined in the metadata section. "
-            "If the small molecule was not identified by the specified search engine, "
-            "“null” MUST be reported. If the confidence measure does not "
-            "report a numerical confidence value, “null” SHOULD be reported.",
+            description="The small molecule confidence measure/score value "
+            "of the best identification for this small molecule summary.",
+            examples=[0.85],
             json_schema_extra=TableSerialization(
                 validation_policy=ValidationPolicy(
                     required=True, enforcement_level="recommended"
@@ -277,12 +232,10 @@ class SmallMoleculeSummary(BaseTableSection):
     abundance_assay: Annotated[
         Optional[List[Optional[float]]],
         Field(
-            description="The small molecule's abundance in every assay described "
-            "in the metadata section MUST be reported. "
-            "Null or zero values may be reported "
-            "as appropriate. 'null' SHOULD be used to report missing quantities, "
-            "while zero SHOULD be used to indicate a present but not reliably "
-            "quantifiable value (e.g. below a minimum noise threshold).",
+            description="The small molecule’s abundance in every assay "
+            "described in the metadata section MUST be reported. "
+            "Null or zero values may be reported as appropriate.",
+            examples=[[12340.0]],
             json_schema_extra=TableSerialization(
                 multiple_columns=True,
             ).model_dump(),
@@ -291,16 +244,10 @@ class SmallMoleculeSummary(BaseTableSection):
     abundance_study_variable: Annotated[
         Optional[List[Optional[float]]],
         Field(
-            description="The small molecule's abundance "
-            "in all the study variables described "
-            "in the metadata section (study_variable[1-n]_average_function), "
-            "calculated using the method as described in the Metadata section "
-            "(default = arithmetic mean across assays). "
-            "Null or zero values may be reported as appropriate. "
-            "'null' SHOULD be used to report missing quantities, "
-            "while zero SHOULD be used to indicate a present "
-            "but not reliably quantifiable value "
-            "(e.g. below a minimum noise threshold).",
+            description="The small molecule’s abundance in every study variable "
+            "described in the metadata section. Null or zero values "
+            "may be reported as appropriate.",
+            examples=[[1230.0]],
             json_schema_extra=TableSerialization(
                 multiple_columns=True,
             ).model_dump(),
@@ -309,11 +256,10 @@ class SmallMoleculeSummary(BaseTableSection):
     abundance_variation_study_variable: Annotated[
         Optional[List[Optional[float]]],
         Field(
-            description="A measure of the variability of the study variable "
-            "abundance measurement, calculated using the method as described "
-            "in the metadata section (study_variable[1-n]_average_function), "
-            "with a default = arithmethic co-efficient of variation of "
-            "the small molecule's abundance in the given study variable.",
+            description="The small molecule’s abundance variation in "
+            "every study variable described in the metadata section. "
+            "Null or zero values may be reported as appropriate.",
+            examples=[[0.2]],
             json_schema_extra=TableSerialization(
                 multiple_columns=True,
             ).model_dump(),
@@ -333,6 +279,7 @@ class SmallMoleculeSummary(BaseTableSection):
             "CV parameter accessions MAY be used for optional columns "
             "following the format: opt{identifier}_cv_{accession}_{parameter name}. "
             "Spaces within the parameter's name MUST be replaced by '_'. ",
+            examples=["opt_global_cv_MS:1002217_decoy_peptide=null"],
             json_schema_extra=TableSerialization(
                 multiple_columns=True,
                 column_value_field="value",
