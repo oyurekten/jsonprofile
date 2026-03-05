@@ -23,6 +23,7 @@ class BaseTableSection(MzTabBaseModel, CustomSerializer):
 
     # It is used to store table info for each section
     __table_section_info_dict__: Union[None, dict[str, TableSectionInfo]] = None
+    __mztab_example__: Annotated[Optional[str], Field(alias="x-mztab-example")] = None
 
     prefix: Annotated[
         Optional[str],

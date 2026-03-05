@@ -1,5 +1,7 @@
 # SpectraRef
 
+## Properties
+
 |Name (Alias)|Type (Default)|Constraints|Description|
 |---|---|----|----------|
 ms_run|<code>int</code>|**required**<br/>format: <code>positive-integer</code><br/>Validation type: **<code>error</code>**|Reference to MsRun

@@ -26,6 +26,12 @@ def escape_markdown(text: str) -> str:
     return re.sub(markdown_chars, r"\\\1", text)
 
 
+def remove_extra_spaces(text: str) -> str:
+    if not text:
+        return ""
+    return re.sub(r"\n +", "\n", text).strip()
+
+
 def update_documentation(
     model_class: type[BaseModel], updated_documents: Set[type[BaseModel]]
 ):
@@ -39,7 +45,16 @@ def update_documentation(
         f.write(f"# {model_class.__name__}\n\n")
 
         # f.write("## Properties\n\n")
-
+        # add class description
+        class_doc = remove_extra_spaces(model_class.__doc__)
+        if class_doc:
+            f.write(class_doc)
+            f.write("\n\n")
+        if model_class.__mztab_example__:
+            f.write("## Example\n\n")
+            f.write("<code>" + model_class.__mztab_example__ + "</code>")
+            f.write("\n\n")
+        f.write("## Properties\n\n")
         f.write(
             "|"
             + "|".join(["Name (Alias)", "Type (Default)", "Constraints", "Description"])
@@ -74,7 +89,7 @@ def update_documentation(
             if policy.required:
                 constraints_list.append("**required**")
             if policy.pattern:
-                constraints_list.append(f"pattern: <code>{policy.pattern}</code>")
+                constraints_list.append(f"pattern: <code>{escape_markdown(policy.pattern)}</code>")
             if policy.minimum:
                 constraints_list.append(f"min: {policy.minimum}")
             if policy.maximum:

@@ -74,6 +74,7 @@ class MetadataSerialization(ValidationProfile):
     non_indexed_list_value: bool = False
     referenced_field_name: Optional[str] = None
     allow_multiple: bool = False
+    mztab_example: Annotated[Optional[str], Field(alias="x-mztab-example")] = None
 
 
 class TableSerialization(ValidationProfile):
@@ -83,6 +84,7 @@ class TableSerialization(ValidationProfile):
     column_value_field: Optional[str] = None
     referenced_section: Optional[str] = None
     referenced_field_name: Optional[str] = None
+    mztab_example: Annotated[Optional[str], Field(alias="x-mztab-example")] = None
 
 
 class TableSectionInfo(MzTabBaseModel):
@@ -106,6 +108,7 @@ class MzTabSerializableModel(MzTabBaseModel):
     __default_serialization__: Annotated[MetadataSerialization, Field(frozen=True)] = (
         MetadataSerialization()
     )
+    __mztab_example__: Annotated[Optional[str], Field(alias="x-mztab-example")] = None
 
     def to_dict(self, context: SerializationContext, **kwargs) -> Dict[str, Any]:
         try:

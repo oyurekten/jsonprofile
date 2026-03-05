@@ -1,5 +1,7 @@
 # SmallMoleculeSummary
 
+## Properties
+
 |Name (Alias)|Type (Default)|Constraints|Description|
 |---|---|----|----------|
 prefix|<code><code>str</code></code> (<code>SML</code>)|**required**<br/>pattern: <code>SML</code><br/>Validation type: **<code>error</code>**|The small molecule table row prefix\. SML MUST be used for rows of the small molecule table\.

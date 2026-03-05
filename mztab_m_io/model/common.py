@@ -350,7 +350,9 @@ class MsRun(IdentifiableModel):
         Field(
             description="The msRun's location URI.",
             json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(required=True)
+                validation_policy=ValidationPolicy(
+                    required=True, value_constraint="any-url"
+                )
             ).model_dump(),
         ),
     ] = None
@@ -809,6 +811,15 @@ class OptColumnMapping(MzTabSerializableModel, OptionalTableColumn):
 
 
 class Comment(MzTabSerializableModel, CustomSerializer):
+    """
+    Comment lines can be placed anywhere in an mzTab file.
+    These lines must start with the three-letter code COM
+    and are ignored by most parsers.
+    Empty lines can also occur anywhere in an mzTab file and are ignored.
+    """
+
+    __mztab_example__ = "COM\tThis is a comment"
+
     prefix: Annotated[
         str,
         Field(

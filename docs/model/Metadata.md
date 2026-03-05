@@ -1,9 +1,11 @@
 # Metadata
 
+## Properties
+
 |Name (Alias)|Type (Default)|Constraints|Description|
 |---|---|----|----------|
 prefix|<code><code>str</code></code> (<code>MTD</code>)|**required**<br/>pattern: <code>MTD</code><br/>Validation type: **<code>error</code>**|Metadata section prefix identifier\.<br/\><br/\>Value must be 'MTD'\. Used to identify metadata lines in the mzTab\-M file format\.
-mztab_version<br/>(mzTab-version)|<code><code>str</code></code> (<code>2.1.0-M</code>)|**required**<br/>pattern: <code>^\d{1}\.\d{1}\.\d{1}-[A-Z]{1}$</code><br/>Validation type: **<code>error</code>**|Version number of the mzTab format used\.<br/\><br/\>Format: \`major\.minor\.patch\-variant\`<br/\>Must end with "\-M" suffix for metabolomics variant\.<br/\><br/\>Used to ensure compatibility and processing correctness\.
+mztab_version<br/>(mzTab-version)|<code><code>str</code></code> (<code>2.1.0-M</code>)|**required**<br/>pattern: <code>^\\d\{1\}\\\.\\d\{1\}\\\.\\d\{1\}\-\[A\-Z\]\{1\}$</code><br/>Validation type: **<code>error</code>**|Version number of the mzTab format used\.<br/\><br/\>Format: \`major\.minor\.patch\-variant\`<br/\>Must end with "\-M" suffix for metabolomics variant\.<br/\><br/\>Used to ensure compatibility and processing correctness\.
 mztab_id<br/>(mzTab-ID)|<code>str</code>|**required**<br/>Validation type: **<code>error</code>**|Unique identifier for the mzTab\-M document\.<br/\>REQUIRED\. Can be:<br/\>\- Repository accession number \(e\.g\., MTBLS214\)<br/\>\- Laboratory internal identifier<br/\>\- Study\-specific identifier<br/\>NOT intended as a globally unique identifier,<br/\>but SHOULD have local meaning within its context\.
 title|<code>str</code>|-|Human\-readable title of the experiment or study\.<br/\>OPTIONAL\. SHOULD be:<br/\>\- Concise but informative<br/\>\- Reflect the main focus of the study<br/\>\- Unique within a collection of related studies
 description|<code>str</code>|-|Detailed description of the experiment or study\.<br/\>OPTIONAL\. SHOULD include:<br/\>\- Study objectives<br/\>\- Experimental design overview<br/\>\- Key methodological approaches<br/\>\- Any unique aspects of the study<br/\>Provides context for understanding the data and its significance\.

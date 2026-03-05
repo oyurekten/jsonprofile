@@ -15,6 +15,26 @@ from mztab_m_io.model.serialization import (
 
 
 class SmallMoleculeFeature(BaseTableSection):
+    """
+    The small molecule feature section is table-based, representing individual
+    MS regions (generally considered to be the elution profile for all isotopomers
+    formed from a single charge state of a molecule), that have been
+    measured/quantified. However, for approaches that quantify individual isotopomers.
+    e.g. stable isotope labelling/flux studies,
+    then each SMF row SHOULD represent a single isotopomer.
+
+    Different adducts or derivatives and different charge states of
+    individual molecules should be reported as separate SMF rows.
+
+    The small molecule feature section MUST always come after the Small Molecule Table.
+    All table columns MUST be Tab separated. There MUST NOT be any empty cells.
+    Missing values MUST be reported using “null”.
+
+    The order of columns MUST follow the order specified below.
+
+    All columns are MANDATORY except for “opt_” columns.
+    """
+
     prefix: Annotated[
         Optional[str],
         Field(

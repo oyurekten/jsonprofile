@@ -1,5 +1,7 @@
 # SmallMoleculeEvidence
 
+## Properties
+
 |Name (Alias)|Type (Default)|Constraints|Description|
 |---|---|----|----------|
 prefix|<code><code>str</code></code> (<code>SME</code>)|**required**<br/>pattern: <code>SME</code><br/>Validation type: **<code>error</code>**|The small molecule evidence table row prefix\. SME MUST be used for rows of the small molecule evidence table\.
@@ -14,7 +16,7 @@ inchi|<code>str</code>|-|A standard IUPAC International Chemical Identifier \(In
 chemical_name|<code>str</code>|-|The small molecule's chemical/common name, or general description if a chemical name is unavailable\.
 uri|<code>str</code>|format: <code>any-url</code><br/>Validation type: **<code>error</code>**|A URI pointing to the small molecule's entry in a database \(e\.g\., the small molecule's HMDB, Chebi or KEGG entry\)\.
 derivatized_form|<code>Parameter</code>|-|The derivatized form of the small molecule, if the identification was based on a specific derivative \(e\.g\. 2 TMS\)\. This MUST be specified using CV terms \(where possible\) otherwise “null”\.
-adduct_ion|<code>str</code>|pattern: <code>^\[\d*M([+-][\w\d]+)*\]\d*[+-]$</code><br/>Validation type: **<code>error</code>**|The assumed classification of this molecule’s adduct ion after detection, following the general style in the 2013 IUPAC recommendations on terms relating to MS e\.g\. \[M\+H\]1\+, \[M\+Na\]1\+, \[M\+NH4\]1\+, \[M\-H\]1\-, \[M\+Cl\]1\-\. If the adduct classification is ambiguous with regards to identification evidence it MAY be null\.
+adduct_ion|<code>str</code>|pattern: <code>^\\\[\\d\*M\(\[\+\-\]\[\\w\\d\]\+\)\*\\\]\\d\*\[\+\-\]$</code><br/>Validation type: **<code>error</code>**|The assumed classification of this molecule’s adduct ion after detection, following the general style in the 2013 IUPAC recommendations on terms relating to MS e\.g\. \[M\+H\]1\+, \[M\+Na\]1\+, \[M\+NH4\]1\+, \[M\-H\]1\-, \[M\+Cl\]1\-\. If the adduct classification is ambiguous with regards to identification evidence it MAY be null\.
 exp_mass_to_charge|<code>float</code>|**required**<br/>Validation type: **<code>error</code>**|
 charge|<code>int</code>|**required**<br/>Validation type: **<code>error</code>**|The small molecule evidence's charge value using positive integers both for positive and negative polarity modes\.
 theoretical_mass_to_charge|<code>float</code>|**required**<br/>Validation type: **<code>error</code>**|The theoretical mass/charge value for the small molecule or the database mass/charge value \(for a spectral library match\)\.

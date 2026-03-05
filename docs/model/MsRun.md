@@ -1,10 +1,12 @@
 # MsRun
 
+## Properties
+
 |Name (Alias)|Type (Default)|Constraints|Description|
 |---|---|----|----------|
 id|<code>int</code>|-|
 name|<code>str</code>|-|The msRun's name\.
-location|<code>str</code>|**required**<br/>Validation type: **<code>error</code>**|The msRun's location URI\.
+location|<code>str</code>|**required**<br/>format: <code>any-url</code><br/>Validation type: **<code>error</code>**|The msRun's location URI\.
 instrument_ref|<code>int</code>|-|Sample reference\.
 format|<code>Parameter</code>|-|The format of the MS run file\.
 id_format|<code>Parameter</code>|-|The format of the IDs in the MS run file\.

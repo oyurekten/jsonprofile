@@ -1,5 +1,7 @@
 # SampleProcessing
 
+## Properties
+
 |Name (Alias)|Type (Default)|Constraints|Description|
 |---|---|----|----------|
 id|<code>int</code>|-|
