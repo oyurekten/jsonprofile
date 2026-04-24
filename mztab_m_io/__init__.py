@@ -42,7 +42,9 @@ class MzTabMLoadResult(ValidationContext):
 
 
 def read(
-    file_path: str, format: Literal["tsv", "json", "yaml"] = "tsv"
+    file_path: str,
+    format: Literal["tsv", "json", "yaml"] = "tsv",
+    auto_complete_ids: bool = False,
 ) -> MzTabMLoadResult:
     """Read and parse an mzTab-M file in TSV, JSON, or YAML format.
 
@@ -87,9 +89,19 @@ def read(
         raise ValueError("Input file does not exist.")
 
     if format == "tsv":
-        result = MzTabMLoadResult(success=False, messages=[], source_format="tsv")
+        result = MzTabMLoadResult(
+            success=False,
+            messages=[],
+            source_format="tsv",
+            auto_complete_ids=auto_complete_ids,
+        )
         try:
-            mztabm, context = MzTabM.from_tsv_file(input_path)
+            mztabm, context = MzTabM.from_tsv_file(
+                input_path,
+                context=ValidationContext(
+                    source_format="tsv", auto_complete_ids=auto_complete_ids
+                ),
+            )
             result.mztabm = mztabm
             if mztabm:
                 result.success = True

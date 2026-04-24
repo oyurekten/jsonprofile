@@ -3,6 +3,7 @@ from typing import (
     Any,
     Dict,
     List,
+    Mapping,
     Optional,
     OrderedDict,
     Type,
@@ -20,6 +21,26 @@ from mztab_m_io.model.section.smf import SmallMoleculeFeature
 from mztab_m_io.model.section.sml import SmallMoleculeSummary
 from mztab_m_io.model.serialization import IdentifiableModel, SerializationContext
 from mztab_m_io.model.validation import Category, MessageType, MzTabMessage
+
+
+def update_ids(model: BaseModel, idx: Union[None, int] = None):
+    if isinstance(model, IdentifiableModel):
+        if idx is not None:
+            model.id = idx
+    for field in model.__class__.model_fields.keys():
+        val = getattr(model, field)
+        if isinstance(val, list):
+            for id, item in enumerate(val, start=1):
+                if isinstance(item, BaseModel):
+                    update_ids(item, id)
+        if isinstance(val, Mapping):
+            for _, v in val.items():
+                if isinstance(v, list):
+                    for id, item in enumerate(v, start=1):
+                        if isinstance(item, BaseModel):
+                            update_ids(item, id)
+        elif isinstance(val, BaseModel):
+            update_ids(val, None)
 
 
 def parse_table_section(

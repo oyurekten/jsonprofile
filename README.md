@@ -1,4 +1,4 @@
-# mzTab-M Python Implementation 
+# mzTab-M Python Implementation
 
 ## Requirements
 

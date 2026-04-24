@@ -31,5 +31,6 @@ class MzTabMessage(MzTabBaseModel):
 
 
 class ValidationContext(MzTabBaseModel):
-    messages: Optional[List[MzTabMessage]] = None
+    messages: List[MzTabMessage] = []
     source_format: Literal["tsv", "json", "yaml"] = "tsv"
+    auto_complete_ids: bool = False

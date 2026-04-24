@@ -1,5 +1,6 @@
 import json
 import pathlib
+import traceback
 from functools import partial
 from pathlib import Path
 from typing import Annotated, Any, Callable, List, Literal, Optional, Tuple
@@ -8,7 +9,7 @@ import yaml
 from pydantic import Field
 
 from mztab_m_io.model.common import Comment
-from mztab_m_io.model.mztabm_parser_utils import check_ids, parse_tsv_file
+from mztab_m_io.model.mztabm_parser_utils import check_ids, parse_tsv_file, update_ids
 from mztab_m_io.model.mztabm_validation import check_validation_policies, cross_check
 from mztab_m_io.model.section.mtd import Metadata
 from mztab_m_io.model.section.sme import SmallMoleculeEvidence
@@ -49,7 +50,8 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
     then all four tables must be present. The tables must follow the order
     MTD, SML, SMF and SME, with a blank line separating each table.
 
-    The structure of each table, in terms of the rows and columns that must be present is
+    The structure of each table, in terms of the rows and columns
+    that must be present is
     tightly specified and formally defined and explained in
     the mzTab-M specification document.
     mzTab-M files MUST have one Metadata (MTD) section and
@@ -59,7 +61,8 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
     Files lacking SMF and SME sections can only present summary data
     about quantified molecules, without any evidence trail for
     how those values were derived.
-    It will be left to reading software to determine whether additional validation will be
+    It will be left to reading software to determine whether
+    additional validation will be
     requested such that SMF and SME tables MUST be present.
     """
 
@@ -70,7 +73,8 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
             "about the mztab file content.",
             json_schema_extra=MetadataSerialization(
                 validation_policy=ValidationPolicy(required=True),
-                mztab_example="MTD\tmzTab-version\t2.0.0-M\nMTD\tmzTab-ID\tMTBL1234\nMTD\ttitle\tEffects of Rapamycin on metabolite profile\n...\n",
+                mztab_example="MTD\tmzTab-version\t2.0.0-M\nMTD\tmzTab-ID\tMTBL1234\n"
+                "MTD\ttitle\tEffects of Rapamycin on metabolite profile\n...\n",
             ).model_dump(),
         ),
     ] = None
@@ -199,6 +203,8 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
 
     @classmethod
     def post_process_model(cls, model: "MzTabM", context: ValidationContext):
+        if context.auto_complete_ids:
+            update_ids(model)
         check_ids(model, [], context.messages)
         cross_check(model, context.messages)
         check_validation_policies([], model, context.messages)
@@ -362,6 +368,7 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
             )
             return model, context
         except Exception as e:
+            traceback.print_exc()
             context.messages.append(
                 MzTabMessage(
                     message_type=MessageType.ERROR,

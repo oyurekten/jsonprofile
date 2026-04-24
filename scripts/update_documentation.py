@@ -89,7 +89,9 @@ def update_documentation(
             if policy.required:
                 constraints_list.append("**required**")
             if policy.pattern:
-                constraints_list.append(f"pattern: <code>{escape_markdown(policy.pattern)}</code>")
+                constraints_list.append(
+                    f"pattern: <code>{escape_markdown(policy.pattern)}</code>"
+                )
             if policy.minimum:
                 constraints_list.append(f"min: {policy.minimum}")
             if policy.maximum:

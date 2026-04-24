@@ -129,9 +129,9 @@ def normalize_mztab_content(content: str) -> List[str]:
         all_line_splits.append(parts)
 
     all_line_splits.sort(
-        key=lambda x: (1, x[0], x[1], x[2])
-        if not x[0].startswith("COM")
-        else (2, x[0], x[1])
+        key=lambda x: (
+            (1, x[0], x[1], x[2]) if not x[0].startswith("COM") else (2, x[0], x[1])
+        )
     )
 
     return all_line_splits
