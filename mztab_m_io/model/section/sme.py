@@ -6,7 +6,7 @@ from typing import (
 
 from pydantic import Field
 
-from mztab_m_io.model.common import OptColumnMapping, Parameter, SpectraRef
+from mztab_m_io.model.common import OptColumnMapping, Parameter, SpectraReference
 from mztab_m_io.model.section.base_table_section import BaseTableSection
 from mztab_m_io.model.serialization import (
     TableSerialization,
@@ -42,7 +42,7 @@ class SmallMoleculeEvidence(BaseTableSection):
     sme_id: Annotated[
         Optional[int],
         Field(
-            alias="SME_ID",
+            validation_alias="SME_ID",
             description="A within file unique identifier for the small "
             "molecule evidence result.",
             examples=[1],
@@ -219,9 +219,10 @@ class SmallMoleculeEvidence(BaseTableSection):
             ).model_dump(),
         ),
     ] = None
-    spectra_ref: Annotated[
-        Optional[List[SpectraRef]],
+    spectra_references: Annotated[
+        Optional[List[SpectraReference]],
         Field(
+            validation_alias="spectra_ref",
             description="Reference to a spectrum in a spectrum file, for example a "
             "fragmentation spectrum "
             "has been used to support the identification. "

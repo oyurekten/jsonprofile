@@ -1,3 +1,4 @@
+import logging
 import re
 from typing import (
     Any,
@@ -21,6 +22,8 @@ from mztab_m_io.model.section.smf import SmallMoleculeFeature
 from mztab_m_io.model.section.sml import SmallMoleculeSummary
 from mztab_m_io.model.serialization import IdentifiableModel, SerializationContext
 from mztab_m_io.model.validation import Category, MessageType, MzTabMessage
+
+logger = logging.getLogger(__name__)
 
 
 def update_ids(model: BaseModel, idx: Union[None, int] = None):
@@ -196,7 +199,13 @@ def update_table_dict(
                     elif isinstance(item_type, type) and issubclass(item_type, int):
                         new_cell_data = [int(val) if val and val != "null" else None]
                     elif isinstance(item_type, type) and issubclass(item_type, float):
-                        new_cell_data = [float(val) if val and val != "null" else None]
+                        try:
+                            new_cell_data = (
+                                [float(val)] if val and val != "null" else None
+                            )
+                        except ValueError:
+                            logger.exception(f"Error parsing float value: {val}")
+                            new_cell_data = None
                     else:
                         new_cell_data = [val]
             else:
@@ -223,65 +232,64 @@ def update_table_dict(
                     else:
                         new_cell_data = None
 
-            if new_cell_data is not None:
-                new_header, index = summary_headers[item]
+            new_header, index = summary_headers[item]
 
-                if index is None:
-                    new_row[new_header] = new_cell_data
-                elif isinstance(index, int):
-                    if new_header not in new_row:
-                        new_row[new_header] = []
-                    i = len(new_row[new_header])
-                    if i < index:
-                        while i < index:
-                            i += 1
-                            new_row[new_header].append(None)
-                    if not new_cell_data:
-                        new_row[new_header][index - 1] = None
-                    if isinstance(new_cell_data, list):
-                        new_row[new_header][index - 1] = new_cell_data[0]
-                    else:
-                        new_row[new_header][index - 1] = new_cell_data
+            if index is None:
+                new_row[new_header] = new_cell_data
+            elif isinstance(index, int):
+                if new_header not in new_row:
+                    new_row[new_header] = []
+                i = len(new_row[new_header])
+                if i < index:
+                    while i < index:
+                        i += 1
+                        new_row[new_header].append(None)
+                if not new_cell_data:
+                    new_row[new_header][index - 1] = None
+                if isinstance(new_cell_data, list):
+                    new_row[new_header][index - 1] = new_cell_data[0]
                 else:
-                    if new_header not in new_row:
-                        new_row[new_header] = []
-                    match = re.match(
-                        r"^(global|ms_run\[\d+\]|assay\[\d+\]|study_variable\[\d+\])_(.+)",
-                        index,
-                    )
-                    if match:
-                        identifier_parts = [match.group(1), match.group(2)]
-                        new_identifier = identifier_parts[0]
-                        accession = ""
-                        cv_label = ""
-                        term = ""
-                        if identifier_parts[1].startswith("cv_"):
-                            param_parts = identifier_parts[1].split("_", maxsplit=2)
-                            cv_label = (
-                                param_parts[1].split(":")[0]
-                                if ":" in param_parts[1]
-                                else ""
-                            )
-                            if len(param_parts) > 2:
-                                accession = param_parts[1]
-                                term = param_parts[2]
-                            else:
-                                accession = param_parts[1]
-                                term = ""
+                    new_row[new_header][index - 1] = new_cell_data
+            else:
+                if new_header not in new_row:
+                    new_row[new_header] = []
+                match = re.match(
+                    r"^(global|ms_run\[\d+\]|assay\[\d+\]|study_variable\[\d+\])_(.+)",
+                    index,
+                )
+                if match:
+                    identifier_parts = [match.group(1), match.group(2)]
+                    new_identifier = identifier_parts[0]
+                    accession = ""
+                    cv_label = ""
+                    term = ""
+                    if identifier_parts[1].startswith("cv_"):
+                        param_parts = identifier_parts[1].split("_", maxsplit=2)
+                        cv_label = (
+                            param_parts[1].split(":")[0]
+                            if ":" in param_parts[1]
+                            else ""
+                        )
+                        if len(param_parts) > 2:
+                            accession = param_parts[1]
+                            term = param_parts[2]
                         else:
-                            cv_label = ""
-                            accession = ""
-                            term = identifier_parts[1]
-                        val = {}
-                        val["param"] = {
-                            "cv_label": cv_label,
-                            "cv_accession": accession,
-                            "name": term,
-                        }
-                        val["identifier"] = new_identifier
-                        val["value"] = new_cell_data
+                            accession = param_parts[1]
+                            term = ""
+                    else:
+                        cv_label = ""
+                        accession = ""
+                        term = identifier_parts[1]
+                    val = {}
+                    val["param"] = {
+                        "cv_label": cv_label,
+                        "cv_accession": accession,
+                        "name": term,
+                    }
+                    val["identifier"] = new_identifier
+                    val["value"] = new_cell_data
 
-                        new_row[new_header].append(val)
+                    new_row[new_header].append(val)
         latest_row = new_row
         new_table.append(new_row)
     return new_table

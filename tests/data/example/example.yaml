@@ -389,7 +389,7 @@ metadata:
   prefix: MTD
   publication:
   - id: 1
-    publicationItems:
+    publication_items:
     - accession: '27036001'
       type: pubmed
     - accession: 10.1073/pnas.1603023113
@@ -473,7 +473,7 @@ metadata:
       name: blood
   sample_processing:
   - id: 1
-    sampleProcessing:
+    sample_processing:
     - cv_accession: EFO:0005518
       cv_label: EFO
       id: 1
@@ -482,7 +482,7 @@ metadata:
         \ 5 ml heparin tube (Terumo). Immediately, 0.2 ml blood were quenched in 1.8\
         \ ml -40 \xB0C 55% methanol.\""
   - id: 2
-    sampleProcessing:
+    sample_processing:
     - cv_accession: MS:1000831
       cv_label: MS
       id: 1
@@ -496,7 +496,7 @@ metadata:
         \ to 5 \u03BCl of initial sample) was used for each injection into the LC-MS\
         \ system.\""
   - id: 3
-    sampleProcessing:
+    sample_processing:
     - cv_accession: CHMO:0001000
       cv_label: CHMO
       id: 1
@@ -514,7 +514,7 @@ metadata:
         \ temperatures and genetic perturbation. Mol Biosyst 6:182\u2013198. doi:\
         \ 10.1039/b908784b PMID:20024080</br>\""
   - id: 4
-    sampleProcessing:
+    sample_processing:
     - cv_accession: CHMO:0000470
       cv_label: CHMO
       id: 1
@@ -524,7 +524,7 @@ metadata:
         Each sample was analyzed twice, once in negative and once in positive ionization
         mode."'
   - id: 5
-    sampleProcessing:
+    sample_processing:
     - cv_accession: OBI:0200000
       cv_label: OBI
       id: 1
@@ -534,7 +534,7 @@ metadata:
         of HEPES and PIPES. The complete workflow and processing parameters are summarized
         in the publication."'
   - id: 6
-    sampleProcessing:
+    sample_processing:
     - cv_accession: MI:2131
       cv_label: MI
       id: 1

@@ -25,7 +25,7 @@ MTD = Metadata(
     ),
     software=[Software(id=1, parameter=Parameter(name="inhouse"))],
     ms_run=[MsRun(id=1, location="ftp://ftp.ebi.ac.uk/path/to/file")],
-    assay=[Assay(id=1, name="assay 1", ms_run_ref=[1])],
+    assay=[Assay(id=1, name="assay 1", ms_run_refs=[1])],
     study_variable=[
         StudyVariable(
             name="study variable 1",

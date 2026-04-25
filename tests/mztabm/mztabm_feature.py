@@ -15,7 +15,7 @@ from mztab_m_io.model.common import (
     Sample,
     SampleProcessing,
     Software,
-    SpectraRef,
+    SpectraReference,
     StudyVariable,
     Uri,
 )
@@ -321,7 +321,7 @@ def create_full_mztabm():
         assay=[
             Assay(
                 name="Cont13_1",
-                ms_run_ref=[1],
+                ms_run_refs=[1],
                 sample_ref=1,
                 external_uri="http://example.com/assay1",
                 custom=[
@@ -332,7 +332,7 @@ def create_full_mztabm():
             ),
             Assay(
                 name="Cont14_1",
-                ms_run_ref=[2],
+                ms_run_refs=[2],
                 sample_ref=2,
                 external_uri="http://example.com/assay2",
                 custom=[
@@ -343,7 +343,7 @@ def create_full_mztabm():
             ),
             Assay(
                 name="Cont16_1",
-                ms_run_ref=[3],
+                ms_run_refs=[3],
                 sample_ref=3,
                 external_uri="http://example.com/assay3",
                 custom=[
@@ -496,7 +496,7 @@ def create_full_mztabm():
             exp_mass_to_charge=76.016,
             charge=1,
             theoretical_mass_to_charge=76.016,
-            spectra_ref=[SpectraRef(ms_run=1, reference="scan=1")],
+            spectra_references=[SpectraReference(ms_run_ref=1, reference="scan=1")],
             identification_method=Parameter(name="MS-DIAL"),
             ms_level=Parameter(
                 cv_label="MS", accession="MS:1000511", name="ms level", value="1"
@@ -517,7 +517,7 @@ def create_full_mztabm():
             exp_mass_to_charge=89.047,
             charge=1,
             theoretical_mass_to_charge=89.047,
-            spectra_ref=[SpectraRef(ms_run=1, reference="scan=1")],
+            spectra_references=[SpectraReference(ms_run_ref=1, reference="scan=1")],
             identification_method=Parameter(name="MS-DIAL"),
             ms_level=Parameter(
                 cv_label="MS", accession="MS:1000511", name="ms level", value="1"
@@ -538,7 +538,7 @@ def create_full_mztabm():
             exp_mass_to_charge=75.032,
             charge=1,
             theoretical_mass_to_charge=75.032,
-            spectra_ref=[SpectraRef(ms_run=1, reference="scan=1")],
+            spectra_references=[SpectraReference(ms_run_ref=1, reference="scan=1")],
             identification_method=Parameter(name="MS-DIAL"),
             ms_level=Parameter(
                 cv_label="MS", accession="MS:1000511", name="ms level", value="1"

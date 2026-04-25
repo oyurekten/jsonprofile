@@ -61,7 +61,7 @@ class BaseTableSection(MzTabBaseModel, CustomSerializer):
                 ignore=True,
             ).model_dump(),
         ),
-    ] = None
+    ] = []
 
     def to_tsv(self, context: SerializationContext) -> str:
         row: list[str] = []

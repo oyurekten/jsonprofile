@@ -19,7 +19,7 @@ from mztab_m_io.model.common import (
     Sample,
     SampleProcessing,
     Software,
-    SpectraRef,
+    SpectraReference,
     StudyVariable,
     Uri,
 )
@@ -56,7 +56,7 @@ __all__ = [
     "Database",
     "Publication",
     "StudyVariable",
-    "SpectraRef",
+    "SpectraReference",
     "ColumnParameterMapping",
     "OptColumnMapping",
     "Comment",

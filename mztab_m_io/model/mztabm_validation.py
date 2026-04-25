@@ -265,11 +265,12 @@ def _check_referenced_items(
     for section, field, subfield, referenced_field in [
         ("metadata", "ms_run", "instrument_ref", "instrument"),
         ("metadata", "assay", "sample_ref", "sample"),
-        ("metadata", "assay", "ms_run_ref", "ms_run"),
+        ("metadata", "assay", "ms_run_refs", "ms_run"),
+        ("metadata", "study_variable", "group_ref", "study_variable_group"),
         ("metadata", "study_variable", "assay_refs", "assay"),
         ("small_molecule_summary", None, "smf_id_refs", "small_molecule_feature"),
         ("small_molecule_feature", None, "sme_id_refs", "small_molecule_evidence"),
-        ("small_molecule_evidence", "spectra_ref", "ms_run", "ms_run"),
+        ("small_molecule_evidence", "spectra_references", "ms_run_ref", "ms_run"),
         ("small_molecule_summary", "opt", "identifier", "assay"),
         ("small_molecule_summary", "opt", "identifier", "ms_run"),
         ("small_molecule_summary", "opt", "identifier", "study_variable"),
@@ -337,6 +338,21 @@ def _check_referenced_items(
                     reference_hits,
                     messages,
                 )
+    # Reference in headers
+    if "study_variable" in reference_hits:
+        section_data = getattr(model, "small_molecule_summary", [])
+        if section_data:
+            for field in [
+                "abundance_study_variable",
+                "abundance_variation_study_variable",
+            ]:
+                length = len(getattr(section_data[0], field, []) or [])
+                for idx in reference_hits["study_variable"]:
+                    if idx is None:
+                        continue
+                    if idx <= length:
+                        reference_hits["study_variable"][idx] += 1
+
     return reference_hits
 
 
@@ -377,6 +393,7 @@ def _get_reference_dict(
             "sample",
             "ms_run",
             "study_variable",
+            "study_variable_group",
         ]:
             vals = getattr(metadata, indexed_field)
             if not vals:

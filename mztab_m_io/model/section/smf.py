@@ -61,7 +61,7 @@ class SmallMoleculeFeature(BaseTableSection):
     smf_id: Annotated[
         Optional[int],
         Field(
-            alias="SMF_ID",
+            validation_alias="SMF_ID",
             description="A within file unique identifier for the "
             "small molecule feature.",
             examples=[1],
@@ -75,7 +75,7 @@ class SmallMoleculeFeature(BaseTableSection):
     sme_id_refs: Annotated[
         Optional[List[int]],
         Field(
-            alias="SME_ID_REFS",
+            validation_alias="SME_ID_REFS",
             description="References to the identification evidence (SME elements) "
             "via referencing SME_ID values. Multiple values MAY be provided as "
             "a | separated list to indicate ambiguity in the identification or "
@@ -95,7 +95,7 @@ class SmallMoleculeFeature(BaseTableSection):
     sme_id_ref_ambiguity_code: Annotated[
         Optional[int],
         Field(
-            alias="SME_ID_REF_ambiguity_code",
+            validation_alias="SME_ID_REF_ambiguity_code",
             description="If multiple values are given under SME_ID_REFS, one "
             "of the following codes MUST be provided. 1=Ambiguous identification; "
             "2=Only different evidence streams for the same molecule with no "

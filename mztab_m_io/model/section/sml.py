@@ -38,7 +38,7 @@ class SmallMoleculeSummary(BaseTableSection):
     sml_id: Annotated[
         Optional[int],
         Field(
-            alias="SML_ID",
+            validation_alias="SML_ID",
             description="A within file unique identifier "
             "for the small molecule summary.",
             examples=[1],
@@ -52,7 +52,7 @@ class SmallMoleculeSummary(BaseTableSection):
     smf_id_refs: Annotated[
         Optional[List[int]],
         Field(
-            alias="SMF_ID_REFS",
+            validation_alias="SMF_ID_REFS",
             description="References to the small molecule features (SMF elements) "
             "via referencing SMF_ID values. Multiple values MAY be provided "
             "as a | separated list to indicate which features were used "

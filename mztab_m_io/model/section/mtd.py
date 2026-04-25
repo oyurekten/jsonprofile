@@ -1,3 +1,4 @@
+from mztab_m_io.model.common import StudyVariableGroup
 import re
 from typing import (
     Annotated,
@@ -26,6 +27,7 @@ from mztab_m_io.model.common import (
     Instrument,
     MsRun,
     Parameter,
+    Protocol,
     Publication,
     Sample,
     SampleProcessing,
@@ -248,6 +250,20 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
+    protocol: Annotated[
+        Optional[List[Protocol]],
+        Field(
+            description="The protocol(s) used in the experiment.",
+            examples=[
+                "MTD\tprotocol[1]-name\tMass Spectrometry\n",
+                "MTD\tprotocol[1]-type\t[CHMO, CHMO:0000470, mass spectrometry, ]\n",
+                "MTD\tprotocol[1]-description\tEluting compounds were detected ...\n",
+                "MTD\tprotocol[1]-parameters\t[MS, MS:1000008, ionization type, "
+                "[MS,MS:1000073, electrospray ionization, ]]\n",
+            ],
+            json_schema_extra=MetadataSerialization().model_dump(),
+        ),
+    ] = None
 
     sample_processing: Annotated[
         Optional[List[SampleProcessing]],
@@ -307,6 +323,7 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
     ms_run: Annotated[
         Optional[List[MsRun]],
         Field(
+            alias="ms_run",
             description="Specification of ms_run. "
             "location: Location of the external data file e.g. raw files on which "
             "analysis has been performed. "
@@ -360,7 +377,7 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
             "information about the assay, "
             "for example via a reference to an object within an ISA-TAB file. "
             "sample_ref: An association from a given assay to the sample analysed. "
-            "ms_run_ref: An association from a given assay to the source MS run. "
+            "ms_run_refs: An association from a given assay to the source MS run. "
             "All assays MUST reference exactly one ms_run unless a workflow with "
             "pre-fractionation "
             "is being encoded, in which case each assay MUST reference n ms_runs "
@@ -372,7 +389,18 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
             ).model_dump(),
         ),
     ] = None
-
+    study_variable_group: Annotated[
+        Optional[List[StudyVariableGroup]],
+        Field(
+            description="A parameter defining the group to which study variables "
+            "belong, allowing grouping of related study variables that belong "
+            "to the same experimental design factor in multi-factorial designs. "
+            "For software that does not capture study variables, a single "
+            "study_variable_group MUST be reported, linking to the single "
+            "study variable, and MUST have the identifier 'undefined'.",
+            json_schema_extra=MetadataSerialization().model_dump(),
+        ),
+    ] = None
     study_variable: Annotated[
         Optional[List[StudyVariable]],
         Field(

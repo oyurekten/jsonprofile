@@ -1,3 +1,4 @@
+from typing import Literal
 import abc
 from typing import Annotated, Any, List, Mapping, Optional, OrderedDict, Union
 
@@ -87,14 +88,78 @@ class Parameter(CompactObjectModel, IdentifiableModel, CustomSerializer):
             cleaned = val.strip("[]")
             parts = cleaned.split(",", maxsplit=3)
 
-            if len(parts) < 4:
-                return None
+            cv_label = parts[0].strip() if len(parts) > 0 else ""
+            cv_accession = parts[1].strip() if len(parts) > 1 else ""
+            name = parts[2].strip() if len(parts) > 2 else ""
+            value = parts[3].strip() if len(parts) > 3 else ""
 
             val = {
-                "cv_label": parts[0].strip() or None,
-                "cv_accession": parts[1].strip() or None,
-                "name": parts[2].strip() or None,
-                "value": parts[3].strip() or None,
+                "cv_label": cv_label,
+                "cv_accession": cv_accession,
+                "name": name,
+                "value": value,
+            }
+        return handler(val)
+
+
+class ExtendedParameter(Parameter):
+    value: Annotated[
+        Optional[str | Parameter],
+        Field(
+            description="The user value for the parameter.",
+            json_schema_extra=MetadataSerialization().model_dump(),
+        ),
+    ] = None
+
+    def to_tsv(self, context: SerializationContext) -> str:
+        if isinstance(self.value, Parameter):
+            return (
+                f"[{sanitize_str(self.cv_label)}, "
+                f"{sanitize_str(self.cv_accession)}, "
+                f"{sanitize_str(self.name)}, "
+                f"{sanitize_str(self.value.to_tsv(context))}]"
+            )
+        return super().to_tsv(context)
+
+    @model_validator(mode="wrap")
+    @classmethod
+    def validate_model(
+        cls,
+        data: Any,
+        handler: ModelWrapValidatorHandler["ExtendedParameter"],
+        info: ValidationInfo,
+    ) -> "ExtendedParameter":
+        if not data:
+            return None
+        if isinstance(data, ExtendedParameter):
+            return handler(data)
+        if info and isinstance(info.context, ValidationContext):
+            if info.context.source_format in {"json", "yaml"}:
+                return handler(data)
+
+        val = data
+        if isinstance(val, Mapping):
+            if len(val) == 1 and None in val:
+                val = data[None]
+        if isinstance(val, str):
+            cleaned = val.strip("[]")
+            parts = cleaned.split(",", maxsplit=3)
+
+            cv_label = parts[0].strip() if len(parts) > 0 else ""
+            cv_accession = parts[1].strip() if len(parts) > 1 else ""
+            name = parts[2].strip() if len(parts) > 2 else ""
+            value = ""
+            if len(parts) > 3:
+                value_str = parts[3].strip()
+                value = value_str
+                if value_str.startswith("["):
+                    value = Parameter.model_validate(value_str.strip("[]"))
+
+            val = {
+                "cv_label": cv_label,
+                "cv_accession": cv_accession,
+                "name": name,
+                "value": value,
             }
         return handler(val)
 
@@ -148,11 +213,49 @@ class Instrument(IdentifiableModel):
         return handler(data)
 
 
+class Protocol(IdentifiableModel):
+    name: Annotated[
+        Optional[str],
+        Field(
+            description="The protocol name.",
+            json_schema_extra=MetadataSerialization(
+                validation_policy=ValidationPolicy(required=True)
+            ).model_dump(),
+        ),
+    ] = None
+    type: Annotated[
+        Optional[Parameter],
+        Field(
+            description="The protocol type, as defined by the parameter.",
+            json_schema_extra=MetadataSerialization(
+                validation_policy=ValidationPolicy(required=True)
+            ).model_dump(),
+        ),
+    ] = None
+    description: Annotated[
+        Optional[str],
+        Field(
+            description="Description of the protocol.",
+            json_schema_extra=MetadataSerialization(
+                validation_policy=ValidationPolicy()
+            ).model_dump(),
+        ),
+    ] = None
+    parameters: Annotated[
+        Optional[List[ExtendedParameter]],
+        Field(
+            description="The protocol parameters.",
+            json_schema_extra=MetadataSerialization(
+                list_concatenation_str="|"
+            ).model_dump(),
+        ),
+    ] = None
+
+
 class SampleProcessing(IdentifiableModel):
     sample_processing: Annotated[
         Optional[List[Parameter]],
         Field(
-            alias="sampleProcessing",
             description="Parameters specifying sample processing "
             "that was applied within one step.",
             json_schema_extra=MetadataSerialization(
@@ -409,6 +512,16 @@ class MsRun(IdentifiableModel):
         ),
     ] = None
 
+    parameters: Annotated[
+        Optional[List[ExtendedParameter]],
+        Field(
+            description="Additional parameters of the assay, separated by bars.",
+            json_schema_extra=MetadataSerialization(
+                list_concatenation_str="|"
+            ).model_dump(),
+        ),
+    ] = None
+
 
 class Assay(IdentifiableModel):
     name: Annotated[
@@ -427,7 +540,7 @@ class Assay(IdentifiableModel):
             description="Additional user or cv parameters.",
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
-    ] = None
+    ] = []
     external_uri: Annotated[
         Optional[str],
         Field(
@@ -446,17 +559,39 @@ class Assay(IdentifiableModel):
             ).model_dump(),
         ),
     ] = None
-    ms_run_ref: Annotated[
+    ms_run_refs: Annotated[
         Optional[List[int]],
         Field(
+            alias="ms_run_ref",
             description="The ms run(s) referenced by this assay.",
-            min_length=1,
             json_schema_extra=MetadataSerialization(
                 referenced_field_name="ms_run",
                 list_concatenation_str="|",
                 validation_policy=ValidationPolicy(
                     required=True, minimum=1, value_constraint="non-negative-integer"
                 ),
+            ).model_dump(),
+        ),
+    ] = None
+    protocol_refs: Annotated[
+        Optional[List[int]],
+        Field(
+            description="The protocol(s) referenced by this assay.",
+            json_schema_extra=MetadataSerialization(
+                referenced_field_name="protocol",
+                list_concatenation_str="|",
+                validation_policy=ValidationPolicy(
+                    value_constraint="non-negative-integer"
+                ),
+            ).model_dump(),
+        ),
+    ] = []
+    parameters: Annotated[
+        Optional[List[ExtendedParameter]],
+        Field(
+            description="Additional parameters of the assay, separated by bars.",
+            json_schema_extra=MetadataSerialization(
+                list_concatenation_str="|"
             ).model_dump(),
         ),
     ] = None
@@ -545,7 +680,8 @@ class Database(IdentifiableModel):
             "For the “no database” case, 'null' must be reported.",
             json_schema_extra=MetadataSerialization(
                 validation_policy=ValidationPolicy(
-                    required=True, enforcement_level="recommended"
+                    required=True,
+                    enforcement_level="recommended",
                 )
             ).model_dump(),
         ),
@@ -559,13 +695,67 @@ class Publication(IdentifiableModel):
     publication_items: Annotated[
         Optional[List[PublicationItem]],
         Field(
-            alias="publicationItems",
             description="The publication item ids referenced by this publication.",
             json_schema_extra=MetadataSerialization(
                 object_level_value=True,
                 list_concatenation_str="|",
                 validation_policy=ValidationPolicy(required=True, minimum=1),
             ).model_dump(),
+        ),
+    ] = None
+
+
+class StudyVariableGroup(IdentifiableModel):
+    name: Annotated[
+        Optional[Parameter],
+        Field(
+            description="The study variable group name.",
+            json_schema_extra=MetadataSerialization(
+                object_level_value=True,
+                validation_policy=ValidationPolicy(required=True),
+            ).model_dump(),
+        ),
+    ] = None
+
+    description: Annotated[
+        Optional[str],
+        Field(
+            description="Description of the study variable group.",
+            json_schema_extra=MetadataSerialization().model_dump(),
+        ),
+    ] = None
+
+    type: Annotated[
+        Optional[Parameter],
+        Field(
+            description="The study variable group type, as defined by the parameter.",
+            json_schema_extra=MetadataSerialization().model_dump(),
+        ),
+    ] = None
+    datatype: Annotated[
+        Optional[
+            Literal[
+                "xsd:string",
+                "xsd:integer",
+                "xsd:decimal",
+                "xsd:boolean",
+                "xsd:date",
+                "xsd:time",
+                "xsd:dateTime",
+                "xsd:anyURI",
+            ]
+        ],
+        Field(
+            description="The study variable group datatype",
+            json_schema_extra=MetadataSerialization().model_dump(),
+        ),
+    ] = None
+
+    unit: Annotated[
+        Optional[Parameter],
+        Field(
+            description="The study variable group unit, as defined by the parameter.",
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
 
@@ -581,12 +771,37 @@ class StudyVariable(IdentifiableModel):
             ).model_dump(),
         ),
     ] = None
+    group_ref: Annotated[
+        Optional[int],
+        Field(
+            description="The study variable group this study variable belongs to.",
+            json_schema_extra=MetadataSerialization(
+                referenced_field_name="study_variable_group",
+                validation_policy=ValidationPolicy(
+                    value_constraint="non-negative-integer"
+                ),
+            ).model_dump(),
+        ),
+    ] = None
     assay_refs: Annotated[
         Optional[List[int]],
         Field(
             description="The assays referenced by this study variable.",
             json_schema_extra=MetadataSerialization(
                 referenced_field_name="assay",
+                list_concatenation_str="|",
+                validation_policy=ValidationPolicy(
+                    value_constraint="non-negative-integer"
+                ),
+            ).model_dump(),
+        ),
+    ] = None
+    ms_run_refs: Annotated[
+        Optional[List[int]],
+        Field(
+            description="The ms run(s) referenced by this study variable.",
+            json_schema_extra=MetadataSerialization(
+                referenced_field_name="ms_run",
                 list_concatenation_str="|",
                 validation_policy=ValidationPolicy(
                     value_constraint="non-negative-integer"
@@ -633,10 +848,12 @@ class StudyVariable(IdentifiableModel):
     ] = None
 
 
-class SpectraRef(MzTabSerializableModel, CustomSerializer):
-    ms_run: Annotated[
+class SpectraReference(MzTabSerializableModel, CustomSerializer):
+    ms_run_ref: Annotated[
         Optional[int],
         Field(
+            validation_alias="ms_run",
+            # alias="ms_run_ref",
             description="Reference to MsRun",
             json_schema_extra=MetadataSerialization(
                 validation_policy=ValidationPolicy(
@@ -657,17 +874,17 @@ class SpectraRef(MzTabSerializableModel, CustomSerializer):
     ] = None
 
     def to_tsv(self, context: SerializationContext) -> str:
-        return f"ms_run[{self.ms_run}]:{self.reference}"
+        return f"ms_run[{self.ms_run_ref}]:{self.reference}"
 
     @model_validator(mode="wrap")
     @classmethod
     def validate_model(
         cls,
         data: Any,
-        handler: ModelWrapValidatorHandler["SpectraRef"],
+        handler: ModelWrapValidatorHandler["SpectraReference"],
         info: ValidationInfo,
-    ) -> "SpectraRef":
-        if isinstance(data, SpectraRef):
+    ) -> "SpectraReference":
+        if isinstance(data, SpectraReference):
             return handler(data)
         if info and isinstance(info.context, ValidationContext):
             if info.context.source_format in {"json", "yaml"}:
@@ -684,7 +901,7 @@ class SpectraRef(MzTabSerializableModel, CustomSerializer):
             ms_run_val = parts[0].removeprefix("ms_run").strip("[]")
             ms_run = int(ms_run_val)
             val = {
-                "ms_run": ms_run,
+                "ms_run_ref": ms_run,
                 "reference": parts[1].strip(),
             }
         return handler(val)
@@ -870,7 +1087,7 @@ __all__ = [
     "Database",
     "Publication",
     "StudyVariable",
-    "SpectraRef",
+    "SpectraReference",
     "ColumnParameterMapping",
     "OptColumnMapping",
     "Comment",
