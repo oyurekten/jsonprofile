@@ -51,16 +51,16 @@ def check_validation_policies(
         elif isinstance(json_extra.validation_policy, ValidationPolicy):
             policies = [json_extra.validation_policy]
         for policy in policies:
+            message_type = MessageTypeMap.get(policy.enforcement_level, "required")
+            enforcement = policy.enforcement_level or "required"
             if policy.required and not val:
                 item_ref = new_ref.copy()
                 messages.append(
                     MzTabMessage(
                         code="",
                         category=Category.CROSS_CHECK,
-                        message_type=MessageTypeMap.get(
-                            policy.enforcement_level, "required"
-                        ),
-                        message=f"'{to_jsonpath(item_ref)}' is required.",
+                        message_type=message_type,
+                        message=f"'{to_jsonpath(item_ref)}' is {enforcement}.",
                         source=to_jsonpath(item_ref),
                     )
                 )
@@ -75,9 +75,7 @@ def check_validation_policies(
                                 MzTabMessage(
                                     code="",
                                     category=Category.CROSS_CHECK,
-                                    message_type=MessageTypeMap.get(
-                                        policy.enforcement_level, "required"
-                                    ),
+                                    message_type=message_type,
                                     message=f"'{to_jsonpath(list_ref)}' value "
                                     f"constraint violation. "
                                     f"Expected value format {policy.value_constraint}. "
@@ -93,9 +91,7 @@ def check_validation_policies(
                             MzTabMessage(
                                 code="",
                                 category=Category.CROSS_CHECK,
-                                message_type=MessageTypeMap.get(
-                                    policy.enforcement_level, "required"
-                                ),
+                                message_type=message_type,
                                 message=f"'{to_jsonpath(item_ref)}' value "
                                 f"constraint violation. "
                                 f"Expected value format {policy.value_constraint}. "
@@ -114,9 +110,7 @@ def check_validation_policies(
                                 MzTabMessage(
                                     code="",
                                     category=Category.CROSS_CHECK,
-                                    message_type=MessageTypeMap.get(
-                                        policy.enforcement_level, "required"
-                                    ),
+                                    message_type=message_type,
                                     message=f"'{to_jsonpath(list_ref)}' pattern "
                                     f"match violation. "
                                     f"Expected pattern {policy.pattern}",
@@ -131,9 +125,7 @@ def check_validation_policies(
                             MzTabMessage(
                                 code="",
                                 category=Category.CROSS_CHECK,
-                                message_type=MessageTypeMap.get(
-                                    policy.enforcement_level, "required"
-                                ),
+                                message_type=message_type,
                                 message=f"'{to_jsonpath(item_ref)}' pattern "
                                 f"match violation."
                                 f"Expected pattern is {policy.pattern}",
@@ -154,9 +146,7 @@ def check_validation_policies(
                     MzTabMessage(
                         code="",
                         category=Category.CROSS_CHECK,
-                        message_type=MessageTypeMap.get(
-                            policy.enforcement_level, "required"
-                        ),
+                        message_type=message_type,
                         message=f"'{to_jsonpath(item_ref)}' min length violation. "
                         f"Expected minimum length is {policy.minimum}",
                         source=to_jsonpath(item_ref),
@@ -176,9 +166,7 @@ def check_validation_policies(
                     MzTabMessage(
                         code="",
                         category=Category.CROSS_CHECK,
-                        message_type=MessageTypeMap.get(
-                            policy.enforcement_level, "required"
-                        ),
+                        message_type=message_type,
                         message=f"'{to_jsonpath(item_ref)}' max length violation. "
                         f"Expected minimum length is {policy.max}",
                         source=to_jsonpath(item_ref),
@@ -266,7 +254,7 @@ def _check_referenced_items(
         ("metadata", "ms_run", "instrument_ref", "instrument"),
         ("metadata", "assay", "sample_ref", "sample"),
         ("metadata", "assay", "ms_run_refs", "ms_run"),
-        ("metadata", "study_variable", "group_ref", "study_variable_group"),
+        ("metadata", "study_variable", "group_refs", "study_variable_group"),
         ("metadata", "study_variable", "assay_refs", "assay"),
         ("small_molecule_summary", None, "smf_id_refs", "small_molecule_feature"),
         ("small_molecule_feature", None, "sme_id_refs", "small_molecule_evidence"),
@@ -324,11 +312,9 @@ def _check_referenced_items(
             elif target:
                 field_ref_name = (
                     f"{field_ref}"
-                    if target_idx is None
+                    if field is None or target_idx is None
                     else f"{field}[{target_idx}] {field_ref}"
                 )
-                if isinstance(target, tuple):
-                    pass
                 _check_references(
                     references,
                     field_ref_name,
@@ -352,6 +338,16 @@ def _check_referenced_items(
                         continue
                     if idx <= length:
                         reference_hits["study_variable"][idx] += 1
+    if "assay" in reference_hits:
+        for section in ["small_molecule_summary", "small_molecule_feature"]:
+            section_data = getattr(model, section, [])
+            if section_data:
+                length = len(getattr(section_data[0], "abundance_assay", []) or [])
+                for idx in reference_hits["assay"]:
+                    if idx is None:
+                        continue
+                    if idx <= length:
+                        reference_hits["assay"][idx] += 1
 
     return reference_hits
 

@@ -51,7 +51,7 @@ ValueConstraint = Literal[
     "email",
 ]
 
-EnforcementLevel = Literal["optional", "recommended", "required"]
+EnforcementLevel = Literal["recommended", "required"]
 
 
 class ValidationPolicy(MzTabBaseModel):

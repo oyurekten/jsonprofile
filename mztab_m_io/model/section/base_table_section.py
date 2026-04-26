@@ -6,7 +6,7 @@ from pydantic import (
 
 from mztab_m_io.model.base import MzTabBaseModel
 from mztab_m_io.model.common import Comment
-from mztab_m_io.model.field_utils import get_field_type_info
+from mztab_m_io.model.field_utils import get_field_type_info, sanitize_str
 from mztab_m_io.model.serialization import (
     CustomSerializer,
     SerializationContext,
@@ -109,7 +109,7 @@ class BaseTableSection(MzTabBaseModel, CustomSerializer):
                         row.append(self._serialize_value(val, context))
         row_data = [self.prefix]
         row_data.extend(row)
-        data = "\t".join(row_data)
+        data = "\t".join([sanitize_str(str(x)) for x in row_data])
         if self.comment:
             data += "\n" + "\n".join(
                 [comment.to_tsv(context) for comment in self.comment]

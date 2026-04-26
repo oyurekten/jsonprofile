@@ -310,7 +310,7 @@ class SmallMoleculeEvidence(BaseTableSection):
             "all replicates). Column names MUST only contain the following characters: "
             "'A'-'Z', 'a'-'z', '0'-'9', '_', '-', '[', ']', and ':'. "
             "CV parameter accessions MAY be used for optional columns following "
-            "the format: opt{identifier}_cv_{accession}_{parameter name}. "
+            "the format: opt_{identifier}_cv_{accession}_{parameter name}. "
             "Spaces within the parameter's name MUST be replaced by '_'. ",
             examples=[
                 "opt_assay[1]_my_value=My value",

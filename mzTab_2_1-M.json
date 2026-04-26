@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/HUPO-PSI/mzTab-M/tree/main/schema/mzTab_2_0-M.json",
-  "title": "mzTab 2.0 M Schema",
+  "$id": "https://github.com/HUPO-PSI/mzTab-M/tree/main/schema/mzTab_2_1-M.json",
+  "title": "mzTab 2.1 M Schema",
   "type": "object",
   "properties": {
     "mztab": {
@@ -77,7 +77,6 @@
       "x-mztab-example": "MTD\tmzTab-version\t2.0.0-M\nMTD\tmzTab-ID\tMTBL1234\nMTD\ttitle\tEffects of Rapamycin on metabolite profile\n...\n",
       "required": [
         "prefix",
-        "description",
         "mzTab-version",
         "mzTab-ID",
         "quantification_method",
@@ -88,7 +87,6 @@
         "cv",
         "database",
         "small_molecule-quantification_unit",
-        "small_molecule_feature-quantification_unit",
         "id_confidence_measure"
       ],
       "properties": {
@@ -287,7 +285,7 @@
         "id_confidence_measure": {
           "type": "array",
           "description": "The type of small molecule confidence measures or scores MUST be reported as a CV parameter [1-n]. The CV parameter definition should formally state whether the ordering is high to low or vice versa. The order of the scores SHOULD reflect their importance for the identification and be used to determine the identification’s rank.",
-          "default": [],
+          "minItems": 1,
           "items": {
             "$ref": "#/definitions/Parameter"
           },
@@ -383,7 +381,7 @@
           "type": "integer",
           "description": "A within file unique identifier for the small molecule.",
           "x-mztab-example": "SMH\tSML_ID\t…\nSML\t1\t…\nSML\t2\t…\n",
-          "format": "int32",
+          "format": "int64",
           "minimum": 1
         },
         "smf_id_refs": {
@@ -393,98 +391,183 @@
           "default": [],
           "items": {
             "type": "integer",
-            "format": "int32",
+            "format": "int64",
             "minimum": 1
           }
         },
         "database_identifier": {
-          "type": "array",
           "description": "A list of “|” separated possible identifiers for the small molecule; multiple values MUST only be provided to indicate ambiguity in the identification of the molecule and not to demonstrate different identifier types for the same molecule. Alternative identifiers for the same molecule MAY be provided as optional columns.\n\nThe database identifier must be preceded by the resource description (prefix) followed by a colon, as specified in the metadata section.    \n\nA null value MAY be provided if the identification is sufficiently ambiguous as to be meaningless for reporting or the small molecule has not been identified.\n",
           "x-mztab-example": "A list of “|” separated possible identifiers for the small molecule; multiple values MUST only be provided to indicate ambiguity in the identification of the molecule and not to demonstrate different identifier types for the same molecule. Alternative identifiers for the same molecule MAY be provided as optional columns.\n\nThe database identifier must be preceded by the resource description (prefix) followed by a colon, as specified in the metadata section.\n\nA null value MAY be provided if the identification is sufficiently ambiguous as to be meaningless for reporting or the small molecule has not been identified.\n",
           "default": [],
-          "items": {
-            "type": "string"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "chemical_formula": {
-          "type": "array",
           "description": "A list of “|” separated potential chemical formulae of the reported compound. The number of values provided MUST match the number of entities reported under “database_identifier”, even if this leads to redundant reporting of information (i.e. if ambiguity can be resolved in the chemical formula), and the validation software will throw an error if the number of “|” symbols does not match. “null” values between bars are allowed.\n\nThis should be specified in Hill notation (EA Hill 1900), i.e. elements in the order C, H and then alphabetically all other elements. Counts of one may be omitted. Elements should be capitalized properly to avoid confusion (e.g., “CO” vs. “Co”). The chemical formula reported should refer to the neutral form.\n\nExample: N-acetylglucosamine would be encoded by the string “C8H15NO6”.\n",
           "x-mztab-example": "SMH\tSML_ID\t…\tchemical_formula\t…\nSML\t1\t…\tC17H20N4O2\t…\n",
           "default": [],
-          "items": {
-            "type": "string"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "smiles": {
-          "type": "array",
           "description": "A list of “|” separated potential molecule structures in the simplified molecular-input line-entry system (SMILES) for the small molecule. The number of values provided MUST match the number of entities reported under “database_identifier”, and the validation software will throw an error if the number of “|” symbols does not match. “null” values between bars are allowed.",
           "x-mztab-example": "SMH\tSML_ID\t…\tchemical_formula\tsmiles\t…\nSML\t1\t…\tC17H20N4O2\tC1=CC=C(C=C1)CCNC(=O)CCNNC(=O)C2=CC=NC=C2\t…\n",
           "default": [],
-          "items": {
-            "type": "string"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "inchi": {
-          "type": "array",
           "description": "A list of “|” separated potential standard IUPAC International Chemical Identifier (InChI) of the given substance.\n\nThe number of values provided MUST match the number of entities reported under “database_identifier”, even if this leads to redundant information being reported (i.e. if ambiguity can be resolved in the InChi), and the validation software will throw an error if the number of “|” symbols does not match. “null” values between bars are allowed.\n",
           "x-mztab-example": "SMH\tSML_ID\t…\tchemical_formula\t…\tinchi\t…\nSML\t1\t…\tC17H20N4O2\t…\tInChI=1S/C17H20N4O2/c22-16(19-12-6-14-4-2-1-3-5-14)9-13-20-21-17(23)15-7-10-18-11-8-15/h1-5,7-8,10-11,20H,6,9,12-13H2,(H,19,22)(H,21,23)\t…\n",
           "default": [],
-          "items": {
-            "type": "string"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "chemical_name": {
-          "type": "array",
           "description": "A list of “|” separated possible chemical/common names for the small molecule, or general description if a chemical name is unavailable. Multiple names are only to demonstrate ambiguity in the identification. The number of values provided MUST match the number of entities reported under “database_identifier”, and the validation software will throw an error if the number of “|” symbols does not match. “null” values between bars are allowed.\n",
           "x-mztab-example": "SMH\tSML_ID\t…\tdescription\t…\nSML\t1\t…\tN-(2-phenylethyl)-3-[2-(pyridine-4-carbonyl)hydrazinyl]propanamide\t…\n",
           "default": [],
-          "items": {
-            "type": "string"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "uri": {
-          "type": "array",
           "description": "A URI pointing to the small molecule’s entry in a reference database (e.g., the small molecule’s HMDB or KEGG entry). The number of values provided MUST match the number of entities reported under “database_identifier”, and the validation software will throw an error if the number of “|” symbols does not match. “null” values between bars are allowed.",
           "x-mztab-example": "SMH\tSML_ID\t…\turi\t…\nSML\t1\t…\thttp://www.genome.jp/dbget-bin/www_bget?cpd:C00031\t…\nSML\t2\t…\thttps://www.hmdb.ca/metabolites/HMDB0001847\t…\nSML\t3\t…\thttps://identifiers.org/hmdb/HMDB0001847\t…\n",
           "default": [],
-          "items": {
-            "type": "string",
-            "format": "uri"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uri"
+              },
+              "minItems": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "theoretical_neutral_mass": {
-          "type": "array",
           "description": "The small molecule’s precursor’s theoretical neutral mass.\n\nThe number of values provided MUST match the number of entities reported under “database_identifier”, and the validation software will throw an error if the number of “|” symbols does not match. “null” values (in general and between bars) are allowed for molecules that have not been identified only, or for molecules where the neutral mass cannot be calculated. In these cases, the SML entry SHOULD reference features in which exp_mass_to_charge values are captured.\n",
           "x-mztab-example": "SMH\tSML_ID\t…\ttheoretical_neutral_mass\t…\nSML\t1\t…\t1234.5\t…\n",
           "default": [],
-          "items": {
-            "type": "number",
-            "format": "double"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "format": "double"
+              },
+              "minItems": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "adduct_ions": {
-          "type": "array",
           "description": "A “|” separated list of detected adducts for this this molecule, following the general style in the 2013 IUPAC recommendations on terms relating to MS e.g. [M+H]1+, [M+Na]1+, [M+NH4]1+, [M-H]1-, [M+Cl]1-, [M+H]1+. If the adduct classification is ambiguous with regards to identification evidence it MAY be null.\n",
           "x-mztab-example": "SMH\tSML_ID\t…\tadduct_ions\t…\nSML\t1\t…\t[M+H]1+ | [M+Na]1+\t…\n",
           "default": [],
-          "pattern": "^\\[\\d*M([+-][\\w\\d]+)*\\]\\d*[+-]$",
-          "items": {
-            "type": "string"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^\\[\\d*M([+-][\\w\\d]+)*\\]\\d*[+-]$"
+              },
+              "minItems": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "reliability": {
-          "type": "string",
           "description": "The reliability of the given small molecule identification. This must be supplied by the resource and MUST be reported as an integer between 1-4:\n\n    identified metabolite (1)\n\n    putatively annotated compound (2)\n\n    putatively characterized compound class (3)\n\n    unknown compound (4)\n\nThese MAY be replaced using a suitable CV term in the metadata section e.g. to use MSI recommendation levels (see Section 6.2.57 for details).\n\nThe following CV terms are already available within the PSI MS CV. Future schemes may be implemented by extending the PSI MS CV with new terms and associated levels.\n\nThe MSI has recently discussed an extension of the original four level scheme into a five level scheme MS:1002896 (compound identification confidence level) with levels\n\n    isolated, pure compound, full stereochemistry (0)\n\n    reference standard match or full 2D structure (1)\n\n    unambiguous diagnostic evidence (literature, database) (2)\n\n    most likely structure, including isomers, substance class or substructure match (3)\n\n    unknown compound (4)\n\nFor high-resolution MS, the following term and its levels may be used: MS:1002955 (hr-ms compound identification confidence level) with levels\n\n    confirmed structure (1)\n\n    probable structure (2)\n\n        unambiguous ms library match (2a)\n\n        diagnostic evidence (2b)\n\n    tentative candidates (3)\n\n    unequivocal molecular formula (4)\n\n    exact mass (5)\n\nA String data type is set to allow for different systems to be specified in the metadata section.\n",
-          "x-mztab-example": "SMH\tidentifier\t…\treliability\t…\nSML\t1\t…\t3\t…\n\nor\nMTD\tsmall_molecule-identification_reliability\t[MS, MS:1002896, compound identification confidence level,]\n…\nSMH\tidentifier\t…\treliability\t…\nSML\t1\t…\t0\t…\n\nor\nMTD\tsmall_molecule-identification_reliability\t[MS, MS:1002955, hr-ms compound identification confidence level,]\n…\nSMH\tidentifier\t…\treliability\t…\nSML\t1\t…\t2a\t…\n"
+          "x-mztab-example": "SMH\tidentifier\t…\treliability\t…\nSML\t1\t…\t3\t…\n\nor\nMTD\tsmall_molecule-identification_reliability\t[MS, MS:1002896, compound identification confidence level,]\n…\nSMH\tidentifier\t…\treliability\t…\nSML\t1\t…\t0\t…\n\nor\nMTD\tsmall_molecule-identification_reliability\t[MS, MS:1002955, hr-ms compound identification confidence level,]\n…\nSMH\tidentifier\t…\treliability\t…\nSML\t1\t…\t2a\t…\n",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "best_id_confidence_measure": {
-          "$ref": "#/definitions/Parameter"
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Parameter"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "best_id_confidence_value": {
-          "type": "number",
           "description": "The best confidence measure in identification (for this type of score) for the given small molecule across all assays. The type of score MUST be defined in the metadata section. If the small molecule was not identified by the specified search engine, “null” MUST be reported. If the confidence measure does not report a numerical confidence value, “null” SHOULD be reported.",
           "x-mztab-example": "SMH\tSML_ID\t…\tbest_id_confidence_value\t…\nSML\t1\t…\t0.7\t…\n",
-          "format": "double"
+          "anyOf": [
+            {
+              "type": "number",
+              "format": "double"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "abundance_assay": {
           "type": "array",
@@ -556,8 +639,18 @@
                 "$ref": "#/definitions/Parameter"
               },
               "value": {
-                "type": "string",
-                "description": "The value for this column in a particular row."
+                "description": "The value for this column in a particular row.",
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/Parameter"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               }
             }
           }
@@ -594,7 +687,7 @@
           "type": "integer",
           "description": "A within file unique identifier for the small molecule feature.",
           "x-mztab-example": "SFH\tSMF_ID\t…\nSMF\t1\t…\nSMF\t2\t…\n",
-          "format": "int32",
+          "format": "int64",
           "minimum": 1
         },
         "sme_id_refs": {
@@ -604,24 +697,45 @@
           "default": [],
           "items": {
             "type": "integer",
-            "format": "int32",
+            "format": "int64",
             "minimum": 1
           }
         },
         "sme_id_ref_ambiguity_code": {
-          "type": "integer",
           "description": "If multiple values are given under SME_ID_REFS, one of the following codes MUST be provided. 1=Ambiguous identification; 2=Only different evidence streams for the same molecule with no ambiguity; 3=Both ambiguous identification and multiple evidence streams. If there are no or one value under SME_ID_REFs, this MUST be reported as null.",
           "x-mztab-example": "SFH\tSMF_ID\tSME_ID_REFS\tSME_ID_REF_ambiguity_code\nSMF\t1\t5|6|12…\t1\n",
-          "format": "int32"
+          "anyOf": [
+            {
+              "type": "integer",
+              "format": "int64"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "adduct_ion": {
-          "type": "string",
           "description": "The assumed classification of this molecule’s adduct ion after detection, following the general style in the 2013 IUPAC recommendations on terms relating to MS e.g. [M+H]1+, [M+Na]1+, [M+NH4]1+, [M-H]1-, [M+Cl]1-, [M+H]1+.",
           "x-mztab-example": "SFH\tSMF_ID\t…\tadduct_ion\t…\nSMF\t1\t…\t[M+H]+\t…\nSMF\t2\t…\t[M+2Na]2+\t…\n",
-          "pattern": "^\\[\\d*M([+-][\\w\\d]+)*\\]\\d*[+-]$"
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^\\[\\d*M([+-][\\w\\d]+)*\\]\\d*[+-]$"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "isotopomer": {
-          "$ref": "#/definitions/Parameter"
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Parameter"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "exp_mass_to_charge": {
           "type": "number",
@@ -633,25 +747,46 @@
           "type": "integer",
           "description": "The feature’s charge value using positive integers both for positive and negative polarity modes.",
           "x-mztab-example": "SFH\tSMF_ID\t…\tcharge\t…\nSMF\t1\t…\t1\t…\n",
-          "format": "int32"
+          "format": "int64"
         },
         "retention_time_in_seconds": {
-          "type": "number",
           "description": "The apex of the feature on the retention time axis, in a Master or aggregate MS run. Retention time MUST be reported in seconds. Retention time values for individual MS runs (i.e. before alignment) MAY be reported as optional columns. Retention time SHOULD only be null in the case of direct infusion MS or other techniques where a retention time value is absent or unknown. Relative retention time or retention time index values MAY be reported as optional columns, and could be considered for inclusion in future versions of mzTab as appropriate.",
           "x-mztab-example": "SFH\tSMF_ID\t…\tretention_time_in_seconds\t…\nSMF\t1\t…\t1345.7\t…\n",
-          "format": "double"
+          " anyOf": [
+            {
+              "type": "number",
+              "format": "double"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "retention_time_in_seconds_start": {
-          "type": "number",
           "description": "The start time of the feature on the retention time axis, in a Master or aggregate MS run. Retention time MUST be reported in seconds. Retention time start and end SHOULD only be null in the case of direct infusion MS or other techniques where a retention time value is absent or unknown and MAY be reported in optional columns.",
           "x-mztab-example": "SFH\tSMF_ID\t…\tretention_time_in_seconds_start\t…\nSMF\t1\t…\t1327.0\t…\n",
-          "format": "double"
+          "anyOf": [
+            {
+              "type": "number",
+              "format": "double"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "retention_time_in_seconds_end": {
-          "type": "number",
           "description": "The end time of the feature on the retention time axis, in a Master or aggregate MS run. Retention time MUST be reported in seconds. Retention time start and end SHOULD only be null in the case of direct infusion MS or other techniques where a retention time value is absent or unknown and MAY be reported in optional columns..",
           "x-mztab-example": "SFH\tSMF_ID\t…\tretention_time_in_seconds_end\t…\nSMF\t1\t…\t1327.8\t…\n",
-          "format": "double"
+          "anyOf": [
+            {
+              "type": "number",
+              "format": "double"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "abundance_assay": {
           "type": "array",
@@ -689,8 +824,18 @@
                 "$ref": "#/definitions/Parameter"
               },
               "value": {
-                "type": "string",
-                "description": "The value for this column in a particular row."
+                "description": "The value for this column in a particular row.",
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/definitions/Parameter"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               }
             }
           }
@@ -738,7 +883,7 @@
           "type": "integer",
           "description": "A within file unique identifier for the small molecule evidence result.",
           "x-mztab-example": "SEH\tSME_ID\t…\nSME\t1\t…\n",
-          "format": "int32"
+          "format": "int64"
         },
         "evidence_input_id": {
           "type": "string",
@@ -746,44 +891,102 @@
           "x-mztab-example": "SEH\tSME_ID\tevidence_input_id\t…\nSME\t1\tms_run[1]:mass=278.65;rt=376.5\nSME\t2\tms_run[1]:mass=278.65;rt=376.5\nSME\t3\tms_run[1]:mass=278.65;rt=376.5\n(in this example three identifications were made from the same accurate mass/RT library search)\n"
         },
         "database_identifier": {
-          "type": "string",
           "description": "The putative identification for the small molecule sourced from an external database, using the same prefix specified in database[1-n]-prefix.\n\nThis could include additionally a chemical class or an identifier to a spectral library entity, even if its actual identity is unknown.\n\nFor the “no database” case, \"null\" must be used. The unprefixed use of \"null\" is prohibited for any other case. If no putative identification can be reported for a particular database, it MUST be reported as the database prefix followed by null.\n",
-          "x-mztab-example": "SEH\tSME_ID\tidentifier\t…\nSME\t1\tCID:00027395\t…\nSME\t2\tHMDB:HMDB0001847\t…\nSME\t3\tCID:null\t…\n"
+          "x-mztab-example": "SEH\tSME_ID\tidentifier\t…\nSME\t1\tCID:00027395\t…\nSME\t2\tHMDB:HMDB0001847\t…\nSME\t3\tCID:null\t…\n",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "chemical_formula": {
-          "type": "string",
           "description": "The chemical formula of the identified compound e.g. in a database, assumed to match the theoretical mass to charge (in some cases this will be the derivatized form, including adducts and protons).\n\nThis should be specified in Hill notation (EA Hill 1900), i.e. elements in the order C, H and then alphabetically all other elements. Counts of one may be omitted. Elements should be capitalized properly to avoid confusion (e.g., “CO” vs. “Co”). The chemical formula reported should refer to the neutral form. Charge state is reported by the charge field.\n\nExample N-acetylglucosamine would be encoded by the string “C8H15NO6”\n",
-          "x-mztab-example": "SEH\tSME_ID\t…\tchemical_formula\t…\nSME\t1\t…\tC17H20N4O2\t…\n"
+          "x-mztab-example": "SEH\tSME_ID\t…\tchemical_formula\t…\nSME\t1\t…\tC17H20N4O2\t…\n",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "smiles": {
-          "type": "string",
           "description": "The potential molecule’s structure in the simplified molecular-input line-entry system (SMILES) for the small molecule.",
-          "x-mztab-example": "SEH\tSME_ID\t…\tchemical_formula\tsmiles\t…\nSML\t1\t…\tC17H20N4O2\tC1=CC=C(C=C1)CCNC(=O)CCNNC(=O)C2=CC=NC=C2\t…\n"
+          "x-mztab-example": "SEH\tSME_ID\t…\tchemical_formula\tsmiles\t…\nSML\t1\t…\tC17H20N4O2\tC1=CC=C(C=C1)CCNC(=O)CCNNC(=O)C2=CC=NC=C2\t…\n",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "inchi": {
-          "type": "string",
           "description": "A standard IUPAC International Chemical Identifier (InChI) for the given substance.",
-          "x-mztab-example": "SEH\tSME_ID\t…\tchemical_formula\t…\tinchi\t…\nSML\t1\t…\tC17H20N4O2\t…\tInChI=1S/C17H20N4O2/c22-16(19-12-6-14-4-2-1-3-5-14)9-13-20-21-17(23)15-7-10-18-11-8-15/h1-5,7-8,10-11,20H,6,9,12-13H2,(H,19,22)(H,21,23)\t…\n"
+          "x-mztab-example": "SEH\tSME_ID\t…\tchemical_formula\t…\tinchi\t…\nSML\t1\t…\tC17H20N4O2\t…\tInChI=1S/C17H20N4O2/c22-16(19-12-6-14-4-2-1-3-5-14)9-13-20-21-17(23)15-7-10-18-11-8-15/h1-5,7-8,10-11,20H,6,9,12-13H2,(H,19,22)(H,21,23)\t…\n",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "chemical_name": {
-          "type": "string",
           "description": "The small molecule’s chemical/common name, or general description if a chemical name is unavailable.",
-          "x-mztab-example": "SEH\tSME_ID\t…\tchemical_name\t…\nSML\t1\t…\tN-(2-phenylethyl)-3-[2-(pyridine-4-carbonyl)hydrazinyl]propanamide\t…\n"
+          "x-mztab-example": "SEH\tSME_ID\t…\tchemical_name\t…\nSML\t1\t…\tN-(2-phenylethyl)-3-[2-(pyridine-4-carbonyl)hydrazinyl]propanamide\t…\n",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "uri": {
-          "type": "string",
           "description": "A URI pointing to the small molecule’s entry in a database (e.g., the small molecule’s HMDB, Chebi or KEGG entry).",
           "x-mztab-example": "SEH\tSME_ID\t…\turi\t…\nSME\t1\t…\thttps://www.hmdb.ca/metabolites/HMDB0001847\n",
-          "format": "uri"
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uri"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "derivatized_form": {
-          "$ref": "#/definitions/Parameter"
+          "description": "If a derivatized form has been analysed by MS, then the functional group attached to the molecule should be reported here using suitable userParam or CV terms as appropriate.",
+          "x-mztab-example": "SEH\tSME_ID\t…\tderivatized_form\t…\nSEH\t1\t…\t[CHEBI, CHEBI:51088, trimethylsilyl group, 3]\t…\n",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Parameter"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "adduct_ion": {
-          "type": "string",
           "description": "The assumed classification of this molecule’s adduct ion after detection, following the general style in the 2013 IUPAC recommendations on terms relating to MS e.g. [M+H]+, [M+Na]1+, [M+NH4]1+, [M-H]1-, [M+Cl]1-. If the adduct classification is ambiguous with regards to identification evidence it MAY be null.",
           "x-mztab-example": "SEH\tSME_ID\t…\tadduct_ion\t…\nSME\t1\t…\t[M+H]+\t…\nSME\t2\t…\t[M+2Na]2+\t…\nOR (for negative mode):\nSME\t1\t…\t[M-H]-\t…\nSME\t2\t…\t[M+Cl]-\t…\n",
-          "pattern": "^\\[\\d*M([+-][\\w\\d]+)*\\]\\d*[+-]$"
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^\\[\\d*M([+-][\\w\\d]+)*\\]\\d*[+-]$"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "exp_mass_to_charge": {
           "type": "number",
@@ -795,7 +998,7 @@
           "type": "integer",
           "description": "The small molecule evidence’s charge value using positive integers both for positive and negative polarity modes.",
           "x-mztab-example": "SEH\tSME_ID\t…\tcharge\t…\nSME\t1\t…\t1\t…\n",
-          "format": "int32"
+          "format": "int64"
         },
         "theoretical_mass_to_charge": {
           "type": "number",
@@ -839,7 +1042,7 @@
           "type": "integer",
           "description": "The rank of this identification from this approach as increasing integers from 1 (best ranked identification). Ties (equal score) are represented by using the same rank – defaults to 1 if there is no ranking system used.",
           "x-mztab-example": "SEH\tSME_ID\t…\trank\t…\nSME\t1\t…\t1\t…\n",
-          "format": "int32",
+          "format": "int64",
           "minimum": 1,
           "default": 1
         },
@@ -862,8 +1065,18 @@
                 "$ref": "#/definitions/Parameter"
               },
               "value": {
-                "type": "string",
-                "description": "The value for this column in a particular row."
+                "description": "The value for this column in a particular row.",
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/definitions/Parameter"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               }
             }
           }
@@ -885,7 +1098,7 @@
       "properties": {
         "id": {
           "type": "integer",
-          "format": "int32",
+          "format": "int64",
           "minimum": 1
         },
         "cv_label": {
@@ -948,7 +1161,7 @@
       "properties": {
         "id": {
           "type": "integer",
-          "format": "int32",
+          "format": "int64",
           "minimum": 1
         },
         "name": {
@@ -978,7 +1191,7 @@
       "properties": {
         "id": {
           "type": "integer",
-          "format": "int32",
+          "format": "int64",
           "minimum": 1
         },
         "sample_processing": {
@@ -999,7 +1212,7 @@
       "properties": {
         "id": {
           "type": "integer",
-          "format": "int32",
+          "format": "int64",
           "minimum": 1
         },
         "parameter": {
@@ -1024,7 +1237,7 @@
       "properties": {
         "id": {
           "type": "integer",
-          "format": "int32",
+          "format": "int64",
           "minimum": 1
         },
         "publication_items": {
@@ -1062,21 +1275,13 @@
       "properties": {
         "ms_run_ref": {
           "type": "integer",
-          "format": "int32",
+          "format": "int64",
           "minimum": 1
         },
         "reference": {
           "description": "The (vendor-dependendent) reference string to the actual mass spectrum.\n",
           "type": "string"
         }
-      }
-    },
-    "StringList": {
-      "type": "array",
-      "default": [],
-      "description": "A typed list of strings.",
-      "items": {
-        "type": "string"
       }
     },
     "Contact": {
@@ -1087,7 +1292,7 @@
       "properties": {
         "id": {
           "type": "integer",
-          "format": "int32",
+          "format": "int64",
           "minimum": 1
         },
         "name": {
@@ -1115,10 +1320,11 @@
       "x-mztab-example": "MTD\turi[1]\thttps://www.ebi.ac.uk/metabolights/MTBLS517\n…\nMTD\texternal_study_uri[1]\thttps://www.ebi.ac.uk/metabolights/MTBLS517/files/i_Investigation.txt\n",
       "type": "object",
       "x-mztab-serialize-by-id": "true",
+      "required": ["value"],
       "properties": {
         "id": {
           "type": "integer",
-          "format": "int32",
+          "format": "int64",
           "minimum": 1
         },
         "value": {
@@ -1136,7 +1342,7 @@
       "properties": {
         "id": {
           "type": "integer",
-          "format": "int32",
+          "format": "int64",
           "minimum": 1
         },
         "name": {
@@ -1194,11 +1400,11 @@
       "x-mztab-example": "COM\tlocation can be a local or remote URI\nMTD\tms_run[1]-location\tfile:///C:/path/to/my/file.mzML\nMTD\tms_run[1]-instrument_ref\tinstrument[1]\nMTD\tms_run[1]-format\t[MS, MS:1000584, mzML file, ]\nMTD\tms_run[1]-id_format\t[MS, MS:1000530, mzML unique identifier, ]\nMTD\tms_run[1]-fragmentation_method[1]\t[MS, MS:1000133, CID, ]\nCOM\tfor mixed polarity scan scenarios\nMTD\tms_run[1]-scan_polarity[1]\t[MS, MS:1000130, positive scan, ]\nMTD\tms_run[1]-scan_polarity[2]\t[MS, MS:1000129, negative scan, ]\nMTD\tms_run[1]-hash_method\t[MS, MS:1000569, SHA-1, ]\nMTD\tms_run[1]-hash\tde9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3\n",
       "x-mztab-serialize-by-id": "true",
       "type": "object",
-      "required": ["id", "location"],
+      "required": ["location", "scan_polarity"],
       "properties": {
         "id": {
           "type": "integer",
-          "format": "int32",
+          "format": "int64",
           "minimum": 1
         },
         "name": {
@@ -1220,7 +1426,7 @@
         },
         "instrument_ref": {
           "type": "integer",
-          "format": "int32",
+          "format": "int64",
           "minimum": 1,
           "description": "The instrument referenced by this msRun."
         },
@@ -1240,7 +1446,7 @@
         },
         "scan_polarity": {
           "type": "array",
-          "default": [],
+          "minItems": 1,
           "items": {
             "$ref": "#/definitions/Parameter"
           },
@@ -1260,7 +1466,7 @@
       "x-mztab-example": "MTD\tprotocol[1]-name\tMass spectrometry\nMTD\tprotocol[1]-type\t[CHMO, CHMO:0000470, mass spectrometry,]\nMTD\tprotocol[1]-description\tEluting compounds were detected from m/z 100-1000 using a hybrid quadrupole ...\nMTD\tprotocol[1]-parameters\t[MS, MS:1000008, ionization type, [MS,MS:1000073, electrospray ionization]] | [MS, MS:1003761, instrument class, [MS, MS:1003951, time-of-flight instrument]] |  [, , Scan m/z range, 100-1000]\n",
       "x-mztab-serialize-by-id": "true",
       "type": "object",
-      "required": ["id", "name", "type"],
+      "required": ["name", "type"],
       "properties": {
         "id": {
           "type": "integer",
@@ -1294,11 +1500,11 @@
       "x-mztab-example": "MTD\tstudy_variable_group[1]\tbiological_sex\nMTD\tstudy_variable_group[1]-description\tBiological sex of samples.\nMTD\tstudy_variable_group[2]\tdiabetes_treatment\nMTD\tstudy_variable_group[2]-description\tTreatment type for diabetes.\n",
       "x-mztab-serialize-by-id": "true",
       "type": "object",
-      "required": ["id", "name"],
+      "required": ["name"],
       "properties": {
         "id": {
           "type": "integer",
-          "format": "int32",
+          "format": "int64",
           "minimum": 1
         },
         "name": {
@@ -1338,29 +1544,39 @@
       "x-mztab-example": "MTD\tstudy_variable[1]\tcontrol\nMTD\tstudy_variable[1]-assay_refs\tassay[1]| assay[2]| assay[3]\nMTD\tstudy_variable-average_function\t[MS, MS:1002883, median, ]\nMTD\tstudy_variable-variation_function\t[MS, MS:1002885, standard error, ]\nMTD\tstudy_variable[1]-description\tGroup B (spike-in 0.74 fmol/uL)\nMTD\tstudy_variable[1]-factors\t[,,time point, 1 minute]|[,,rapamycin dose,0.5mg]\nMTD\tstudy_variable[2]\t1 minute 0.5mg rapamycin\n",
       "x-mztab-serialize-by-id": "true",
       "type": "object",
-      "required": ["id", "name"],
+      "required": ["name", "description", "assay_refs"],
       "properties": {
         "id": {
           "type": "integer",
-          "format": "int32",
+          "format": "int64",
           "minimum": 1
         },
         "name": {
           "type": "string",
           "description": "The study variable name."
         },
-        "group_ref": {
-          "type": "integer",
-          "format": "int32",
-          "minimum": 1,
+        "group_refs": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "minItems": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
           "description": "The study variable group referenced by this study variable."
         },
         "assay_refs": {
           "type": "array",
-          "default": [],
+          "minItems": 1,
           "items": {
             "type": "integer",
-            "format": "int32",
+            "format": "int64",
             "minimum": 1
           },
           "description": "The assays referenced by this study variable."
@@ -1368,10 +1584,9 @@
         "ms_run_refs": {
           "type": "array",
           "default": [],
-          "minItems": 1,
           "items": {
             "type": "integer",
-            "format": "int32",
+            "format": "int64",
             "minimum": 1
           },
           "description": "The ms run(s) referenced by this study variable."
@@ -1401,7 +1616,7 @@
       "properties": {
         "id": {
           "type": "integer",
-          "format": "int32",
+          "format": "int64",
           "minimum": 1
         },
         "name": {
@@ -1440,7 +1655,7 @@
         },
         "sample_ref": {
           "type": "integer",
-          "format": "int32",
+          "format": "int64",
           "minimum": 1,
           "description": "The sample referenced by this assay."
         },
@@ -1450,7 +1665,7 @@
           "minItems": 1,
           "items": {
             "type": "integer",
-            "format": "int32",
+            "format": "int64",
             "minimum": 1
           },
           "description": "The ms run(s) referenced by this assay."
@@ -1466,7 +1681,7 @@
       "properties": {
         "id": {
           "type": "integer",
-          "format": "int32",
+          "format": "int64",
           "minimum": 1
         },
         "label": {
@@ -1497,32 +1712,43 @@
       "properties": {
         "id": {
           "type": "integer",
-          "format": "int32",
+          "format": "int64",
           "minimum": 1
         },
         "param": {
           "$ref": "#/definitions/Parameter"
         },
         "prefix": {
-          "type": "string",
+          "description": "The database prefix.",
           "default": "null",
-          "description": "The database prefix."
-        },
-        "version": {
-          "type": "string",
-          "description": "The database version."
-        },
-        "uri": {
           "anyOf": [
-            {
-              "type": "string",
-              "format": "uri",
-              "description": "The URI to the online database."
-            },
             {
               "type": "string",
               "pattern": "^null$",
               "description": "no database."
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "version": {
+          "default": "Unknown",
+          "type": "string",
+          "description": "The database version."
+        },
+        "uri": {
+          "default": "null",
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^null$",
+              "description": "no database."
+            },
+            {
+              "type": "string",
+              "format": "uri",
+              "description": "The URI to the online database."
             }
           ]
         }
@@ -1568,7 +1794,7 @@
       "properties": {
         "code": {
           "type": "integer",
-          "format": "int32"
+          "format": "int64"
         },
         "message": {
           "type": "string"

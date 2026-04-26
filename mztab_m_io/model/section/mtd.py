@@ -1,4 +1,3 @@
-from mztab_m_io.model.common import StudyVariableGroup
 import re
 from typing import (
     Annotated,
@@ -33,9 +32,10 @@ from mztab_m_io.model.common import (
     SampleProcessing,
     Software,
     StudyVariable,
+    StudyVariableGroup,
     Uri,
 )
-from mztab_m_io.model.field_utils import get_field_type_info
+from mztab_m_io.model.field_utils import get_field_type_info, sanitize_str
 from mztab_m_io.model.serialization import (
     CompactObjectModel,
     CustomSerializer,
@@ -491,9 +491,7 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
                 "MTD\tsmall_molecule_feature-quantification_unit\t"
                 "[MS, MS:1001113, peak area, ]"
             ],
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(required=True)
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
 
@@ -877,6 +875,10 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
         else:
             base_item[sub_field] = value
 
+    def _quote(self, value: Any) -> str:
+        """Quote a value if it contains whitespace."""
+        return f'"{value}"' if "|" in str(value) or "," in str(value) else str(value)
+
     def _serialize_object(
         self,
         section: str,
@@ -901,7 +903,7 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
             if value is None:
                 continue
             elif isinstance(value, str):
-                line = f"{section}\t{key_name}\t{value or ''}"
+                line = f"{section}\t{key_name}\t{sanitize_str(value)}"
                 lines.append(line)
             elif isinstance(value, int):
                 if value is None:
@@ -925,12 +927,16 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
                 if isinstance(value[0], str):
                     separator = extra.list_concatenation_str
                     if separator:
-                        line_value = separator.join([str(x) for x in value])
+                        line_value = separator.join(
+                            [sanitize_str(x, separator) for x in value]
+                        )
                         line = f"{section}\t{key_name}\t{line_value}"
                     else:
                         for idx, item in enumerate(value, start=1):
                             indexed_key_name = f"{key_name}[{idx}]"
-                            line = f"{section}\t{indexed_key_name}\t{item or ''}"
+                            line = (
+                                f"{section}\t{indexed_key_name}\t{sanitize_str(item)}"
+                            )
                             lines.append(line)
                 elif isinstance(value[0], int):
                     separator = extra.list_concatenation_str or "|"

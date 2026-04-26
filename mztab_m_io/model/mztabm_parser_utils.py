@@ -14,6 +14,7 @@ from typing import (
 from pydantic import BaseModel, ValidationError
 
 from mztab_m_io.model.base import MzTabBaseModel
+from mztab_m_io.model.field_utils import split_joined_str
 from mztab_m_io.model.mztabm_validation import to_jsonpath
 from mztab_m_io.model.section.base_table_section import BaseTableSection
 from mztab_m_io.model.section.mtd import Metadata
@@ -54,7 +55,11 @@ def parse_table_section(
     data = []
     for line in lines:
         if line.startswith(header_prefix):
-            headers = [x for x in line.split("\t")[1:] if x and x.strip()]
+            headers = [
+                x.strip().strip('"')
+                for x in split_joined_str(line, "\t")[1:]
+                if x and x.strip()
+            ]
         elif line.startswith("COM"):
             parts = line.split("\t", maxsplit=1)
             if len(parts) < 2:
@@ -67,10 +72,18 @@ def parse_table_section(
                     }
                 )
         elif line.startswith(data_prefix) and headers:
-            values = [x for x in line.split("\t")[1:] if x and x.strip()]
+            values = [
+                x.strip().strip('"')
+                for x in split_joined_str(line, "\t")[1:]
+                if x and x.strip()
+            ]
             if len(values) == len(headers):
                 row = dict(zip(headers, values))
                 data.append(row)
+            else:
+                raise ValueError(
+                    f"Invalid number of values for headers: {headers} {values}"
+                )
 
     return data
 
@@ -83,7 +96,7 @@ def parse_table_header(header: str) -> Dict[str, Any]:
     column_map = {}
     for column in columns:
         if column.startswith("opt_"):
-            optional_column_name = column.replace("opt_", "", 1)
+            optional_column_name = column.replace("opt_", "", 1).strip('"')
             column_map[column] = (
                 "opt",
                 optional_column_name,
@@ -92,9 +105,9 @@ def parse_table_header(header: str) -> Dict[str, Any]:
             match = re.match(r"^\s*(.+)\s*\[\s*(\d+)\s*\]\s*$", column)
             if match:
                 column_name, index = match.groups()
-                column_map[column] = (column_name, int(index))
+                column_map[column] = (column_name.strip('"'), int(index))
             else:
-                column_map[column] = (column, None)
+                column_map[column] = (column.strip('"'), None)
     return column_map
 
 
@@ -175,7 +188,8 @@ def update_table_dict(
                     new_cell_data = val if val and val != "null" else None
                     if new_cell_data:
                         new_cell_data = [
-                            x if x and x != "null" else None for x in val.split(join_op)
+                            x if x and x != "null" else None
+                            for x in split_joined_str(val, join_op)
                         ]
 
                         if isinstance(item_type, type) and issubclass(item_type, int):
@@ -204,7 +218,7 @@ def update_table_dict(
                                 [float(val)] if val and val != "null" else None
                             )
                         except ValueError:
-                            logger.exception(f"Error parsing float value: {val}")
+                            logger.exception("Error parsing float value: %s", val)
                             new_cell_data = None
                     else:
                         new_cell_data = [val]

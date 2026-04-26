@@ -18,7 +18,8 @@ how molecules were quantified or identified by software,
 then all four tables must be present. The tables must follow the order
 MTD, SML, SMF and SME, with a blank line separating each table.
 
-The structure of each table, in terms of the rows and columns that must be present is
+The structure of each table, in terms of the rows and columns
+that must be present is
 tightly specified and formally defined and explained in
 the mzTab-M specification document.
 mzTab-M files MUST have one Metadata (MTD) section and
@@ -28,7 +29,8 @@ and one Small Molecule Evidence (SME) Section.
 Files lacking SMF and SME sections can only present summary data
 about quantified molecules, without any evidence trail for
 how those values were derived.
-It will be left to reading software to determine whether additional validation will be
+It will be left to reading software to determine whether
+additional validation will be
 requested such that SMF and SME tables MUST be present.
 
 ## Properties

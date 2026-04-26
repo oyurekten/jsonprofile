@@ -8,15 +8,15 @@ MTD	protocol[1]-description	For the human studies, midstream urine (~15 ml) samp
 MTD	protocol[2]-name	Extraction
 MTD	protocol[2]-type	[EFO, EFO:0000490, extraction protocol, ]
 MTD	protocol[2]-description	Plant material was homogenized in liquid nitrogen using a pestle and mortar and aliquots of 100 +/- 5 mg were weighed into pre-cooled 2 ml …
-MTD	protocol[2]-parameters	[,,Post Extraction, 400 µL water,] | [,,Derivatization, [MSIO, MSIO:0000141, silylation,]]
+MTD	protocol[2]-parameters	[,,Post Extraction, 400 µL water] | [,,Derivatization, "[MSIO, MSIO:0000141, silylation, ]"]
 MTD	protocol[3]-name	Chromatography
 MTD	protocol[3]-type	[CHMO, CHMO:0001000, chromatography, ]
 MTD	protocol[3]-description	Plant material was homogenized in liquid nitrogen using a pestle and mortar and aliquots of 100 +/- 5 mg were weighed into pre-cooled 2 ml …
-MTD	protocol[3]-parameters	[OBI, OBI:0000485, chromatography instrument, [MS, MS:1001763, ACQUITY UPLC H-Class Bio, ]] | [OBI, OBI:0000038, chromatography column, HSS T3 C18 (1.8 μm, 1.0 x 100 mm; Waters)] | [MS, MS:1002270, chromatography separation, [MS, MS:1003582, reversed phase chromatography, ]]
+MTD	protocol[3]-parameters	[OBI, OBI:0000485, chromatography instrument, "[MS, MS:1001763, ACQUITY UPLC H-Class Bio, ]"] | [OBI, OBI:0000038, chromatography column, "HSS T3 C18 (1.8 μm, 1.0 x 100 mm; Waters)"] | [MS, MS:1002270, chromatography separation, "[MS, MS:1003582, reversed phase chromatography, ]"]
 MTD	protocol[4]-name	Mass spectrometry
 MTD	protocol[4]-type	[CHMO, CHMO:0000470, mass spectrometry, ]
 MTD	protocol[4]-description	Eluting compounds were detected from m/z 100-1000 using a hybrid quadrupole …
-MTD	protocol[4]-parameters	[MS, MS:1000008, ionization type, [MS,MS:1000073, electrospray ionization, ]] | [MS, MS:1003761, instrument class, [MS, MS:1003951, time-of-flight instrument, ]] |  [, , Scan m/z range, 100-1000,]
+MTD	protocol[4]-parameters	[MS, MS:1000008, ionization type, "[MS,MS:1000073, electrospray ionization, ]"] | [MS, MS:1003761, instrument class, "[MS, MS:1003951, time-of-flight instrument, ]"] |  [, , Scan m/z range, 100-1000]
 MTD	protocol[5]-name	Data transformation
 MTD	protocol[5]-type	[, , data transformation, ]
 MTD	protocol[5]-description	Raw data files were converted to mzData format using the vendor-specific...
@@ -163,19 +163,19 @@ MTD	study_variable_group[1]-unit	[UO, UO:0000033, day, ]
 MTD	study_variable[1]	1																															
 MTD	study_variable[1]-description	Day 1																															
 MTD	study_variable[1]-assay_refs	assay[1] | assay[2] | assay[3] | assay[7] | assay[8] | assay[9] | 																				
-MTD	study_variable[1]-group_ref	study_variable_group[1]																													
+MTD	study_variable[1]-group_refs	study_variable_group[1]																													
 MTD	study_variable[2]	2																															
 MTD	study_variable[2]-description	Day 2																															
 MTD	study_variable[2]-assay_refs	assay[4] | assay[10] 		
-MTD	study_variable[2]-group_ref	study_variable_group[1]																														
+MTD	study_variable[2]-group_refs	study_variable_group[1]																														
 MTD	study_variable[3]	3																															
 MTD	study_variable[3]-description	Day 3																															
 MTD	study_variable[3]-assay_refs	assay[5] | assay[11]	
-MTD	study_variable[3]-group_ref	study_variable_group[1]																															
+MTD	study_variable[3]-group_refs	study_variable_group[1]																															
 MTD	study_variable[4]	4																															
 MTD	study_variable[4]-description	Day 4																															
 MTD	study_variable[4]-assay_refs	assay[6] | assay[12]	
-MTD	study_variable[4]-group_ref	study_variable_group[1]																															
+MTD	study_variable[4]-group_refs	study_variable_group[1]																															
 MTD	cv[1]-label	MS																															
 MTD	cv[1]-full_name	PSI-MS controlled vocabulary																															
 MTD	cv[1]-version	4.0.9																															

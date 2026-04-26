@@ -14,3 +14,4 @@ fragmentation_method|List of <code>Parameter</code>|-|The fragmentation methods 
 scan_polarity|List of <code>Parameter</code>|-|The scan polarity/polarities used during this msRun\.
 hash|<code>str</code>|-|The file hash value of this msRun's data file\.
 hash_method|<code>Parameter</code>|-|The method used to calculate the hash\.
+parameters|List of <code>ExtendedParameter</code>|-|Additional parameters of the assay, separated by bars\.

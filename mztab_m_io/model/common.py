@@ -1,6 +1,5 @@
-from typing import Literal
 import abc
-from typing import Annotated, Any, List, Mapping, Optional, OrderedDict, Union
+from typing import Annotated, Any, List, Literal, Mapping, Optional, OrderedDict, Union
 
 from pydantic import (
     Field,
@@ -771,8 +770,8 @@ class StudyVariable(IdentifiableModel):
             ).model_dump(),
         ),
     ] = None
-    group_ref: Annotated[
-        Optional[int],
+    group_refs: Annotated[
+        Optional[List[int]],
         Field(
             description="The study variable group this study variable belongs to.",
             json_schema_extra=MetadataSerialization(
@@ -874,7 +873,7 @@ class SpectraReference(MzTabSerializableModel, CustomSerializer):
     ] = None
 
     def to_tsv(self, context: SerializationContext) -> str:
-        return f"ms_run[{self.ms_run_ref}]:{self.reference}"
+        return f"ms_run[{self.ms_run_ref}]:{sanitize_str(self.reference)}"
 
     @model_validator(mode="wrap")
     @classmethod
@@ -932,8 +931,8 @@ class ColumnParameterMapping(
 
     def to_tsv(self, context: SerializationContext) -> str:
         if self.param:
-            return f"{self.column_name}={self.param.to_tsv(context)}"
-        return f"{self.column_name}=null"
+            return f"{sanitize_str(self.column_name)}={self.param.to_tsv(context)}"
+        return f"{sanitize_str(self.column_name)}=null"
 
     @model_validator(mode="wrap")
     @classmethod
@@ -986,7 +985,7 @@ class OptionalTableColumn(abc.ABC):
 
 class OptColumnMapping(MzTabSerializableModel, OptionalTableColumn):
     identifier: Annotated[
-        Optional[str],
+        Union[None, Parameter, str],
         Field(
             description="The fully qualified column name.",
             json_schema_extra=MetadataSerialization(

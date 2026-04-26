@@ -126,7 +126,7 @@ def normalize_mztab_content(content: str) -> List[str]:
             new_parts = [parts[source[x]] for x in range(len(source))]
             parts = new_parts
 
-        all_line_splits.append(parts)
+        all_line_splits.append([x.replace('"', "") for x in parts])
 
     all_line_splits.sort(
         key=lambda x: (
@@ -202,7 +202,7 @@ def test_mztab_roundtrip(source_path):
             val2 = target_content[i][cell]
             matched = False
             if not line[0].startswith("COM") and (
-                is_scientific_number(val1) or is_scientific_number(val2)
+                is_scientific_number(val1) and is_scientific_number(val2)
             ):
                 try:
                     v1 = decimal.Decimal(float(val1)).quantize(
@@ -216,13 +216,13 @@ def test_mztab_roundtrip(source_path):
                     # compare first 4 digits
                     matched = str(v1)[:4] == str(v2)[:4]
                 except Exception as e:
-                    matched = str(val1) == str(val2)
+                    matched = str(val1.replace('"', "")) == str(val2.replace('"', ""))
                     if not matched:
                         inconsistencies.append(
                             f"Numeric comparison failed: {val1} {val2}: {e}"
                         )
             else:
-                matched = str(val1) == str(val2)
+                matched = str(val1.replace('"', "")) == str(val2.replace('"', ""))
             if not matched:
                 inconsistencies.append(
                     f"{line[0]} {line[1]} mismatched column {cell}: {val1} != {val2}"

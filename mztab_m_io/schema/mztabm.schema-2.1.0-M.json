@@ -16,6 +16,7 @@
           "default": null,
           "ignore": true,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -43,6 +44,7 @@
           "description": "The assay name.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": true,
           "referenced_field_name": null,
@@ -69,10 +71,11 @@
               "type": "null"
             }
           ],
-          "default": null,
+          "default": [],
           "description": "Additional user or cv parameters.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -100,6 +103,7 @@
           "description": "An external URI to further information about this assay.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -127,6 +131,7 @@
           "description": "Sample reference.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": "sample",
@@ -147,7 +152,6 @@
               "items": {
                 "type": "integer"
               },
-              "minItems": 1,
               "type": "array"
             },
             {
@@ -158,10 +162,11 @@
           "description": "The ms run(s) referenced by this assay.",
           "ignore": false,
           "list_concatenation_str": "|",
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": "ms_run",
-          "title": "Ms Run Ref",
+          "title": "Ms Run Refs",
           "validation_policy": {
             "enforcement_level": "required",
             "maximum": null,
@@ -169,6 +174,68 @@
             "pattern": null,
             "required": true,
             "value_constraint": "non-negative-integer"
+          }
+        },
+        "protocol_refs": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": [],
+          "description": "The protocol(s) referenced by this assay.",
+          "ignore": false,
+          "list_concatenation_str": "|",
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": false,
+          "referenced_field_name": "protocol",
+          "title": "Protocol Refs",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": null,
+            "value_constraint": "non-negative-integer"
+          }
+        },
+        "parameters": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/ExtendedParameter"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Additional parameters of the assay, separated by bars.",
+          "ignore": false,
+          "list_concatenation_str": "|",
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": false,
+          "referenced_field_name": null,
+          "title": "Parameters",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": null,
+            "value_constraint": null
           }
         }
       },
@@ -191,6 +258,7 @@
           "default": null,
           "ignore": true,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -218,6 +286,7 @@
           "description": "The abbreviated CV label.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -245,6 +314,7 @@
           "description": "The full name of this CV, for humans.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -272,6 +342,7 @@
           "description": "The CV version used when the file was generated.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -299,6 +370,7 @@
           "description": "A URI to the CV definition.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -332,6 +404,7 @@
           "description": "The fully qualified target column name.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -356,9 +429,10 @@
             }
           ],
           "default": null,
-          "description": "The database name.",
+          "description": "The parameter defining the unit.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": true,
           "referenced_field_name": null,
@@ -377,6 +451,7 @@
       "type": "object"
     },
     "Comment": {
+      "description": "Comment lines can be placed anywhere in an mzTab file.\nThese lines must start with the three-letter code COM\nand are ignored by most parsers.\nEmpty lines can also occur anywhere in an mzTab file and are ignored.",
       "properties": {
         "prefix": {
           "allow_multiple": false,
@@ -384,6 +459,7 @@
           "description": "Comment prefix",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -412,6 +488,7 @@
           "description": "message",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -439,6 +516,7 @@
           "description": "line number",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -472,6 +550,7 @@
           "default": null,
           "ignore": true,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -499,6 +578,7 @@
           "description": "The contact's name.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -526,6 +606,7 @@
           "description": "The contact's affiliation.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -553,6 +634,7 @@
           "description": "The contact's e-mail address.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -580,6 +662,7 @@
           "description": "The contact's orcid id, without https prefix.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -613,6 +696,7 @@
           "default": null,
           "ignore": true,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -633,6 +717,7 @@
           "description": "The database name.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": true,
           "referenced_field_name": null,
@@ -660,6 +745,7 @@
           "description": "The prefix used in the \u201cidentifier\u201d column of data tables. For the 'no database' case 'null' must be used.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -687,6 +773,7 @@
           "description": "The database version is mandatory where identification has been performed. This may be a formal version number e.g. \u201c1.4.1\u201d, a date of access \u201c2016-10-27\u201d (ISO-8601 format) or \u201cUnknown\u201d if there is no suitable version that can be annotated.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -714,6 +801,7 @@
           "description": "The URI to the database. For the \u201cno database\u201d case, 'null' must be reported.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -729,6 +817,155 @@
         }
       },
       "title": "Database",
+      "type": "object"
+    },
+    "ExtendedParameter": {
+      "properties": {
+        "id": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "ignore": true,
+          "list_concatenation_str": null,
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": false,
+          "referenced_field_name": null,
+          "title": "Id",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": null,
+            "value_constraint": null
+          }
+        },
+        "cv_label": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "",
+          "description": "CV label",
+          "ignore": false,
+          "list_concatenation_str": null,
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": false,
+          "referenced_field_name": null,
+          "title": "Cv Label",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": null,
+            "value_constraint": null
+          }
+        },
+        "cv_accession": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "",
+          "description": "CV accession in CURIE format",
+          "ignore": false,
+          "list_concatenation_str": null,
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": false,
+          "referenced_field_name": null,
+          "title": "Cv Accession",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": null,
+            "value_constraint": "curie"
+          }
+        },
+        "name": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "",
+          "description": "The name of the parameter term.",
+          "ignore": false,
+          "list_concatenation_str": null,
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": false,
+          "referenced_field_name": null,
+          "title": "Name",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": null,
+            "value_constraint": null
+          }
+        },
+        "value": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Parameter"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The user value for the parameter.",
+          "ignore": false,
+          "list_concatenation_str": null,
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": false,
+          "referenced_field_name": null,
+          "title": "Value",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": null,
+            "value_constraint": null
+          }
+        }
+      },
+      "title": "ExtendedParameter",
       "type": "object"
     },
     "Instrument": {
@@ -747,6 +984,7 @@
           "default": null,
           "ignore": true,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -774,6 +1012,7 @@
           "description": "The instrument's name.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -801,6 +1040,7 @@
           "description": "The instrument's ion source.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -831,6 +1071,7 @@
           "description": "The instrument's mass analyzer, as defined by the parameter.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -858,6 +1099,7 @@
           "description": "The instrument's mass analyzer, as defined by the parameter.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -894,6 +1136,7 @@
           ],
           "ignore": true,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -925,6 +1168,7 @@
           ],
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -957,6 +1201,7 @@
           ],
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -988,6 +1233,7 @@
           ],
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1019,6 +1265,7 @@
           ],
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1054,6 +1301,7 @@
           ],
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1088,6 +1336,7 @@
           ],
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1118,6 +1367,7 @@
           "description": "A URI pointing to the file's source data (e.g., a MetaboLights records).",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1148,6 +1398,7 @@
           "description": "A URI pointing to an external file with more details about the study design (e.g., an ISA-TAB file).",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1183,6 +1434,7 @@
           ],
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1210,6 +1462,7 @@
           "description": "The quantification method used in the experiment reported in the file.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1240,10 +1493,48 @@
           "description": "Specification of sample. A name for each sample to serve as a list of the samples that MUST be reported in the following tables. Samples MUST be reported if a statistical design is being captured (i.e. bio or tech replicates). If the type of replicates are not known, samples SHOULD NOT be reported. species: The respective species of the samples analysed. For more complex cases, such as metagenomics, optional columns and userParams should be used.tissue: The respective tissue(s) of the sample. cell_type: The respective cell type(s) of the sample. disease: The respective disease(s) of the sample. description: A human readable description of the sample. custom: Custom parameters describing the sample's additional properties. Dates MUST be provided in ISO-8601 format.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
           "title": "Sample",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": null,
+            "value_constraint": null
+          }
+        },
+        "protocol": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Protocol"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The protocol(s) used in the experiment.",
+          "examples": [
+            "MTD\tprotocol[1]-name\tMass Spectrometry\n",
+            "MTD\tprotocol[1]-type\t[CHMO, CHMO:0000470, mass spectrometry, ]\n",
+            "MTD\tprotocol[1]-description\tEluting compounds were detected ...\n",
+            "MTD\tprotocol[1]-parameters\t[MS, MS:1000008, ionization type, [MS,MS:1000073, electrospray ionization, ]]\n"
+          ],
+          "ignore": false,
+          "list_concatenation_str": null,
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": false,
+          "referenced_field_name": null,
+          "title": "Protocol",
           "validation_policy": {
             "enforcement_level": "required",
             "maximum": null,
@@ -1275,6 +1566,7 @@
           ],
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1309,6 +1601,7 @@
           ],
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1337,8 +1630,12 @@
           ],
           "default": null,
           "description": "A description of derivatization agents applied to small molecules, using userParams or CV terms where possible.",
+          "examples": [
+            "MTD\tderivatization_agent[1]\t[XLMOD, XLMOD:07014, N-methyl-N-t-butyldimethylsilyltrifluoroacetamide, ]"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1369,6 +1666,7 @@
           "description": "Specification of ms_run. location: Location of the external data file e.g. raw files on which analysis has been performed. If the actual location of the MS run is unknown, a \u201cnull\u201d MUST be used as a place holder value, since the [1-n] cardinality is referenced elsewhere. If pre-fractionation has been performed, then [1-n] ms_runs SHOULD be created per assay.instrument_ref: If different instruments are used in different runs, instrument_ref can be used to link a specific instrument to a specific run. format: Parameter specifying the data format of the external MS data file. If ms_run[1-n]-format is present, ms_run[1-n]-id_format SHOULD also be present, following the parameters specified in Table 1. id_format: Parameter specifying the id format used in the external data file. If ms_run[1-n]-id_format is present, ms_run[1-n]-format SHOULD also be present.fragmentation_method: The type(s) of fragmentation used in a given ms run.scan_polarity: The polarity mode of a given run. Usually only one value SHOULD be given here except for the case of mixed polarity runs.hash: Hash value of the corresponding external MS data file defined in ms_run[1-n]-location. If ms_run[1-n]-hash is present, ms_run[1-n]-hash_method SHOULD also be present.hash_method: A parameter specifying the hash methods used to generate the String in ms_run[1-n]-hash. Specifics of the hash method used MAY follow the definitions of the mzML format. If ms_run[1-n]-hash is present, ms_run[1-n]-hash_method SHOULD also be present.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1396,9 +1694,10 @@
             }
           ],
           "default": null,
-          "description": "Specification of assay. (empty) name: A name for each assay, to serve as a list of the assays that MUST be reported in the following tables. custom: Additional custom parameters or values for a given assay. external_uri: An external reference uri to further information about the assay, for example via a reference to an object within an ISA-TAB file. sample_ref: An association from a given assay to the sample analysed. ms_run_ref: An association from a given assay to the source MS run. All assays MUST reference exactly one ms_run unless a workflow with pre-fractionation is being encoded, in which case each assay MUST reference n ms_runs where n fractions have been collected. Multiple assays SHOULD reference the same ms_run to capture multiplexed experimental designs.",
+          "description": "Specification of assay. (empty) name: A name for each assay, to serve as a list of the assays that MUST be reported in the following tables. custom: Additional custom parameters or values for a given assay. external_uri: An external reference uri to further information about the assay, for example via a reference to an object within an ISA-TAB file. sample_ref: An association from a given assay to the sample analysed. ms_run_refs: An association from a given assay to the source MS run. All assays MUST reference exactly one ms_run unless a workflow with pre-fractionation is being encoded, in which case each assay MUST reference n ms_runs where n fractions have been collected. Multiple assays SHOULD reference the same ms_run to capture multiplexed experimental designs.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1409,6 +1708,37 @@
             "minimum": 1,
             "pattern": null,
             "required": true,
+            "value_constraint": null
+          }
+        },
+        "study_variable_group": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/StudyVariableGroup"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "A parameter defining the group to which study variables belong, allowing grouping of related study variables that belong to the same experimental design factor in multi-factorial designs. For software that does not capture study variables, a single study_variable_group MUST be reported, linking to the single study variable, and MUST have the identifier 'undefined'.",
+          "ignore": false,
+          "list_concatenation_str": null,
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": false,
+          "referenced_field_name": null,
+          "title": "Study Variable Group",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": null,
             "value_constraint": null
           }
         },
@@ -1429,6 +1759,7 @@
           "description": "Specification of study_variable. (empty) name: A name for each study variable (experimental condition or factor), to serve as a list of the study variables that MUST be reported in the following tables. For software that does not capture study variables, a single study variable MUST be reported, linking to all assays. This single study variable MUST have the identifier \u201cundefined\u201c. assay_refs: Bar-separated references to the IDs of assays grouped in the study variable. average_function: The function used to calculate the study variable quantification value and the operation used is not arithmetic mean (default) e.g. \u201cgeometric mean\u201d, \u201cmedian\u201d. The 1-n refers to different study variables. variation_function: The function used to calculate the study variable quantification variation value if it is reported and the operation used is not coefficient of variation (default) e.g. \u201cstandard error\u201d. description: A textual description of the study variable. factors: Additional parameters or factors, separated by bars, that are known about study variables allowing the capture of more complex, such as nested designs. ",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1457,8 +1788,12 @@
           ],
           "default": null,
           "description": "Any additional parameters describing the analysis reported.",
+          "examples": [
+            "MTD\tcustom\t[MS, MS:1000001, custom param, value]"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1494,6 +1829,7 @@
           ],
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1519,8 +1855,12 @@
           ],
           "default": null,
           "description": "Defines what type of units are reported in the small molecule summary quantification / abundance fields",
+          "examples": [
+            "MTD\tsmall_molecule-quantification_unit\t[MS, MS:1001113, peak area, ]"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1546,8 +1886,12 @@
           ],
           "default": null,
           "description": "Defines what type of units are reported in the small molecule feature quantification / abundance fields.",
+          "examples": [
+            "MTD\tsmall_molecule_feature-quantification_unit\t[MS, MS:1001113, peak area, ]"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1557,7 +1901,7 @@
             "maximum": null,
             "minimum": null,
             "pattern": null,
-            "required": true,
+            "required": null,
             "value_constraint": null
           }
         },
@@ -1573,8 +1917,12 @@
           ],
           "default": null,
           "description": "The system used for giving reliability / confidence codes to small molecule identifications MUST be specified if not using the default codes.",
+          "examples": [
+            "MTD\tsmall_molecule-identification_reliability\t[MS, MS:1000932, identification reliability, ]"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1603,8 +1951,14 @@
           ],
           "default": null,
           "description": "Specification of databases. (empty): The description of databases used. For cases, where a known database has not been used for identification, a userParam SHOULD be inserted to describe any identification performed. e.g. de novo. If no identification has been performed at all then 'no database' should be inserted followed by null. prefix: The prefix used in the \u201cidentifier\u201d column of data tables. For the 'no database' case 'null' must be used. version: The database version is mandatory where identification has been performed. This may be a formal version number e.g. \u201c1.4.1\u201d, a date of access \u201c2016-10-27\u201d (ISO-8601 format) or \u201cUnknown\u201d if there is no suitable version that can be annotated. uri: The URI to the database. For the 'no database' case, 'null' must be reported. ",
+          "examples": [
+            "MTD\tdatabase[1]\t[MS, MS:1002992, HMDB, 4.0]",
+            "MTD\tdatabase[1]-prefix\tHMDB",
+            "MTD\tdatabase[1]-uri\thttp://www.hmdb.ca/metabolites/"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1639,6 +1993,7 @@
           ],
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1673,6 +2028,7 @@
           ],
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": true,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1701,8 +2057,12 @@
           ],
           "default": null,
           "description": "Defines the used unit for a column in the small molecule feature section. The format of the value has to be {column name}={Parameter defining the unit}. This field MUST NOT be used to define a unit for quantification columns. The unit used for small molecule quantification values MUST be set in small_molecule_feature-quantification_unit.",
+          "examples": [
+            "MTD\tcolunit-small_molecule_feature\tretention_time=[UO, UO:0000031, minute, ]"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": true,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1731,8 +2091,12 @@
           ],
           "default": null,
           "description": "Defines the used unit for a column in the small molecule evidence section. The format of the value has to be {column name}={Parameter defining the unit}.",
+          "examples": [
+            "MTD\tcolunit-small_molecule_evidence\tretention_time=[UO, UO:0000031, minute, ]"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": true,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1769,6 +2133,7 @@
           "default": null,
           "ignore": true,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1796,6 +2161,7 @@
           "description": "The msRun's name.",
           "ignore": true,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1823,6 +2189,7 @@
           "description": "The msRun's location URI.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1833,7 +2200,7 @@
             "minimum": null,
             "pattern": null,
             "required": true,
-            "value_constraint": null
+            "value_constraint": "any-url"
           }
         },
         "instrument_ref": {
@@ -1850,6 +2217,7 @@
           "description": "Sample reference.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": "instrument",
@@ -1874,9 +2242,10 @@
             }
           ],
           "default": null,
-          "description": "",
+          "description": "The format of the MS run file.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1901,8 +2270,10 @@
             }
           ],
           "default": null,
+          "description": "The format of the IDs in the MS run file.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1933,6 +2304,7 @@
           "description": "The fragmentation methods applied during this msRun.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1963,6 +2335,7 @@
           "description": "The scan polarity/polarities used during this msRun.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -1990,6 +2363,7 @@
           "description": "The file hash value of this msRun's data file.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -2014,12 +2388,45 @@
             }
           ],
           "default": null,
+          "description": "The method used to calculate the hash.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
           "title": "Hash Method",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": null,
+            "value_constraint": null
+          }
+        },
+        "parameters": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/ExtendedParameter"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Additional parameters of the assay, separated by bars.",
+          "ignore": false,
+          "list_concatenation_str": "|",
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": false,
+          "referenced_field_name": null,
+          "title": "Parameters",
           "validation_policy": {
             "enforcement_level": "required",
             "maximum": null,
@@ -2039,6 +2446,9 @@
           "allow_multiple": false,
           "anyOf": [
             {
+              "$ref": "#/$defs/Parameter"
+            },
+            {
               "type": "string"
             },
             {
@@ -2049,6 +2459,7 @@
           "description": "The fully qualified column name.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -2076,6 +2487,7 @@
           "description": "The fully qualified column parameter.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -2103,6 +2515,7 @@
           "description": "The value for this column in a particular row.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -2136,6 +2549,7 @@
           "default": null,
           "ignore": true,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -2163,6 +2577,7 @@
           "description": "CV label",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -2190,6 +2605,7 @@
           "description": "CV accession in CURIE format",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -2214,9 +2630,10 @@
             }
           ],
           "default": "",
-          "description": "name",
+          "description": "The name of the parameter term.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -2241,9 +2658,10 @@
             }
           ],
           "default": "",
-          "description": "value",
+          "description": "The user value for the parameter.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -2259,6 +2677,155 @@
         }
       },
       "title": "Parameter",
+      "type": "object"
+    },
+    "Protocol": {
+      "properties": {
+        "id": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "ignore": true,
+          "list_concatenation_str": null,
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": false,
+          "referenced_field_name": null,
+          "title": "Id",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": null,
+            "value_constraint": null
+          }
+        },
+        "name": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The protocol name.",
+          "ignore": false,
+          "list_concatenation_str": null,
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": false,
+          "referenced_field_name": null,
+          "title": "Name",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": true,
+            "value_constraint": null
+          }
+        },
+        "type": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Parameter"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The protocol type, as defined by the parameter.",
+          "ignore": false,
+          "list_concatenation_str": null,
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": false,
+          "referenced_field_name": null,
+          "title": "Type",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": true,
+            "value_constraint": null
+          }
+        },
+        "description": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Description of the protocol.",
+          "ignore": false,
+          "list_concatenation_str": null,
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": false,
+          "referenced_field_name": null,
+          "title": "Description",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": null,
+            "value_constraint": null
+          }
+        },
+        "parameters": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/ExtendedParameter"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The protocol parameters.",
+          "ignore": false,
+          "list_concatenation_str": "|",
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": false,
+          "referenced_field_name": null,
+          "title": "Parameters",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": null,
+            "value_constraint": null
+          }
+        }
+      },
+      "title": "Protocol",
       "type": "object"
     },
     "Publication": {
@@ -2277,6 +2844,7 @@
           "default": null,
           "ignore": true,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -2290,7 +2858,7 @@
             "value_constraint": null
           }
         },
-        "publicationItems": {
+        "publication_items": {
           "allow_multiple": false,
           "anyOf": [
             {
@@ -2307,6 +2875,7 @@
           "description": "The publication item ids referenced by this publication.",
           "ignore": false,
           "list_concatenation_str": "|",
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": true,
           "referenced_field_name": null,
@@ -2345,6 +2914,7 @@
           ],
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -2372,6 +2942,7 @@
           "description": "The native accession id for this publication item.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -2405,6 +2976,7 @@
           "default": null,
           "ignore": true,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -2432,6 +3004,7 @@
           "description": "The sample's name.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": true,
           "referenced_field_name": null,
@@ -2462,6 +3035,7 @@
           "description": "Additional user or cv parameters.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -2492,6 +3066,7 @@
           "description": "Biological species information on the sample.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -2522,6 +3097,7 @@
           "description": "Biological tissue information on the sample.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -2552,6 +3128,7 @@
           "description": "Biological cell type information on the sample.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -2582,6 +3159,7 @@
           "description": "Disease information on the sample.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -2609,6 +3187,7 @@
           "description": "A free form description of the sample.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -2642,6 +3221,7 @@
           "default": null,
           "ignore": true,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -2655,7 +3235,7 @@
             "value_constraint": null
           }
         },
-        "sampleProcessing": {
+        "sample_processing": {
           "allow_multiple": false,
           "anyOf": [
             {
@@ -2672,6 +3252,7 @@
           "description": "Parameters specifying sample processing that was applied within one step.",
           "ignore": false,
           "list_concatenation_str": "|",
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": true,
           "referenced_field_name": null,
@@ -2698,6 +3279,7 @@
           "ignore": true,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Prefix",
@@ -2718,6 +3300,7 @@
           "ignore": true,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Header Prefix",
@@ -2744,11 +3327,12 @@
             }
           ],
           "column_value_field": null,
-          "default": null,
+          "default": [],
           "description": "",
           "ignore": true,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Comment",
@@ -2773,9 +3357,13 @@
           "column_value_field": null,
           "default": null,
           "description": "A within file unique identifier for the small molecule evidence result.",
+          "examples": [
+            1
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Sme Id",
@@ -2800,9 +3388,13 @@
           "column_value_field": null,
           "default": null,
           "description": "A within file unique identifier for the input data used to support this identification e.g. fragment spectrum, RT and m/z pair, isotope profile that was used for the identification process, to serve as a grouping mechanism, whereby multiple rows of results from the same input data share the same ID. The identifiers may be human readable but should not be assumed to be interpretable. For example, if fragmentation spectra have been searched then the ID may be the spectrum reference, or for accurate mass search, the ms_run[2]:458.75.",
+          "examples": [
+            "ms_run[1]:mass=278.65;rt=376.5"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Evidence Input Id",
@@ -2827,9 +3419,13 @@
           "column_value_field": null,
           "default": null,
           "description": "The putative identification for the small molecule sourced from an external database, using the same prefix specified in database[1-n]-prefix.  This could include additionally a chemical class or an identifier to a spectral library entity, even if its actual identity is unknown.  For the \u201cno database\u201d case, 'null' must be used. The unprefixed use of 'null' is prohibited for any other case. If no putative identification can be reported for a particular database, it MUST be reported as the database prefix followed by null.",
+          "examples": [
+            "CID:00027395"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Database Identifier",
@@ -2854,9 +3450,13 @@
           "column_value_field": null,
           "default": null,
           "description": "The chemical formula of the identified compound e.g. in a database, assumed to match the theoretical mass to charge (in some cases this will be the derivatized form, including adducts and protons).  This should be specified in Hill notation (EA Hill 1900), i.e. elements in the order C, H and then alphabetically all other elements. Counts of one may be omitted. Elements should be capitalized properly to avoid confusion (e.g., \u201cCO\u201d vs. \u201cCo\u201d). The chemical formula reported should refer to the neutral form. Charge state is reported by the charge field.  Example N-acetylglucosamine would be encoded by the string \u201cC8H15NO6\u201d ",
+          "examples": [
+            "C17H20N4O2"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Chemical Formula",
@@ -2881,9 +3481,13 @@
           "column_value_field": null,
           "default": null,
           "description": "The potential molecule's structure in the simplified molecular-input line-entry system (SMILES) for the small molecule.",
+          "examples": [
+            "C1=CC=C(C=C1)CCNC(=O)CCNNC(=O)C2=CC=NC=C2"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Smiles",
@@ -2908,9 +3512,13 @@
           "column_value_field": null,
           "default": null,
           "description": "A standard IUPAC International Chemical Identifier (InChI) for the given substance.",
+          "examples": [
+            "InChI=1S/C17H20N4O2/c22-16(19-12-6-14-4-2-1-3-5-14)9-13-20-21-17(23)15-7-10-18-11-8-15/h1-5,7-8,10-11,20H,6,9,12-13H2,(H,19,22)(H,21,23)"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Inchi",
@@ -2935,9 +3543,13 @@
           "column_value_field": null,
           "default": null,
           "description": "The small molecule's chemical/common name, or general description if a chemical name is unavailable.",
+          "examples": [
+            "N-(2-phenylethyl)-3-[2-(pyridine-4-carbonyl)hydrazinyl]propanamide"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Chemical Name",
@@ -2962,9 +3574,13 @@
           "column_value_field": null,
           "default": null,
           "description": "A URI pointing to the small molecule's entry in a database (e.g., the small molecule's HMDB, Chebi or KEGG entry).",
+          "examples": [
+            "http://www.hmdb.ca/metabolites/HMDB00054"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Uri",
@@ -2988,10 +3604,14 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "Derivatization form",
+          "description": "The derivatized form of the small molecule, if the identification was based on a specific derivative (e.g. 2 TMS). This MUST be specified using CV terms (where possible) otherwise \u201cnull\u201d.",
+          "examples": [
+            "[CHEBI, CHEBI:51088, trimethylsilyl group, 3]"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Derivatized Form",
@@ -3015,10 +3635,14 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "The assumed classification of this molecule's adduct ion after detection, following the general style in the 2013 IUPAC recommendations on terms relating to MS e.g. [M+H]+, [M+Na]1+, [M+NH4]1+, [M-H]1-, [M+Cl]1-. If the adduct classification is ambiguous with regards to identification evidence it MAY be null.",
+          "description": "The assumed classification of this molecule\u2019s adduct ion after detection, following the general style in the 2013 IUPAC recommendations on terms relating to MS e.g. [M+H]1+, [M+Na]1+, [M+NH4]1+, [M-H]1-, [M+Cl]1-. If the adduct classification is ambiguous with regards to identification evidence it MAY be null.",
+          "examples": [
+            "[M+H]+"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Adduct Ion",
@@ -3042,10 +3666,13 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "The experimental mass/charge value for the precursor ion. If multiple adduct forms have been combined into a single identification event/search, then a single value e.g. for the protonated form SHOULD be reported here.",
+          "examples": [
+            1234.5
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Exp Mass To Charge",
@@ -3070,9 +3697,13 @@
           "column_value_field": null,
           "default": null,
           "description": "The small molecule evidence's charge value using positive integers both for positive and negative polarity modes.",
+          "examples": [
+            1
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Charge",
@@ -3097,9 +3728,13 @@
           "column_value_field": null,
           "default": null,
           "description": "The theoretical mass/charge value for the small molecule or the database mass/charge value (for a spectral library match).",
+          "examples": [
+            1234.71
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Theoretical Mass To Charge",
@@ -3116,7 +3751,7 @@
           "anyOf": [
             {
               "items": {
-                "$ref": "#/$defs/SpectraRef"
+                "$ref": "#/$defs/SpectraReference"
               },
               "type": "array"
             },
@@ -3127,12 +3762,18 @@
           "column_value_field": null,
           "default": null,
           "description": "Reference to a spectrum in a spectrum file, for example a fragmentation spectrum has been used to support the identification. If a separate spectrum file has been used for fragmentation spectrum, this MUST be reported in the metadata section as additional ms_runs. The reference must be in the format ms_run[1-n]:{SPECTRA_REF} where SPECTRA_REF MUST follow the format defined in 5.2 (including references to chromatograms where these are used to inform identification). Multiple spectra MUST be referenced using a | delimited list for the (rare) cases in which search engines have combined or aggregated multiple spectra in advance of the search to make identifications.  If a fragmentation spectrum has not been used, the value should indicate the ms_run to which is identification is mapped e.g. \u201cms_run[1]\u201d. ",
+          "examples": [
+            [
+              "ms_run[1]:index=5"
+            ]
+          ],
           "ignore": false,
           "list_concatenation_str": "|",
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
-          "title": "Spectra Ref",
+          "title": "Spectra References",
           "validation_policy": {
             "enforcement_level": "required",
             "maximum": null,
@@ -3153,10 +3794,14 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "identification method",
+          "description": "The search engine or algorithm used for the identification. This SHOULD be specified using CV terms.",
+          "examples": [
+            "[MS, MS:1001477, SpectraST,]"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Identification Method",
@@ -3180,10 +3825,14 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "MS level",
+          "description": "The MS level of the spectrum used for the identification. This SHOULD be specified using CV terms.",
+          "examples": [
+            "[MS, MS:1000511, ms level, 2]"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Ms Level",
@@ -3218,9 +3867,15 @@
           "column_value_field": null,
           "default": null,
           "description": "Any statistical value or score for the identification. The metadata section reports the type of score used, as id_confidence_measure[1-n] of type Param.",
+          "examples": [
+            [
+              0.7
+            ]
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": true,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Id Confidence Measure",
@@ -3245,9 +3900,13 @@
           "column_value_field": null,
           "default": null,
           "description": "The rank of this identification from this approach as increasing integers from 1 (best ranked identification). Ties (equal score) are represented by using the same rank - defaults to 1 if there is no ranking system used.",
+          "examples": [
+            1
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Rank",
@@ -3274,10 +3933,15 @@
           ],
           "column_value_field": "value",
           "default": null,
-          "description": "Additional columns can be added to the end of the small molecule evidence table. These column headers MUST start with the prefix \u201copt_\u201d followed by the {identifier} of the object they reference: assay, study variable, MS run or \u201cglobal\u201d (if the value relates to all replicates). Column names MUST only contain the following characters: 'A'-'Z', 'a'-'z', '0'-'9', '_', '-', '[', ']', and ':'. CV parameter accessions MAY be used for optional columns following the format: opt{identifier}_cv_{accession}_{parameter name}. Spaces within the parameter's name MUST be replaced by '_'. ",
+          "description": "Additional columns can be added to the end of the small molecule evidence table. These column headers MUST start with the prefix \u201copt_\u201d followed by the {identifier} of the object they reference: assay, study variable, MS run or \u201cglobal\u201d (if the value relates to all replicates). Column names MUST only contain the following characters: 'A'-'Z', 'a'-'z', '0'-'9', '_', '-', '[', ']', and ':'. CV parameter accessions MAY be used for optional columns following the format: opt_{identifier}_cv_{accession}_{parameter name}. Spaces within the parameter's name MUST be replaced by '_'. ",
+          "examples": [
+            "opt_assay[1]_my_value=My value",
+            "opt_global_another_value=some other value"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": true,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Opt",
@@ -3295,6 +3959,7 @@
       "type": "object"
     },
     "SmallMoleculeFeature": {
+      "description": "The small molecule feature section is table-based, representing individual\nMS regions (generally considered to be the elution profile for all isotopomers\nformed from a single charge state of a molecule), that have been\nmeasured/quantified. However, for approaches that quantify individual isotopomers.\ne.g. stable isotope labelling/flux studies,\nthen each SMF row SHOULD represent a single isotopomer.\n\nDifferent adducts or derivatives and different charge states of\nindividual molecules should be reported as separate SMF rows.\n\nThe small molecule feature section MUST always come after the Small Molecule Table.\nAll table columns MUST be Tab separated. There MUST NOT be any empty cells.\nMissing values MUST be reported using \u201cnull\u201d.\n\nThe order of columns MUST follow the order specified below.\n\nAll columns are MANDATORY except for \u201copt_\u201d columns.",
       "properties": {
         "prefix": {
           "anyOf": [
@@ -3311,6 +3976,7 @@
           "ignore": true,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Prefix",
@@ -3330,6 +3996,7 @@
           "ignore": true,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Header Prefix",
@@ -3356,11 +4023,12 @@
             }
           ],
           "column_value_field": null,
-          "default": null,
+          "default": [],
           "description": "",
           "ignore": true,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Comment",
@@ -3385,9 +4053,13 @@
           "column_value_field": null,
           "default": null,
           "description": "A within file unique identifier for the small molecule feature.",
+          "examples": [
+            1
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Smf Id",
@@ -3414,10 +4086,18 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "References to the identification evidence (SME elements) via referencing SME_ID values. Multiple values MAY be provided as a | separated list to indicate ambiguity in the identification or to indicate that different types of data supported the identification (see SME_ID_REF_ambiguity_code). For the case of a consensus approach where multiple adduct forms are used to infer the SML ID, different features should just reference the same SME_ID value(s).",
+          "description": "References to the identification evidence (SME elements) via referencing SME_ID values. Multiple values MAY be provided as a | separated list to indicate ambiguity in the identification or to indicate that different types of data supported the identifiction (see SME_ID_REF_ambiguity_code). For the case of a consensus approach where multiple adduct forms are used to infer the SML ID, different features should just reference the same SME_ID value(s).",
+          "examples": [
+            [
+              5,
+              6,
+              12
+            ]
+          ],
           "ignore": false,
           "list_concatenation_str": "|",
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Sme Id Refs",
@@ -3442,9 +4122,13 @@
           "column_value_field": null,
           "default": null,
           "description": "If multiple values are given under SME_ID_REFS, one of the following codes MUST be provided. 1=Ambiguous identification; 2=Only different evidence streams for the same molecule with no ambiguity; 3=Both ambiguous identification and multiple evidence streams. If there are no or one value under SME_ID_REFs, this MUST be reported as null.",
+          "examples": [
+            1
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Sme Id Ref Ambiguity Code",
@@ -3468,10 +4152,15 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "The assumed classification of this molecule's adduct ion after detection, following the general style in the 2013 IUPAC recommendations on terms relating to MS e.g. [M+H]1+, [M+Na]1+, [M+NH4]1+, [M-H]1-, [M+Cl]1-, [M+H]1+.",
+          "description": "The assumed classification of this molecule\u2019s adduct ion after detection, following the general style in the 2013 IUPAC recommendations on terms relating to MS e.g. [M+H]1+, [M+Na]1+, [M+NH4]1+, [M-H]1-, [M+Cl]1-. ",
+          "examples": [
+            "[M+H]1+",
+            "[M+2Na]2+"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Adduct Ion",
@@ -3495,10 +4184,14 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "If de-isotoping has not been performed, then the isotopomer quantified MUST be reported here e.g. \u201c+1\u201d, \u201c+2\u201d, \u201c13C peak\u201d using CV terms, otherwise (i.e. for approaches where SMF rows are de-isotoped features) this MUST be null.",
+          "description": "If de-isotoping has not been performed, then the isotopomer quantified MUST be reported here e.g. \u201c+1\u201d, \u201c+2\u201d, \u201c13C peak\u201d using CV terms, otherwise (i.e. for approaches were SMF rows are de-isotoped features) this MUST be null.",
+          "examples": [
+            "[MS,MS:1002957,\u201disotopomer MS peak\u201d,\u201d13C peak\u201d]"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Isotopomer",
@@ -3523,9 +4216,13 @@
           "column_value_field": null,
           "default": null,
           "description": "The experimental mass/charge value for the feature, by default assumed to be the mean across assays or a representative value. For approaches that report isotopomers as SMF rows, then the m/z of the isotopomer MUST be reported here.",
+          "examples": [
+            1234.5
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Exp Mass To Charge",
@@ -3549,10 +4246,14 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "The feature's charge value using positive integers both for positive and negative polarity modes.",
+          "description": "The feature\u2019s charge value using positive integers both for positive and negative polarity modes.",
+          "examples": [
+            1
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Charge",
@@ -3577,9 +4278,13 @@
           "column_value_field": null,
           "default": null,
           "description": "The apex of the feature on the retention time axis, in a Master or aggregate MS run. Retention time MUST be reported in seconds. Retention time values for individual MS runs (i.e. before alignment) MAY be reported as optional columns. Retention time SHOULD only be null in the case of direct infusion MS or other techniques where a retention time value is absent or unknown. Relative retention time or retention time index values MAY be reported as optional columns, and could be considered for inclusion in future versions of mzTab as appropriate.",
+          "examples": [
+            1345.7
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Retention Time In Seconds",
@@ -3604,9 +4309,13 @@
           "column_value_field": null,
           "default": null,
           "description": "The start time of the feature on the retention time axis, in a Master or aggregate MS run. Retention time MUST be reported in seconds. Retention time start and end SHOULD only be null in the case of direct infusion MS or other techniques where a retention time value is absent or unknown and MAY be reported in optional columns.",
+          "examples": [
+            1327.0
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Retention Time In Seconds Start",
@@ -3631,9 +4340,13 @@
           "column_value_field": null,
           "default": null,
           "description": "The end time of the feature on the retention time axis, in a Master or aggregate MS run. Retention time MUST be reported in seconds. Retention time start and end SHOULD only be null in the case of direct infusion MS or other techniques where a retention time value is absent or unknown and MAY be reported in optional columns.",
+          "examples": [
+            1327.8
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Retention Time In Seconds End",
@@ -3667,10 +4380,16 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "The feature's abundance in every assay described in the metadata section MUST be reported. Null or zero values may be reported as appropriate.",
+          "description": "The feature\u2019s abundance in every assay described in the metadata section MUST be reported. Null or zero values may be reported as appropriate.",
+          "examples": [
+            [
+              38648.0
+            ]
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": true,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Abundance Assay",
@@ -3698,9 +4417,14 @@
           "column_value_field": "value",
           "default": null,
           "description": "Additional columns can be added to the end of the small molecule feature table. These column headers MUST start with the prefix \u201copt_\u201d followed by the {identifier} of the object they reference: assay, study variable, MS run or \u201cglobal\u201d (if the value relates to all replicates). Column names MUST only contain the following characters: 'A'-'Z', 'a'-'z', '0'-'9', '', '-', '[', ']', and ':'. CV parameter accessions MAY be used for optional columns following the format: opt{identifier}_cv_{accession}_parameter name}. Spaces within the parameter's name MUST be replaced by '_'. ",
+          "examples": [
+            "opt_assay[1]_my_value=My value",
+            "opt_global_another_value=some other value"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": true,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Opt",
@@ -3734,6 +4458,7 @@
           "ignore": true,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Prefix",
@@ -3761,6 +4486,7 @@
           "ignore": true,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Header Prefix",
@@ -3786,11 +4512,12 @@
             }
           ],
           "column_value_field": null,
-          "default": null,
+          "default": [],
           "description": "",
           "ignore": true,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Comment",
@@ -3814,10 +4541,14 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "A within file unique identifier for the small molecule.",
+          "description": "A within file unique identifier for the small molecule summary.",
+          "examples": [
+            1
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Sml Id",
@@ -3844,17 +4575,25 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "References to all the features on which quantitation has been based (SMF elements) via referencing SMF_ID values. Multiple values SHOULD be provided as a | separated list. This MAY be null only if this is a Summary file.",
+          "description": "References to the small molecule features (SMF elements) via referencing SMF_ID values. Multiple values MAY be provided as a | separated list to indicate which features were used to aggregate the SML row.",
+          "examples": [
+            [
+              2,
+              3,
+              11
+            ]
+          ],
           "ignore": false,
           "list_concatenation_str": "|",
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Smf Id Refs",
           "validation_policy": {
             "enforcement_level": "required",
             "maximum": null,
-            "minimum": 1,
+            "minimum": null,
             "pattern": null,
             "required": null,
             "value_constraint": "non-negative-integer"
@@ -3875,9 +4614,21 @@
           "column_value_field": null,
           "default": null,
           "description": "A list of | separated possible identifiers for the small molecule; multiple values MUST only be provided to indicate ambiguity in the identification of the molecule and not to demonstrate different identifier types for the same molecule. Alternative identifiers for the same molecule MAY be provided as optional columns. The database identifier must be preceded by the resource description (prefix) followed by a colon, as specified in the metadata section. A null value MAY be provided if the identification is sufficiently ambiguous as to be meaningless for reporting or the small molecule has not been identified.",
+          "examples": [
+            [
+              "CID:00027395"
+            ],
+            [
+              "HMDB:HMDB0001847"
+            ],
+            [
+              "null"
+            ]
+          ],
           "ignore": false,
           "list_concatenation_str": "|",
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Database Identifier",
@@ -3904,10 +4655,16 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "A list of | separated potential chemical formulae of the reported compound. The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, even if this leads to redundant reporting of information (i.e. if ambiguity can be resolved in the chemical formula), and the validation software will throw an error if the number of | symbols does not match. \u201cnull\u201d values between bars are allowed. This should be specified in Hill notation (EA Hill 1900), i.e. elements in the order C, H and then alphabetically all other elements. Counts of one may be omitted. Elements should be capitalized properly to avoid confusion (e.g., \u201cCO\u201d vs. \u201cCo\u201d). The chemical formula reported should refer to the neutral form.Example: N-acetylglucosamine would be encoded by the string \u201cC8H15NO6\u201d.",
+          "description": "The chemical formula of the identified compound e.g. in a database, assumed to match the theoretical mass to charge (in some cases this will be the derivatized form, including adducts and protons). This should be specified in Hill notation (EA Hill 1900), i.e. elements in the order C, H and then alphabetically all other elements. Counts of one may be omitted. Elements should be capitalized properly to avoid confusion (e.g., \u201cCO\u201d vs. \u201cCo\u201d). The chemical formula reported should refer to the neutral form. Charge state is reported by the charge field in the SME and SMF section.\nExample N-acetylglucosamine would be encoded by the string \u201cC8H15NO6\u201d",
+          "examples": [
+            [
+              "C17H20N4O2"
+            ]
+          ],
           "ignore": false,
           "list_concatenation_str": "|",
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Chemical Formula",
@@ -3934,10 +4691,16 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "A list of | separated potential molecule structures in the simplified molecular-input line-entry system (SMILES) for the small molecule. The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, and the validation software will throw an error if the number of | symbols does not match. \u201cnull\u201d values between bars are allowed.",
+          "description": "The potential molecule\u2019s structure in the simplified molecular-input line-entry system (SMILES) for the small molecule.",
+          "examples": [
+            [
+              "C1=CC=C(C=C1)CCNC(=O)CCNNC(=O)C2=CC=NC=C2"
+            ]
+          ],
           "ignore": false,
           "list_concatenation_str": "|",
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Smiles",
@@ -3964,10 +4727,16 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "A list of | separated potential standard IUPAC International Chemical Identifier (InChI) of the given substance.  The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, even if this leads to redundant information being reported (i.e. if ambiguity can be resolved in the InChi), and the validation software will throw an error if the number of | symbols does not match. \u201cnull\u201d values between bars are allowed. ",
+          "description": "A standard IUPAC International Chemical Identifier (InChI) for the given substance.",
+          "examples": [
+            [
+              "InChI=1S/C17H20N4O2/c22-16(19-12-6-14-4-2-1-3-5-14)9-13-20-21-17(23)15-7-10-18-11-8-15/h1-5,7-8,10-11,20H,6,9,12-13H2,(H,19,22)(H,21,23)"
+            ]
+          ],
           "ignore": false,
           "list_concatenation_str": "|",
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Inchi",
@@ -3994,10 +4763,16 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "A list of | separated possible chemical/common names for the small molecule, or general description if a chemical name is unavailable. Multiple names are only to demonstrate ambiguity in the identification. The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, and the validation software will throw an error if the number of | symbols does not match. \u201cnull\u201d values between bars are allowed. ",
+          "description": "The small molecule\u2019s chemical/common name, or general description if a chemical name is unavailable.",
+          "examples": [
+            [
+              "N-(2-phenylethyl)-3-[2-(pyridine-4-carbonyl)hydrazinyl]propanamide"
+            ]
+          ],
           "ignore": false,
           "list_concatenation_str": "|",
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Chemical Name",
@@ -4024,10 +4799,22 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "A URI pointing to the small molecule's entry in a reference database (e.g., the small molecule's HMDB or KEGG entry). The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, and the validation software will throw an error if the number of | symbols does not match. \u201cnull\u201d values between bars are allowed.",
+          "description": "A URI pointing to the small molecule\u2019s entry in a database (e.g., the small molecule\u2019s HMDB, Chebi or KEGG entry).",
+          "examples": [
+            [
+              "http://www.genome.jp/dbget-bin/www_bget?cpd:C00031"
+            ],
+            [
+              "http://www.hmdb.ca/metabolites/HMDB0001847"
+            ],
+            [
+              "http://identifiers.org/hmdb/HMDB0001847"
+            ]
+          ],
           "ignore": false,
           "list_concatenation_str": "|",
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Uri",
@@ -4061,10 +4848,16 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "The small molecule's precursor's theoretical neutral mass.  The number of values provided MUST match the number of entities reported under \u201cdatabase_identifier\u201d, and the validation software will throw an error if the number of | symbols does not match. \u201cnull\u201d values (in general and between bars) are allowed for molecules that have not been identified only, or for molecules where the neutral mass cannot be calculated. In these cases, the SML entry SHOULD reference features in which exp_mass_to_charge values are captured. ",
+          "description": "The theoretical neutral mass of the small molecule. This should be calculated from the chemical formula.",
+          "examples": [
+            [
+              1234.5
+            ]
+          ],
           "ignore": false,
           "list_concatenation_str": "|",
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Theoretical Neutral Mass",
@@ -4092,10 +4885,17 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "A | separated list of detected adducts for this this molecule, following the general style in the 2013 IUPAC recommendations on terms relating to MS e.g. [M+H]1+, [M+Na]1+, [M+NH4]1+, [M-H]1-, [M+Cl]1-, [M+H]1+. If the adduct classification is ambiguous with regards to identification evidence it MAY be null. ",
+          "description": "A | separated list of the detected adduct ion forms for this small molecule. The terms should follow the general style in the 2013 IUPAC recommendations on terms relating to MS e.g. [M+H]1+, [M+Na]1+, [M+NH4]1+, [M-H]1-, [M+Cl]1-.",
+          "examples": [
+            [
+              "[M+H]1+",
+              "[M+Na]1+"
+            ]
+          ],
           "ignore": false,
           "list_concatenation_str": "|",
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Adduct Ions",
@@ -4119,10 +4919,16 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "The reliability of the given small molecule identification. This must be supplied by the resource and MUST be reported as an integer between 1-4: identified metabolite (1)      putatively annotated compound (2)      putatively characterized compound class (3)      unknown compound (4)  These MAY be replaced using a suitable CV term in the metadata section e.g. to use MSI recommendation levels (see Section 6.2.57 for details).  The following CV terms are already available within the PSI MS CV. Future schemes may be implemented by extending the PSI MS CV with new terms and associated levels.  The MSI has recently discussed an extension of the original four level scheme into a five level scheme MS:1002896 (compound identification confidence level) with levels isolated, pure compound, full stereochemistry (0)      reference standard match or full 2D structure (1)      unambiguous diagnostic evidence (literature, database) (2)      most likely structure, including isomers, substance class or substructure match (3) unknown compound (4)  For high-resolution MS, the following term and its levels may be used: MS:1002955 (hr-ms compound identification confidence level) with levels      confirmed structure (1)      probable structure (2)          unambiguous ms library match (2a)          diagnostic evidence (2b)      tentative candidates (3)      unequivocal molecular formula (4)      exact mass (5)  A String data type is set to allow for different systems to be specified in the metadata section. ",
+          "description": "The reliability of the given small molecule identification. This must be supplied by the resource and should be reported as an integer between 1-4:\n\n1: identified, rigorous. ...\n2: identified. ...\n3: putatively characterized class. ...\n4: unknown. ...",
+          "examples": [
+            "3",
+            "0",
+            "2a"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Reliability",
@@ -4146,10 +4952,14 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "The approach or database search that identified this small molecule with highest confidence.",
+          "description": "The small molecule confidence measure/score of the best identification for this small molecule summary. The type of the value is defined by the best_id_confidence_measure CV parameter. The value is reported in the best_id_confidence_value column.",
+          "examples": [
+            "[MS, MS:1001477, SpectraST,,]"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Best Id Confidence Measure",
@@ -4173,10 +4983,14 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "The best confidence measure in identification (for this type of score) for the given small molecule across all assays. The type of score MUST be defined in the metadata section. If the small molecule was not identified by the specified search engine, \u201cnull\u201d MUST be reported. If the confidence measure does not report a numerical confidence value, \u201cnull\u201d SHOULD be reported.",
+          "description": "The small molecule confidence measure/score value of the best identification for this small molecule summary.",
+          "examples": [
+            0.85
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": false,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Best Id Confidence Value",
@@ -4210,10 +5024,16 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "The small molecule's abundance in every assay described in the metadata section MUST be reported. Null or zero values may be reported as appropriate. 'null' SHOULD be used to report missing quantities, while zero SHOULD be used to indicate a present but not reliably quantifiable value (e.g. below a minimum noise threshold).",
+          "description": "The small molecule\u2019s abundance in every assay described in the metadata section MUST be reported. Null or zero values may be reported as appropriate.",
+          "examples": [
+            [
+              12340.0
+            ]
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": true,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Abundance Assay",
@@ -4247,10 +5067,16 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "The small molecule's abundance in all the study variables described in the metadata section (study_variable[1-n]_average_function), calculated using the method as described in the Metadata section (default = arithmetic mean across assays). Null or zero values may be reported as appropriate. 'null' SHOULD be used to report missing quantities, while zero SHOULD be used to indicate a present but not reliably quantifiable value (e.g. below a minimum noise threshold).",
+          "description": "The small molecule\u2019s abundance in every study variable described in the metadata section. Null or zero values may be reported as appropriate.",
+          "examples": [
+            [
+              1230.0
+            ]
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": true,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Abundance Study Variable",
@@ -4284,10 +5110,16 @@
           ],
           "column_value_field": null,
           "default": null,
-          "description": "A measure of the variability of the study variable abundance measurement, calculated using the method as described in the metadata section (study_variable[1-n]_average_function), with a default = arithmethic co-efficient of variation of the small molecule's abundance in the given study variable.",
+          "description": "The small molecule\u2019s abundance variation in every study variable described in the metadata section. Null or zero values may be reported as appropriate.",
+          "examples": [
+            [
+              0.2
+            ]
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": true,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Abundance Variation Study Variable",
@@ -4315,9 +5147,13 @@
           "column_value_field": "value",
           "default": null,
           "description": "Additional columns can be added to the end of the small molecule table. These column headers MUST start with the prefix \u201copt_\u201d followed by the {identifier} of the object they reference: assay, study variable, MS run or \u201cglobal\u201d (if the value relates to all replicates). Column names MUST only contain the following characters: 'A'-'Z', 'a'-'z', '0'-'9', '', '-', '[', ']', and ':'. CV parameter accessions MAY be used for optional columns following the format: opt{identifier}_cv_{accession}_{parameter name}. Spaces within the parameter's name MUST be replaced by '_'. ",
+          "examples": [
+            "opt_global_cv_MS:1002217_decoy_peptide=null"
+          ],
           "ignore": false,
           "list_concatenation_str": null,
           "multiple_columns": true,
+          "mztab_example": null,
           "referenced_field_name": null,
           "referenced_section": null,
           "title": "Opt",
@@ -4350,6 +5186,7 @@
           "default": null,
           "ignore": true,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -4374,8 +5211,10 @@
             }
           ],
           "default": null,
+          "description": "The software utilized.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": true,
           "referenced_field_name": null,
@@ -4406,6 +5245,7 @@
           "description": "A software setting used. This field MAY occur multiple times for a single software. The value of this field is deliberately set as a String, since there currently do not exist cvParams for every possible setting.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -4423,7 +5263,7 @@
       "title": "Software",
       "type": "object"
     },
-    "SpectraRef": {
+    "SpectraReference": {
       "properties": {
         "ms_run": {
           "allow_multiple": false,
@@ -4439,10 +5279,11 @@
           "description": "Reference to MsRun",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
-          "title": "Ms Run",
+          "title": "Ms Run Ref",
           "validation_policy": {
             "enforcement_level": "required",
             "maximum": null,
@@ -4466,6 +5307,7 @@
           "description": "The (vendor-dependent) reference string to the actual mass spectrum.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -4480,7 +5322,7 @@
           }
         }
       },
-      "title": "SpectraRef",
+      "title": "SpectraReference",
       "type": "object"
     },
     "StudyVariable": {
@@ -4499,6 +5341,7 @@
           "default": null,
           "ignore": true,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -4526,6 +5369,7 @@
           "description": "The study variable name.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": true,
           "referenced_field_name": null,
@@ -4537,6 +5381,37 @@
             "pattern": null,
             "required": true,
             "value_constraint": null
+          }
+        },
+        "group_refs": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The study variable group this study variable belongs to.",
+          "ignore": false,
+          "list_concatenation_str": null,
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": false,
+          "referenced_field_name": "study_variable_group",
+          "title": "Group Refs",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": null,
+            "value_constraint": "non-negative-integer"
           }
         },
         "assay_refs": {
@@ -4556,10 +5431,42 @@
           "description": "The assays referenced by this study variable.",
           "ignore": false,
           "list_concatenation_str": "|",
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": "assay",
           "title": "Assay Refs",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": null,
+            "value_constraint": "non-negative-integer"
+          }
+        },
+        "ms_run_refs": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The ms run(s) referenced by this study variable.",
+          "ignore": false,
+          "list_concatenation_str": "|",
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": false,
+          "referenced_field_name": "ms_run",
+          "title": "Ms Run Refs",
           "validation_policy": {
             "enforcement_level": "required",
             "maximum": null,
@@ -4583,6 +5490,7 @@
           "description": "The function used to calculate the study variable quantification value and the operation used is not arithmetic mean (default). e.g. geometric mean, median.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -4610,6 +5518,7 @@
           "description": "The function used to calculate the study variable quantification variation value if it is reported and the operation used is not coefficient of variation (default). e.g. standard error.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -4637,6 +5546,7 @@
           "description": "A free-form description of this study variable.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -4667,6 +5577,7 @@
           "description": "Parameters indicating which factors were used for the assays referenced by this study variable, and at which levels.",
           "ignore": false,
           "list_concatenation_str": "|",
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -4682,6 +5593,190 @@
         }
       },
       "title": "StudyVariable",
+      "type": "object"
+    },
+    "StudyVariableGroup": {
+      "properties": {
+        "id": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "ignore": true,
+          "list_concatenation_str": null,
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": false,
+          "referenced_field_name": null,
+          "title": "Id",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": null,
+            "value_constraint": null
+          }
+        },
+        "name": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Parameter"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The study variable group name.",
+          "ignore": false,
+          "list_concatenation_str": null,
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": true,
+          "referenced_field_name": null,
+          "title": "Name",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": true,
+            "value_constraint": null
+          }
+        },
+        "description": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Description of the study variable group.",
+          "ignore": false,
+          "list_concatenation_str": null,
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": false,
+          "referenced_field_name": null,
+          "title": "Description",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": null,
+            "value_constraint": null
+          }
+        },
+        "type": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Parameter"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The study variable group type, as defined by the parameter.",
+          "ignore": false,
+          "list_concatenation_str": null,
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": false,
+          "referenced_field_name": null,
+          "title": "Type",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": null,
+            "value_constraint": null
+          }
+        },
+        "datatype": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "enum": [
+                "xsd:string",
+                "xsd:integer",
+                "xsd:decimal",
+                "xsd:boolean",
+                "xsd:date",
+                "xsd:time",
+                "xsd:dateTime",
+                "xsd:anyURI"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The study variable group datatype",
+          "ignore": false,
+          "list_concatenation_str": null,
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": false,
+          "referenced_field_name": null,
+          "title": "Datatype",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": null,
+            "value_constraint": null
+          }
+        },
+        "unit": {
+          "allow_multiple": false,
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Parameter"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The study variable group unit, as defined by the parameter.",
+          "ignore": false,
+          "list_concatenation_str": null,
+          "mztab_example": null,
+          "non_indexed_list_value": false,
+          "object_level_value": false,
+          "referenced_field_name": null,
+          "title": "Unit",
+          "validation_policy": {
+            "enforcement_level": "required",
+            "maximum": null,
+            "minimum": null,
+            "pattern": null,
+            "required": null,
+            "value_constraint": null
+          }
+        }
+      },
+      "title": "StudyVariableGroup",
       "type": "object"
     },
     "Uri": {
@@ -4700,6 +5795,7 @@
           "default": null,
           "ignore": true,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": false,
           "referenced_field_name": null,
@@ -4727,6 +5823,7 @@
           "description": "The URI pointing to the external resource.",
           "ignore": false,
           "list_concatenation_str": null,
+          "mztab_example": null,
           "non_indexed_list_value": false,
           "object_level_value": true,
           "referenced_field_name": null,
@@ -4745,6 +5842,7 @@
       "type": "object"
     }
   },
+  "description": "    mzTab-M is intended as a reporting standard for quantitative results\n    from metabolomics/lipodomics approaches.\n\n    This format is further intended to provide local LIMS systems\n    as well as MS metabolomics repositories a simple way to share\n    and combine basic information. The mzTab-M format consists of four\n    cross-referenced data tables:\n\n    * Metadata (MTD),\n    * Small Molecule (SML),\n    * Small Molecule Feature (SMF) and the\n    * Small Molecule Evidence (SME).\n\nThe MTD and SML tables are mandatory, and for a file to contain any evidence about\nhow molecules were quantified or identified by software,\nthen all four tables must be present. The tables must follow the order\nMTD, SML, SMF and SME, with a blank line separating each table.\n\nThe structure of each table, in terms of the rows and columns\nthat must be present is\ntightly specified and formally defined and explained in\nthe mzTab-M specification document.\nmzTab-M files MUST have one Metadata (MTD) section and\none Small Molecule (SML) Section. In practice, we expect that most files SHOULD also\ninclude one Small Molecule Feature (SMF) section,\nand one Small Molecule Evidence (SME) Section.\nFiles lacking SMF and SME sections can only present summary data\nabout quantified molecules, without any evidence trail for\nhow those values were derived.\nIt will be left to reading software to determine whether\nadditional validation will be\nrequested such that SMF and SME tables MUST be present.",
   "properties": {
     "metadata": {
       "allow_multiple": false,
@@ -4760,6 +5858,7 @@
       "description": "The metadata section contains general information about the mztab file content.",
       "ignore": false,
       "list_concatenation_str": null,
+      "mztab_example": "MTD\tmzTab-version\t2.0.0-M\nMTD\tmzTab-ID\tMTBL1234\nMTD\ttitle\tEffects of Rapamycin on metabolite profile\n...",
       "non_indexed_list_value": false,
       "object_level_value": false,
       "referenced_field_name": null,
@@ -4790,6 +5889,7 @@
       "description": "The small molecule section is table-based. The small molecule section MUST always come after the metadata section. All table columns MUST be Tab separated. There MUST NOT be any empty cells; missing values MUST be reported using \u201cnull\u201d for columns where Is Nullable = \u201cTrue\u201d.  Each row of the small molecule section is intended to report one final result to be communicated in terms of a molecule that has been quantified. In many cases, this may be the molecule of biological interest, although in some cases, the final result could be a derivatized form as appropriate - although it is desirable for the database identifier(s) to reference to the biological (non-derivatized) form. In general, different adduct forms would generally be reported in the Small Molecule Feature section.  The order of columns MUST follow the order specified below.  All columns are MANDATORY except for \u201copt_\u201d columns. ",
       "ignore": false,
       "list_concatenation_str": null,
+      "mztab_example": null,
       "non_indexed_list_value": false,
       "object_level_value": false,
       "referenced_field_name": null,
@@ -4820,6 +5920,7 @@
       "description": "The small molecule feature section is table-based, representing individual MS regions (generally considered to be the elution profile for all isotopomers formed from a single charge state of a molecule), that have been measured/quantified. However, for approaches that quantify individual isotopomers e.g. stable isotope labelling/flux studies, then each SMF row SHOULD represent a single isotopomer. Different adducts or derivatives and different charge states of individual molecules should be reported as separate SMF rows. The small molecule feature section MUST always come after the Small Molecule Table. All table columns MUST be Tab separated. There MUST NOT be any empty cells. Missing values MUST be reported using \u201cnull\u201d.  The order of columns MUST follow the order specified below.  All columns are MANDATORY except for \u201copt_\u201d columns. ",
       "ignore": false,
       "list_concatenation_str": null,
+      "mztab_example": null,
       "non_indexed_list_value": false,
       "object_level_value": false,
       "referenced_field_name": null,
@@ -4850,6 +5951,7 @@
       "description": "The small molecule evidence section is table-based, representing evidence for identifications of small molecules/features, from database search or any other process used to give putative identifications to molecules. In a typical case, each row represents one result from a single search or interpretation of a piece of evidence e.g. a database search with a fragmentation spectrum. Multiple results from a given input data item (e.g. one fragment spectrum) SHOULD share the same value under evidence_input_id.  The small molecule evidence section MUST always come after the Small Molecule Feature Table. All table columns MUST be Tab separated. There MUST NOT be any empty cells. Missing values MUST be reported using \u201cnull\u201d.  The order of columns MUST follow the order specified below.  All columns are MANDATORY except for \u201copt_\u201d columns. ",
       "ignore": false,
       "list_concatenation_str": null,
+      "mztab_example": null,
       "non_indexed_list_value": false,
       "object_level_value": false,
       "referenced_field_name": null,
@@ -4880,6 +5982,7 @@
       "description": "Comment lines can be placed anywhere in an mzTab file. These lines must start with the three-letter code COM and are ignored by most parsers. Empty lines can also occur anywhere in an mzTab file and are ignored. ",
       "ignore": false,
       "list_concatenation_str": null,
+      "mztab_example": null,
       "non_indexed_list_value": false,
       "object_level_value": false,
       "referenced_field_name": null,
