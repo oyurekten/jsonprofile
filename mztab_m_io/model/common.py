@@ -140,7 +140,13 @@ class ExtendedParameter(Parameter):
         if isinstance(val, Mapping):
             if len(val) == 1 and None in val:
                 val = data[None]
-        if isinstance(val, str):
+        if isinstance(val, dict):
+            value_str = val.get("value", "")
+            value_str = value_str.strip('"')
+            if value_str.startswith("["):
+                value = Parameter.model_validate(value_str.strip("[]"))
+                val["value"] = value.model_dump(by_alias=True)
+        elif isinstance(val, str):
             cleaned = val.strip("[]")
             parts = cleaned.split(",", maxsplit=3)
 
@@ -149,7 +155,7 @@ class ExtendedParameter(Parameter):
             name = parts[2].strip() if len(parts) > 2 else ""
             value = ""
             if len(parts) > 3:
-                value_str = parts[3].strip()
+                value_str = parts[3].strip('"').strip()
                 value = value_str
                 if value_str.startswith("["):
                     value = Parameter.model_validate(value_str.strip("[]"))
@@ -158,7 +164,7 @@ class ExtendedParameter(Parameter):
                 "cv_label": cv_label,
                 "cv_accession": cv_accession,
                 "name": name,
-                "value": value,
+                "value": value.strip('"'),
             }
         return handler(val)
 

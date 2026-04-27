@@ -808,9 +808,10 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
             return
 
         if metadata_info.object_level_value_field:
-            item[metadata_info.object_level_value_field] = item.get(None, None)
-            if None in item:
-                del item[None]
+            if not item.get(metadata_info.object_level_value_field):
+                item[metadata_info.object_level_value_field] = item.get(None, None)
+                if None in item:
+                    del item[None]
         for join_field, join_op in metadata_info.list_concatenation_str_dict.items():
             if join_field in item:
                 item[join_field] = item[join_field] or ""
@@ -824,14 +825,19 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
                 if isinstance(val, list):
                     new_val = []
                     for v in val:
-                        ref_match = re.match(rf"\s*{ref}\[(\d+)\]\s*", v)
-                        if ref_match:
-                            new_val.append(int(ref_match.groups()[0]))
+                        if not isinstance(v, int):
+                            ref_match = re.match(rf"\s*{ref}\[(\d+)\]\s*", str(v))
+                            if ref_match:
+                                new_val.append(int(ref_match.groups()[0]))
+                        else:
+                            new_val.append(v)
                     item[ref_field] = new_val
                 else:
-                    ref_match = re.match(rf"{ref}\[(\d+)\]", item[ref_field])
-                    if ref_match:
-                        item[ref_field] = int(ref_match.groups()[0])
+                    if not isinstance(item[ref_field], int):
+                        ref_match = re.match(rf"{ref}\[(\d+)\]", str(item[ref_field]))
+                        if ref_match:
+                            item[ref_field] = int(ref_match.groups()[0])
+
         for k in item.keys():
             if k in metadata_info.subfield_lists and not isinstance(item[k], list):
                 item[k] = [item[k]]
