@@ -23,6 +23,7 @@ from mztab_m_io.model.common import (
     ColumnParameterMapping,
     Contact,
     Database,
+    ExtendedParameter,
     Instrument,
     MsRun,
     Parameter,
@@ -426,10 +427,7 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
             "of variation (default) e.g. "
             "“standard error”. description: A textual description of "
             "the study variable. "
-            "factors: Additional parameters or factors, separated by bars, "
-            "that are known "
-            "about study variables allowing the capture of more complex, "
-            "such as nested designs. ",
+            "group_refs: Related study variable group IDs.",
             json_schema_extra=MetadataSerialization(
                 validation_policy=ValidationPolicy(required=True, minimum=1)
             ).model_dump(),
@@ -437,14 +435,15 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
     ] = None
 
     custom: Annotated[
-        Optional[List[Parameter]],
+        Optional[List[ExtendedParameter]],
         Field(
             description="Any additional parameters describing the analysis reported.",
             examples=["MTD\tcustom\t[MS, MS:1000001, custom param, value]"],
-            json_schema_extra=MetadataSerialization().model_dump(),
+            json_schema_extra=MetadataSerialization(
+                list_concatenation_str="|"
+            ).model_dump(),
         ),
     ] = None
-
     cv: Annotated[
         Optional[List[CV]],
         Field(
@@ -838,9 +837,13 @@ class Metadata(MzTabSerializableModel, CustomSerializer):
                         if ref_match:
                             item[ref_field] = int(ref_match.groups()[0])
 
-        for k in item.keys():
-            if k in metadata_info.subfield_lists and not isinstance(item[k], list):
-                item[k] = [item[k]]
+        for k, v in item.items():
+            if (
+                v is not None
+                and k in metadata_info.subfield_lists
+                and not isinstance(v, list)
+            ):
+                item[k] = [v]
 
     @classmethod
     def _set_dict_value(
