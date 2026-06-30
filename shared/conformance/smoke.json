@@ -1,0 +1,23 @@
+{
+  "version": "0.1.0",
+  "schema": "../schema/jsonprofile.schema.json",
+  "cases": [
+    {
+      "id": "minimal-valid-profile",
+      "fixture": "../fixtures/minimal-valid-profile.json",
+      "valid": true,
+      "expectedErrors": []
+    },
+    {
+      "id": "missing-required-profile-name",
+      "fixture": "../fixtures/missing-required-profile-name.json",
+      "valid": false,
+      "expectedErrors": [
+        {
+          "path": "/profile/name",
+          "keyword": "required"
+        }
+      ]
+    }
+  ]
+}

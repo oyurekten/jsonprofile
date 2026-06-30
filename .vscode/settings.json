@@ -1,0 +1,25 @@
+{
+    "python.defaultInterpreterPath": "${workspaceFolder}/python/.venv/bin/python",
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/python/src"
+    ],
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.cwd": "${workspaceFolder}/python",
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "ruff.path": [
+        "${workspaceFolder}/python/.venv/bin/ruff"
+    ],
+    "terminal.integrated.env.osx": {
+        "GRADLE_USER_HOME": "${workspaceFolder}/.cache/gradle",
+        "PRE_COMMIT_HOME": "${workspaceFolder}/.cache/pre-commit",
+        "UV_CACHE_DIR": "${workspaceFolder}/.cache/uv"
+    },
+    "terminal.integrated.env.linux": {
+        "GRADLE_USER_HOME": "${workspaceFolder}/.cache/gradle",
+        "PRE_COMMIT_HOME": "${workspaceFolder}/.cache/pre-commit",
+        "UV_CACHE_DIR": "${workspaceFolder}/.cache/uv"
+    }
+}

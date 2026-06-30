@@ -1,0 +1,50 @@
+repos:
+- repo: https://github.com/abravalheri/validate-pyproject
+  rev: v0.25
+  hooks:
+  - id: validate-pyproject
+    files: ^python/pyproject\.toml$
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v6.0.0
+  hooks:
+  - id: check-added-large-files
+    args: [ "--maxkb=2000" ]
+    exclude: "^shared/fixtures/.+\\.json$"
+  - id: check-toml
+  - id: check-json
+    exclude: .vscode/.+
+  - id: check-yaml
+    args:
+    - --unsafe
+  - id: end-of-file-fixer
+  - id: trailing-whitespace
+    exclude: "tests/data/.+"
+- repo: https://github.com/lk16/detect-missing-init
+  rev: v0.1.6
+  hooks:
+  - id: detect-missing-init
+    args: [ "--create", "--track", "--python-folders", "python/src/jsonprofile" ]
+    files: ^python/src/.+\.py$
+- repo: https://github.com/astral-sh/uv-pre-commit
+  rev: 0.11.25
+  hooks:
+  - id: uv-lock
+    args: [ "--project", "python" ]
+    files: ^python/(pyproject\.toml|uv\.lock)$
+
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.15.20
+  hooks:
+  - id: ruff-check
+    args: [ "--config=python/pyproject.toml" ]
+    files: ^python/.+\.py$
+  - id: ruff-format
+    args: [ "--config=python/pyproject.toml" ]
+    files: ^python/.+\.py$
+- repo: https://github.com/commitizen-tools/commitizen
+  rev: v4.16.4
+  hooks:
+  - id: commitizen
+    stages: [ commit-msg ]
+  - id: commitizen-branch
+    stages: [ pre-push ]

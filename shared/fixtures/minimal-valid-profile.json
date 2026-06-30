@@ -1,0 +1,31 @@
+{
+  "id": "https://github.com/example-profiles/minimum-profile.json",
+  "version": "1.0.0",
+  "name": "Default Test Profile",
+  "description": "Example profile",
+  "configuration": {
+    "wasm_file_definitions": {
+      "default": {
+        "wasm_file_path": "tests/resources/default-policies-1.0.0-M.wasm",
+        "wasm_file_download_url": "https://github.com/example-profiles/example-profile.wasm"
+      }
+    }
+  },
+  "requirements": {
+    "$": {
+      "enforcement_level": "required",
+      "requirements": [
+        {
+          "code": "D-0001",
+          "enforcement_level": "required",
+          "required_properties": [
+            "metadata"
+          ],
+          "recommended_properties": [
+            "smallMoleculeSummary"
+          ]
+        }
+      ]
+    }
+  }
+}

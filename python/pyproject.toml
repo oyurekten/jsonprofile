@@ -1,0 +1,53 @@
+[project]
+name = "jsonprofile"
+version = "0.1.0"
+description = "Dynamic profile management for json files share same schema"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "cachetools>=7.1.4",
+    "email-validator>=2.3.0",
+    "httpx2>=0.28.1",
+    "jsonpath-ng>=1.8.0",
+    "jsonschema>=4.26.0",
+    "opa-wasmtime>=0.1.1",
+    "pydantic>=2.12.4",
+    "pyyaml>=6.0.3",
+    "rfc3986>=2.0.0",
+]
+[dependency-groups]
+dev = [
+    "pre-commit>=3.10.1",
+    "pytest>=9.0.3",
+    "ruff>=0.14.4",
+    "uv-build>=0.9.8",
+    "mkdocs-material>=9.7.0",
+]
+
+[tool.ruff]
+target-version = "py310"
+cache-dir = "../.cache/python/ruff"
+src = ["src"]
+
+
+[tool.ruff.lint]
+select = ["E", "F", "C", "I", "G", "SLF", "PTH", "Q", "T"]
+ignore = [ "C901"]
+
+fixable = ["ALL"]
+
+[tool.pytest.ini_options]
+addopts = "-v"
+cache_dir = "../.cache/python/pytest"
+testpaths = ["tests"]
+log_cli = true
+log_cli_level = "INFO"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
+
+[build-system]
+requires = ["uv_build>=0.9.8,<0.12.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "jsonprofile"
