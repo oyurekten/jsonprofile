@@ -3,7 +3,7 @@ from pathlib import Path
 
 import jsonpath_ng
 
-from jsonprofile.profile.base import Category, JsonProfileMessage, MessageType
+from jsonprofile.profile.base import Category, EnforcementLevel, JsonProfileMessage
 from jsonprofile.profile.model import (
     FieldRequirement,
     FieldRequirementGroup,
@@ -26,7 +26,6 @@ def validate_profile_file(
         return False, [
             JsonProfileMessage(
                 category=Category.CROSS_CHECK,
-                message_type=MessageType.ERROR,
                 message="Profile file path is not defined.",
             )
         ]
@@ -36,7 +35,6 @@ def validate_profile_file(
         return False, [
             JsonProfileMessage(
                 category=Category.CROSS_CHECK,
-                message_type=MessageType.ERROR,
                 message="Input is not file path.",
             )
         ]
@@ -46,7 +44,6 @@ def validate_profile_file(
         return False, [
             JsonProfileMessage(
                 category=Category.CROSS_CHECK,
-                message_type=MessageType.ERROR,
                 message=f"Profile file is not valid json file: {ex}",
             )
         ]
@@ -62,7 +59,6 @@ def validate_profile(profile: dict | JsonProfile):
             return False, [
                 JsonProfileMessage(
                     category=Category.CROSS_CHECK,
-                    message_type=MessageType.ERROR,
                     message=f"Profile json file format is not valid: {ex}",
                 )
             ]
@@ -74,7 +70,6 @@ def validate_profile(profile: dict | JsonProfile):
             messages.append(
                 JsonProfileMessage(
                     category=Category.CROSS_CHECK,
-                    message_type=MessageType.ERROR,
                     message=f"Requirement '{key}' is not unique.",
                 )
             )
@@ -88,7 +83,6 @@ def validate_profile(profile: dict | JsonProfile):
             messages.append(
                 JsonProfileMessage(
                     category=Category.CROSS_CHECK,
-                    message_type=MessageType.ERROR,
                     message=f"Requirement '{key}' value is not valid. "
                     "Define field requirement or field requirement group",
                 )
@@ -108,7 +102,6 @@ def validate_profile(profile: dict | JsonProfile):
                     JsonProfileMessage(
                         code=requirement.code or "",
                         category=Category.CROSS_CHECK,
-                        message_type=MessageType.ERROR,
                         message=message,
                     )
                 )
@@ -118,7 +111,6 @@ def validate_profile(profile: dict | JsonProfile):
                         JsonProfileMessage(
                             code=requirement.code or "",
                             category=Category.CROSS_CHECK,
-                            message_type=MessageType.ERROR,
                             message=message,
                         )
                     )
@@ -143,7 +135,6 @@ def validate_profile(profile: dict | JsonProfile):
                                     JsonProfileMessage(
                                         code=requirement.code or "",
                                         category=Category.CROSS_CHECK,
-                                        message_type=MessageType.ERROR,
                                         message=f"'{key}' requirement "
                                         f"{requirement.code} "
                                         "precondition evaluation (at index {index})"
@@ -162,11 +153,10 @@ def validate_profile(profile: dict | JsonProfile):
                                 JsonProfileMessage(
                                     code=requirement.code or "",
                                     category=Category.CROSS_CHECK,
-                                    message_type=MessageType.ERROR,
                                     message=f"Requirement {requirement.code} json path "
                                     f"'{json_path}' of '{key}' is not valid. ",
                                 )
                             )
-    errors = [x for x in messages if x.message_type == MessageType.ERROR]
+    errors = [x for x in messages if x.enforcement_level == EnforcementLevel.REQUIRED]
     success = False if errors else True
     return success, messages

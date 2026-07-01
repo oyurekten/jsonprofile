@@ -5,19 +5,16 @@ from typing import Any, Optional, Tuple
 import httpx2
 from cachetools import TTLCache, cached
 
-from jsonprofile.profile.constraints import CustomConstraint
-from jsonprofile.profile.model import (
-    JsonProfileConfiguration,
-    ValidationRuntimeConfiguration,
-)
-from jsonprofile.validator.base import ConstraintChecker
+from jsonprofile.profile.constraints.constraints import CustomConstraint
+from jsonprofile.validator.abstract_checker import ConstraintChecker
+from jsonprofile.validator.context import JsonProfileRunContext
 from jsonprofile.validator.decorators import constraint_checker
 
 logger = logging.getLogger(__name__)
 
 
 @constraint_checker(CustomConstraint, constraint_name="orcid", is_active=True)
-class OrcidValidator(ConstraintChecker):
+class OrcidChecker(ConstraintChecker):
     """
     OrcidValidator checks if a given string value strictly conforms to the ORCID format.
 
@@ -31,9 +28,8 @@ class OrcidValidator(ConstraintChecker):
         self,
         constraint: CustomConstraint,
         value: Any,
-        root: None | dict[str, Any] = None,
-        config: None | JsonProfileConfiguration = None,
-        runtime_config: None | ValidationRuntimeConfiguration = None,
+        root: dict[str, Any],
+        context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
         """
         Validates the provided value against the ORCID regular expression pattern.
@@ -78,12 +74,11 @@ class AccessibleUrlChecker(ConstraintChecker):
         self,
         constraint: CustomConstraint,
         value: Any,
-        root: None | dict[str, Any] = None,
-        config: None | JsonProfileConfiguration = None,
-        runtime_config: None | ValidationRuntimeConfiguration = None,
+        root: dict[str, Any],
+        context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
         if not isinstance(value, str):
             return False, "Value must be a string"
-        if runtime_config and runtime_config.offline_mode:
+        if context.runtime_config and context.runtime_config.offline_mode:
             return True, "Offline mode"
         return self.check_http_url(value)

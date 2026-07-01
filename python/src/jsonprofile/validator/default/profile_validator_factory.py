@@ -1,9 +1,10 @@
+import importlib
 import logging
 from typing import Annotated, Any, Optional
 
 from pydantic import Field
 
-from jsonprofile.profile.constraints import Constraint
+from jsonprofile.profile.constraints.constraints import Constraint
 from jsonprofile.profile.model import ProfileValidatorDefinition
 from jsonprofile.validator.base import (
     ConstraintChecker,
@@ -11,19 +12,63 @@ from jsonprofile.validator.base import (
     ProfileValidatorFactory,
     ProfileValidatorLoader,
 )
-from jsonprofile.validator.decorators import get_registered_constraint_checkers
+from jsonprofile.validator.default.profile_validator import DefaultProfileValidator
 from jsonprofile.validator.opa_engine import OpaEngineFactory
 
 logger = logging.getLogger(__name__)
+
+
+class DefaultProfileValidatorLoader(ProfileValidatorLoader):
+    def __init__(
+        self, validator_definitions: None | list[ProfileValidatorDefinition] = None
+    ):
+        self.loaded_validators: dict[str, ProfileValidator] = {}
+        self.validator_definitions = validator_definitions
+        for definition in self.validator_definitions or []:
+            self.load_validator(definition)
+
+    def load_validator(
+        self, definition: ProfileValidatorDefinition
+    ) -> ProfileValidator:
+        profile_validator_class = definition.profile_validator_class
+        if isinstance(profile_validator_class, dict):
+            profile_validator_class = profile_validator_class.get("python")
+        if not profile_validator_class:
+            message = (
+                f"Profile validator class is not defined for {definition.validator_id}"
+            )
+            logger.error(message)
+            raise ValueError(message)
+        parts = profile_validator_class.split(".")
+        class_name = parts[-1]
+        module_name = ".".join(parts[:-1])
+        try:
+            module_object = importlib.import_module(module_name)
+            target_class = getattr(module_object, class_name)
+
+        except Exception as ex:
+            message = f"Error while loading {module_name}.{class_name}: {ex}"
+            logger.error(message)
+            raise ValueError(message)
+        if not issubclass(target_class, ProfileValidator):
+            message = f"Class {module_name}.{class_name} is not ProfileValidator class"
+            logger.error(message)
+            raise ValueError(message)
+        instance = target_class()
+        self.loaded_validators[definition.validator_id] = instance
+        return instance
+
+
+ValidatorLabel = Annotated[
+    None | str,
+    Field(description="Human-readable validator label. None selects the default."),
+]
 
 ValidatorId = Annotated[
     None | str,
     Field(description="Profile validator identifier. None selects the default."),
 ]
-ValidatorLabel = Annotated[
-    None | str,
-    Field(description="Human-readable validator label. None selects the default."),
-]
+
 ConstraintType = Annotated[
     str,
     Field(description="Constraint type discriminator handled by a checker."),
@@ -32,121 +77,17 @@ ConstraintName = Annotated[
     Optional[str],
     Field(description="Optional named checker for a constraint type."),
 ]
-CheckerClass = Annotated[
-    type[ConstraintChecker],
-    Field(description="Constraint checker class to register."),
-]
-CheckerInstance = Annotated[
-    ConstraintChecker,
-    Field(description="Constraint checker instance to unregister."),
-]
+
 CustomValidatorDefinitions = Annotated[
     Optional[list[ProfileValidatorDefinition]],
     Field(description="Custom profile validator definitions available to the factory."),
 ]
-ValidatorLoader = Annotated[
-    None | ProfileValidatorLoader,
-    Field(description="Loader used to instantiate custom profile validators."),
-]
+
+
 OpaFactory = Annotated[
     Optional[OpaEngineFactory],
     Field(description="Factory used by validators that evaluate OPA policies."),
 ]
-
-
-class DefaultProfileValidator(ProfileValidator):
-    """Default profile validator backed by registered constraint checkers.
-
-    The validator resolves checker classes by constraint type and optional
-    constraint name, lazily instantiates them, and reuses checker instances
-    for subsequent validations.
-    """
-
-    def __init__(
-        self,
-        profile_validator_factory: Annotated[
-            "ProfileValidatorFactory",
-            Field(description="Factory that owns this profile validator."),
-        ],
-        id: ValidatorId = "default",
-    ):
-        """Create the default validator and load registered checker classes."""
-
-        super().__init__(profile_validator_factory=profile_validator_factory, id=id)
-        self.id: ValidatorId = id
-        self._registry: Annotated[
-            dict[tuple[str, str], type[ConstraintChecker]],
-            Field(description="Registered checker classes keyed by type and name."),
-        ] = {}
-        self._checkers: Annotated[
-            dict[tuple[str, str], ConstraintChecker],
-            Field(description="Instantiated checker cache keyed by type and name."),
-        ] = {}
-        checkers = get_registered_constraint_checkers(self.get_id())
-        for (constraint_type, name), checker in checkers.items():
-            self.register_checker(
-                constraint_type=constraint_type, constraint_name=name, checker=checker
-            )
-
-    def get_id(self) -> str:
-        """Return this validator's identifier."""
-
-        return self.id
-
-    def get_checker(
-        self,
-        constraint: Annotated[
-            Constraint,
-            Field(description="Constraint whose checker should be resolved."),
-        ],
-    ) -> Optional[ConstraintChecker]:
-        """Resolve the checker for a concrete constraint definition."""
-
-        return self.get_checker_by_name(
-            constraint_type=constraint.type, constraint_name=constraint.name
-        )
-
-    def get_checker_by_name(
-        self, constraint_type: ConstraintType, constraint_name: ConstraintName
-    ) -> Optional[ConstraintChecker]:
-        """Resolve or instantiate a checker by constraint type and optional name."""
-
-        key = (constraint_type, constraint_name or None)
-        checker_class = self._registry.get(key)
-        if checker_class:
-            checker = self._checkers.get(key)
-            if not checker:
-                checker = checker_class()
-                checker.profile_validator_factory = self.profile_validator_factory
-                checker.constraint_type = constraint_type
-                checker.constraint_name = constraint_type
-                checker.validator_id = self.get_id()
-                self._checkers[key] = checker
-            return checker
-        else:
-            raise ValueError(
-                f"There is no checker class for '{constraint_type}, {constraint_name}'"
-            )
-
-    def register_checker(
-        self,
-        constraint_type: ConstraintType,
-        constraint_name: ConstraintName,
-        checker: CheckerClass,
-    ) -> None:
-        """Register a checker class for a constraint type/name pair."""
-
-        self._registry[(constraint_type, constraint_name)] = checker
-
-    def unregister_checker(self, checker: CheckerInstance) -> None:
-        """Remove a checker instance and its registered class from this validator."""
-
-        matches = [k for k, v in self._registry.items() if v == checker.__class__]
-        for key in matches or []:
-            del self._registry[key]
-        matches = [k for k, v in self._checkers.items() if v == checker]
-        for key in matches or []:
-            del self._checkers[key]
 
 
 class DefaultProfileValidatorFactory(ProfileValidatorFactory):
@@ -156,7 +97,10 @@ class DefaultProfileValidatorFactory(ProfileValidatorFactory):
         self,
         custom_validator_definitions: CustomValidatorDefinitions = None,
         default_profile_validator_id: ValidatorId = None,
-        validator_loader: ValidatorLoader = None,
+        profile_validator_loader: Annotated[
+            None | DefaultProfileValidatorLoader,
+            Field(description="Loader used to instantiate custom profile validators."),
+        ] = None,
         opa_engine_factory: OpaFactory = None,
         **kwargs: Annotated[Any, Field(description="Additional factory arguments.")],
     ):
@@ -168,8 +112,8 @@ class DefaultProfileValidatorFactory(ProfileValidatorFactory):
             opa_engine_factory=opa_engine_factory,
             **kwargs,
         )
-        if not validator_loader:
-            validator_loader = ProfileValidatorLoader(
+        if not profile_validator_loader:
+            profile_validator_loader = DefaultProfileValidatorLoader(
                 validator_definitions=custom_validator_definitions
             )
         self._validator_definitions: Annotated[
@@ -189,7 +133,7 @@ class DefaultProfileValidatorFactory(ProfileValidatorFactory):
             Field(description="Validator ids keyed by label."),
         ] = {}
 
-        self.validator_loader: ValidatorLoader = validator_loader
+        self.profile_validator_loader = profile_validator_loader
         base = DefaultProfileValidator(profile_validator_factory=self)
         self._profile_validators[base.get_id()] = base
         base_label = ""
@@ -225,7 +169,7 @@ class DefaultProfileValidatorFactory(ProfileValidatorFactory):
         if not profile_validator:
             definition = self._validator_definitions.get(validator_id)
             if definition:
-                validator = self.validator_loader.load_validator(definition)
+                validator = self.profile_validator_loader.load_validator(definition)
                 self._profile_validators[definition.validator_id] = validator
                 self._validator_labels[definition.validator_id] = definition.label
                 self._validator_ids_by_label[definition.label] = definition.validator_id
@@ -243,7 +187,7 @@ class DefaultProfileValidatorFactory(ProfileValidatorFactory):
         if not profile_validator:
             definition = self._validator_definitions.get(validator_id)
             if definition:
-                validator = self.validator_loader.load_validator(definition)
+                validator = self.profile_validator_loader.load_validator(definition)
                 self._profile_validators[definition.validator_id] = validator
                 self._validator_labels[definition.validator_id] = definition.label
                 self._validator_ids_by_label[definition.label] = definition.validator_id
@@ -293,7 +237,7 @@ class DefaultProfileValidatorFactory(ProfileValidatorFactory):
     ) -> ProfileValidator:
         """Load and register a profile validator definition."""
 
-        profile_validator = self.validator_loader.load_validator(definition)
+        profile_validator = self.profile_validator_loader.load_validator(definition)
         self._profile_validators[definition.validator_id] = profile_validator
         self._validator_labels[definition.validator_id] = definition.label
         self._validator_ids_by_label[definition.label] = definition.validator_id

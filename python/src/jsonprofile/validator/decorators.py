@@ -1,8 +1,8 @@
 import logging
 from typing import Optional
 
-from jsonprofile.profile.constraints import Constraint
-from jsonprofile.validator.base import ConstraintChecker
+from jsonprofile.profile.constraints.constraints import Constraint
+from jsonprofile.validator.abstract_checker import ConstraintChecker
 
 logger = logging.getLogger(__name__)
 
@@ -10,14 +10,6 @@ DEFAULT_VALIDATOR_ID = "default"
 REGISTERED_PROFILE_CHECKER_CLASSES: dict[
     str, dict[tuple[str, str], type[ConstraintChecker]]
 ] = {}
-
-
-def get_registered_constraint_checkers(
-    validator_id: None | str = None,
-) -> dict[tuple[str, str], type["ConstraintChecker"]]:
-    if not validator_id:
-        validator_id = DEFAULT_VALIDATOR_ID
-    return REGISTERED_PROFILE_CHECKER_CLASSES.get(validator_id) or {}
 
 
 def constraint_checker(

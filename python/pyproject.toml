@@ -5,6 +5,7 @@ description = "Dynamic profile management for json files share same schema"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "bioregistry>=0.13.64",
     "cachetools>=7.1.4",
     "email-validator>=2.3.0",
     "httpx2>=0.28.1",

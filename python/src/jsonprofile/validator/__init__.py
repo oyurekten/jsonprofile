@@ -1,15 +1,34 @@
-from jsonprofile.validator import custom_checker, default_checker
+from jsonprofile.validator import checkers, default
+from jsonprofile.validator.abstract_checker import (
+    ConstraintChecker,
+    ConstraintValidationResult,
+)
+from jsonprofile.validator.base import (
+    ProfileValidator,
+    ProfileValidatorFactory,
+    ProfileValidatorLoader,
+)
+from jsonprofile.validator.decorators import (
+    DEFAULT_VALIDATOR_ID,
+    REGISTERED_PROFILE_CHECKER_CLASSES,
+    constraint_checker,
+)
+from jsonprofile.validator.json_validator import JsonValidationResult, JsonValidator
+from jsonprofile.validator.opa_engine import OpaEngine, OpaEngineFactory
 
-
-def init_constraint_checkers() -> None:
-    """
-    Ensure that the default and custom constraint checker modules are loaded
-    so their classes register with the DefaultConstraintCheckerManager.
-    """
-    import importlib
-
-    importlib.import_module(custom_checker.__name__)
-    importlib.import_module(default_checker.__name__)
-
-
-init_constraint_checkers()
+__all__ = [
+    "DEFAULT_VALIDATOR_ID",
+    "REGISTERED_PROFILE_CHECKER_CLASSES",
+    "constraint_checker",
+    "JsonValidator",
+    "JsonValidationResult",
+    "OpaEngine",
+    "OpaEngineFactory",
+    "ConstraintChecker",
+    "ProfileValidator",
+    "ProfileValidatorFactory",
+    "ProfileValidatorLoader",
+    "ConstraintValidationResult",
+    "checkers",
+    "default",
+]

@@ -5,8 +5,12 @@ from typing import Annotated, Any, Optional, Union
 
 from pydantic import Field, field_validator
 
-from jsonprofile.profile.base import EnforcementLevel, JsonPath, JsonProfileBaseModel
-from jsonprofile.profile.constraints import (
+from jsonprofile.profile.base import (
+    EnforcementLevel,
+    JsonPath,
+    JsonProfileBaseModel,
+)
+from jsonprofile.profile.constraints.constraints import (
     DEFAULT_CONSTRAINTS_MAP,
     Constraint,
     ConstraintGroup,
@@ -225,6 +229,15 @@ class ValidationRuntimeConfiguration(JsonProfileBaseModel):
     skip_decimal_validations: Annotated[
         None | bool,
         Field(description="Skip decimal value constraints."),
+    ] = None
+
+    cv_term_search_class: Annotated[
+        None | str,
+        Field(
+            description="Selected CV term search implementation class. "
+            "If it is not defined, default implementation will be used. "
+            "If you want to skip online searches, use `offline_mode`"
+        ),
     ] = None
 
 

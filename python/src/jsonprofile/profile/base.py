@@ -29,14 +29,6 @@ class Category(str, enum.Enum):
     PROFILE = "profile"
 
 
-class MessageType(str, enum.Enum):
-    """Severity type for validation and profile-check messages."""
-
-    ERROR = "error"
-    WARNING = "warn"
-    INFO = "info"
-
-
 class JsonProfileBaseModel(BaseModel):
     """Base model configuration shared by JSON Profile schemas."""
 
@@ -50,6 +42,15 @@ class JsonProfileBaseModel(BaseModel):
             field_name.replace("_", " ").strip()
         ),
     )
+
+
+class EnforcementLevel(str, Enum):
+    """How strongly a profile requirement is enforced."""
+
+    NOT_DEFINED = "not-defined"
+    OPTIONAL = "optional"
+    RECOMMENDED = "recommended"
+    REQUIRED = "required"
 
 
 class JsonProfileMessage(JsonProfileBaseModel):
@@ -66,26 +67,21 @@ class JsonProfileMessage(JsonProfileBaseModel):
         Field(description="Source file, JSONPath, or resource related to the message."),
     ] = None
     category: Annotated[
-        Category,
+        Category | str,
         Field(description="Validation category that produced the message."),
     ]
-    message_type: Annotated[
-        Optional[MessageType],
-        Field(description="Message severity."),
-    ] = MessageType.INFO
+    name: Annotated[
+        Optional[str],
+        Field(description="Source file, JSONPath, or resource related to the message."),
+    ] = None
     message: Annotated[
         str,
         Field(description="Human-readable validation message."),
     ]
-
-
-class EnforcementLevel(str, Enum):
-    """How strongly a profile requirement is enforced."""
-
-    NOT_DEFINED = "not-defined"
-    OPTIONAL = "optional"
-    RECOMMENDED = "recommended"
-    REQUIRED = "required"
+    enforcement_level: Annotated[
+        Optional[EnforcementLevel],
+        Field(description="Severity applied when the requirement is not satisfied."),
+    ] = EnforcementLevel.REQUIRED
 
 
 class BaseCvTerm(JsonProfileBaseModel):

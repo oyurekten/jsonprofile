@@ -11,7 +11,7 @@ import rfc3986
 from rfc3986.validators import Validator as Rfc3986Validator
 
 from jsonprofile.profile.base import BaseCvTerm, CvTerm, JsonProfileBaseModel
-from jsonprofile.profile.constraints import (
+from jsonprofile.profile.constraints.constraints import (
     BooleanConstraint,
     CollectionConstraint,
     ConstraintGroup,
@@ -36,10 +36,10 @@ from jsonprofile.profile.constraints import (
 )
 from jsonprofile.profile.model import (
     JsonProfileConfiguration,
-    ValidationRuntimeConfiguration,
 )
 from jsonprofile.utils import convert_full_path, is_non_string_container
-from jsonprofile.validator.base import ConstraintChecker
+from jsonprofile.validator.abstract_checker import ConstraintChecker
+from jsonprofile.validator.context import JsonProfileRunContext
 from jsonprofile.validator.decorators import constraint_checker
 
 logger = logging.getLogger(__name__)
@@ -78,9 +78,8 @@ class NotNullConstraintChecker(ConstraintChecker):
         self,
         constraint: NotNullConstraint,
         value: Any,
-        root: None | dict[str, Any] = None,
-        config: None | JsonProfileConfiguration = None,
-        runtime_config: None | ValidationRuntimeConfiguration = None,
+        root: dict[str, Any],
+        context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
         evaluation = False
         messages = []
@@ -111,9 +110,8 @@ class RegexConstraintChecker(ConstraintChecker):
         self,
         constraint: RegexConstraint,
         value: Any,
-        root: None | dict[str, Any] = None,
-        config: None | JsonProfileConfiguration = None,
-        runtime_config: None | ValidationRuntimeConfiguration = None,
+        root: dict[str, Any],
+        context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
         evaluation = False
         if value is not None and constraint.null_values:
@@ -160,9 +158,8 @@ class StringConstraintChecker(ConstraintChecker):
         self,
         constraint: StringConstraint,
         value: Any,
-        root: None | dict[str, Any] = None,
-        config: None | JsonProfileConfiguration = None,
-        runtime_config: None | ValidationRuntimeConfiguration = None,
+        root: dict[str, Any],
+        context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
         if value is not None and constraint.null_values:
             str_val = str(value)
@@ -219,9 +216,8 @@ class CollectionConstraintChecker(ConstraintChecker):
         self,
         constraint: CollectionConstraint,
         value: Any,
-        root: None | dict[str, Any] = None,
-        config: None | JsonProfileConfiguration = None,
-        runtime_config: None | ValidationRuntimeConfiguration = None,
+        root: dict[str, Any],
+        context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
         if value is not None and constraint.null_values:
             str_val = str(value)
@@ -287,10 +283,10 @@ class CollectionConstraintChecker(ConstraintChecker):
                     values: list[dict[str, Any]] = []
                     for json_path in constraint.item_value_jsonpath_list:
                         item_values = {}
-                        json_expression = self._json_path_expressions.get(json_path)
+                        json_expression = context.json_path_expressions.get(json_path)
                         if not json_expression:
                             json_expression = jsonpath_ng.parse(json_path)
-                            self._json_path_expressions[json_path] = json_expression
+                            context.json_path_expressions[json_path] = json_expression
                         # if json_path.startswith("@"):
                         matches = json_expression.find(value)
                         # else:
@@ -409,9 +405,8 @@ class StringEnumConstraintChecker(ConstraintChecker):
         self,
         constraint: StringEnumConstraint,
         value: Any,
-        root: None | dict[str, Any] = None,
-        config: None | JsonProfileConfiguration = None,
-        runtime_config: None | ValidationRuntimeConfiguration = None,
+        root: dict[str, Any],
+        context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
         evaluation = False
         message = ""
@@ -448,9 +443,8 @@ class IntegerEnumConstraintChecker(ConstraintChecker):
         self,
         constraint: IntegerEnumConstraint,
         value: Any,
-        root: None | dict[str, Any] = None,
-        config: None | JsonProfileConfiguration = None,
-        runtime_config: None | ValidationRuntimeConfiguration = None,
+        root: dict[str, Any],
+        context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
         evaluation = False
         message = ""
@@ -494,9 +488,8 @@ class IntegerConstraintChecker(ConstraintChecker):
         self,
         constraint: IntegerConstraint,
         value: Any,
-        root: None | dict[str, Any] = None,
-        config: None | JsonProfileConfiguration = None,
-        runtime_config: None | ValidationRuntimeConfiguration = None,
+        root: dict[str, Any],
+        context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
         evaluation = False
         message = ""
@@ -570,9 +563,8 @@ class BooleanConstraintChecker(ConstraintChecker):
         self,
         constraint: BooleanConstraint,
         value: Any,
-        root: None | dict[str, Any] = None,
-        config: None | JsonProfileConfiguration = None,
-        runtime_config: None | ValidationRuntimeConfiguration = None,
+        root: dict[str, Any],
+        context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
         evaluation = False
         message = ""
@@ -618,10 +610,10 @@ class DecimalConstraintChecker(ConstraintChecker):
         self,
         constraint: DecimalConstraint,
         value: Any,
-        root: None | dict[str, Any] = None,
-        config: None | JsonProfileConfiguration = None,
-        runtime_config: None | ValidationRuntimeConfiguration = None,
+        root: dict[str, Any],
+        context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
+        runtime_config = context.runtime_config
         if runtime_config and runtime_config.skip_decimal_validations:
             return True, "Decimal validation is skipped."
         evaluation = False
@@ -725,9 +717,8 @@ class DateTimeConstraintChecker(ConstraintChecker):
         self,
         constraint: DateTimeConstraint,
         value: Any,
-        root: None | dict[str, Any] = None,
-        config: None | JsonProfileConfiguration = None,
-        runtime_config: None | ValidationRuntimeConfiguration = None,
+        root: dict[str, Any],
+        context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
         evaluation = False
         message = ""
@@ -770,9 +761,8 @@ class EmailConstraintChecker(ConstraintChecker):
         self,
         constraint: EmailConstraint,
         value: Any,
-        root: None | dict[str, Any] = None,
-        config: None | JsonProfileConfiguration = None,
-        runtime_config: None | ValidationRuntimeConfiguration = None,
+        root: dict[str, Any],
+        context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
         evaluation = False
         message = ""
@@ -814,9 +804,8 @@ class UriConstraintChecker(ConstraintChecker):
         self,
         constraint: UriConstraint,
         value: Any,
-        root: None | dict[str, Any] = None,
-        config: None | JsonProfileConfiguration = None,
-        runtime_config: None | ValidationRuntimeConfiguration = None,
+        root: dict[str, Any],
+        context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
         evaluation = False
         message = ""
@@ -861,11 +850,12 @@ class CVTermConstraintChecker(ConstraintChecker):
         self,
         constraint: CVTermConstraint,
         value: Any,
-        root: None | dict[str, Any] = None,
-        config: None | JsonProfileConfiguration = None,
-        runtime_config: None | ValidationRuntimeConfiguration = None,
+        root: dict[str, Any],
+        context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
         evaluation = False
+        cv_term_search = context.cv_term_search
+        runtime_config = context.runtime_config
         param = None
         if value is not None and constraint.null_values:
             param = extract_cv_info(value)
@@ -900,8 +890,13 @@ class CVTermConstraintChecker(ConstraintChecker):
                         if not param.cv_label or not param.cv_accession:
                             message = f"invalid cv term label or accession. {param}"
                         else:
-                            name_req = True
-                            message = "term is valid."
+                            if runtime_config and runtime_config.offline_mode:
+                                name_req = True
+                                message = "term is valid."
+                            else:
+                                verified, message = cv_term_search.check_cv_term(param)
+                                return verified, message
+
                     else:
                         message = f"invalid cv term name: {param}"
 
@@ -929,11 +924,12 @@ class CVListConstraintChecker(ConstraintChecker):
         self,
         constraint: CVListConstraint,
         value: Any,
-        root: None | dict[str, Any] = None,
-        config: None | JsonProfileConfiguration = None,
-        runtime_config: None | ValidationRuntimeConfiguration = None,
+        root: dict[str, Any],
+        context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
         evaluation = False
+        runtime_config = context.runtime_config
+        cv_term_search = context.cv_term_search
         if value is not None and constraint.null_values:
             param = extract_cv_info(value)
             if str(param) in constraint.null_values:
@@ -975,19 +971,32 @@ class CVListConstraintChecker(ConstraintChecker):
                                     )
                             if not name_req:
                                 if constraint.allowed_cv_list:
-                                    if (
-                                        param.cv_label.upper()
-                                        in constraint.allowed_cv_list
-                                    ):
-                                        name_req = True
+                                    if param.cv_label.upper() in [
+                                        x.upper() for x in constraint.allowed_cv_list
+                                    ]:
+                                        if runtime_config.offline_mode:
+                                            name_req = True
+                                            message = "offline mode."
+                                        else:
+                                            verified, message = (
+                                                cv_term_search.check_cv_term(param)
+                                            )
+                                            return verified, message
                                     else:
                                         message = (
                                             f"'{param}' not in the selected cv list: "
                                             f"{', '.join(constraint.allowed_cv_list)}"
                                         )
                                 else:
-                                    name_req = True
-                                    message = "term in cv list."
+                                    if runtime_config and runtime_config.offline_mode:
+                                        name_req = True
+                                        message = "offline mode."
+                                    else:
+                                        verified, message = (
+                                            cv_term_search.check_cv_term(param)
+                                        )
+                                        return verified, message
+
                     else:
                         message = "invalid cv term name."
 
@@ -1015,9 +1024,8 @@ class CVTermEnumConstraintChecker(ConstraintChecker):
         self,
         constraint: CVTermEnumConstraint,
         value: Any,
-        root: None | dict[str, Any] = None,
-        config: None | JsonProfileConfiguration = None,
-        runtime_config: None | ValidationRuntimeConfiguration = None,
+        root: dict[str, Any],
+        context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
         evaluation = False
         if value is not None and constraint.null_values:
@@ -1100,11 +1108,12 @@ class ParentCVTermConstraintChecker(ConstraintChecker):
         self,
         constraint: ParentCVTermConstraint,
         value: Any,
-        root: None | dict[str, Any] = None,
-        config: None | JsonProfileConfiguration = None,
-        runtime_config: None | ValidationRuntimeConfiguration = None,
+        root: dict[str, Any],
+        context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
         evaluation = False
+        runtime_config = context.runtime_config
+        cv_term_search = context.cv_term_search
         if value is not None and constraint.null_values:
             param = extract_cv_info(value)
             if str(param) in constraint.null_values:
@@ -1134,16 +1143,39 @@ class ParentCVTermConstraintChecker(ConstraintChecker):
                         if not param.cv_label or not param.cv_accession:
                             message = "invalid cv term label or accession."
                         else:
-                            if constraint.parent_cv_terms:
-                                if param.cv_label in constraint.exceptional_cv_list:
+                            if constraint.exceptional_values:
+                                if param in constraint.exceptional_values:
                                     name_req = True
-                                    message = "term is in exception cv list."
+                                    message = "cv term is in exception list."
                             if not name_req:
+                                if runtime_config and runtime_config.offline_mode:
+                                    name_req = True
+                                    message = "offline mode."
+                                else:
+                                    verified_parent = None
+                                    for parent in constraint.parent_cv_terms or []:
+                                        verified, message = (
+                                            cv_term_search.check_cv_term(
+                                                cv_term=param, parent_cv_term=parent
+                                            )
+                                        )
+                                        if verified:
+                                            verified_parent = parent
+                                            break
+                                    if verified_parent:
+                                        name_req = True
+                                        message = (
+                                            f"CV term {param} is "
+                                            f"parent of {verified_parent}."
+                                        )
+                                    else:
+                                        message = "term in cv term list."
+
                                 if constraint.parent_cv_terms:
                                     input_val = BaseCvTerm.model_validate(
                                         param, from_attributes=True
                                     )
-                                    if input_val in constraint.allowed_cv_terms:
+                                    if input_val in constraint.exceptional_values:
                                         name_req = True
                                     else:
                                         message = "not in cv term list."
@@ -1178,12 +1210,18 @@ class CVTermValueConstraintChecker(ConstraintChecker):
         self,
         constraint: CVTermValueConstraint,
         value: Any,
-        root: None | dict[str, Any] = None,
-        config: None | JsonProfileConfiguration = None,
-        runtime_config: None | ValidationRuntimeConfiguration = None,
+        root: dict[str, Any],
+        context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
+        runtime_config = context.runtime_config
         checker = CVTermConstraintChecker()
-        is_valid, msg = checker.validate(constraint, value)
+
+        is_valid, msg = checker.validate(
+            constraint=constraint,
+            value=value,
+            root=root,
+            context=context,
+        )
         if not is_valid:
             return is_valid, msg
 
@@ -1211,11 +1249,14 @@ class CVTermValueConstraintChecker(ConstraintChecker):
                     skip = True
             if not skip:
                 if key_matches and constraint.value_constraint:
-                    checker = self.profile_validator_factory.get_checker(
+                    checker = context.profile_validator_factory.get_checker(
                         constraint.value_constraint
                     )
                     res = checker.validate_constraint(
-                        constraint.value_constraint, param.value, root=root
+                        constraint.value_constraint,
+                        param.value,
+                        root=root,
+                        context=context,
                     )
                     return res.is_valid, res.message
 
@@ -1228,9 +1269,8 @@ class ConstraintGroupChecker(ConstraintChecker):
         self,
         constraint: ConstraintGroup,
         value: Any,
-        root: None | dict[str, Any] = None,
-        config: None | JsonProfileConfiguration = None,
-        runtime_config: None | ValidationRuntimeConfiguration = None,
+        root: dict[str, Any],
+        context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
         if not constraint.constraints:
             return True, None
@@ -1243,7 +1283,12 @@ class ConstraintGroupChecker(ConstraintChecker):
         messages = []
         valid_constraints = []
         for sub_constraint in constraint.constraints:
-            res = self.validate_constraint(sub_constraint, value, root=root)
+            res = self.validate_constraint(
+                sub_constraint,
+                value,
+                root=root,
+                context=context,
+            )
             if not res.is_valid and res.message:
                 messages.append(res.message)
 
@@ -1296,10 +1341,10 @@ class OpaPolicyConstraintChecker(ConstraintChecker):
         self,
         constraint: OpaPolicyConstraint,
         value: Any,
-        root: None | dict[str, Any] = None,
-        config: None | JsonProfileConfiguration = None,
-        runtime_config: None | ValidationRuntimeConfiguration = None,
+        root: dict[str, Any],
+        context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
+        config = context.profile_config
         evaluation = False
         if value is not None and constraint.null_values:
             str_val = str(value)
@@ -1329,7 +1374,7 @@ class OpaPolicyConstraintChecker(ConstraintChecker):
                     wasm_file_download_url = opa_config.wasm_file_download_url
 
                 engine = (
-                    self.profile_validator_factory.opa_engine_factory.get_opa_engine(
+                    context.profile_validator_factory.opa_engine_factory.get_opa_engine(
                         wasm_file_path=wasm_file_path,
                         wasm_file_download_url=wasm_file_download_url,
                     )

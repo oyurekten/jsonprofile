@@ -12,13 +12,10 @@ from pathlib import Path
 from typing import Optional
 from urllib.request import urlopen
 
+import jsonschema
 from opa_wasmtime import OPAPolicy
 
 logger = logging.getLogger(__name__)
-try:
-    import jsonschema
-except ImportError:
-    jsonschema = None
 
 
 def _sanitize_json_value(value):
