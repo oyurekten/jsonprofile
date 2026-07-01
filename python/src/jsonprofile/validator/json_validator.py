@@ -251,9 +251,6 @@ class JsonValidator:
     ) -> JsonValidationResult:
         if not runtime_config:
             runtime_config = ValidationRuntimeConfiguration()
-        cv_term_search = None
-        if not runtime_config.offline_mode:
-            cv_term_search = self.default_cv_term_search
 
         max_message = (
             runtime_config.max_messages_for_each_requirement if runtime_config else None
@@ -265,7 +262,7 @@ class JsonValidator:
             profile_config=profile_config or JsonProfileConfiguration(),
             opa_engine_factory=self.opa_engine_factory,
             profile_validator_factory=self.profile_validator_factory,
-            cv_term_search=cv_term_search,
+            cv_term_search=self.default_cv_term_search,
             message_collector=message_collector,
             json_path_expressions=self.json_path_expressions or {},
         )
