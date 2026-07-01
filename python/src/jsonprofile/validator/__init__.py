@@ -4,6 +4,7 @@ from jsonprofile.validator.abstract_checker import (
     ConstraintValidationResult,
 )
 from jsonprofile.validator.base import (
+    CvTermSearch,
     ProfileValidator,
     ProfileValidatorFactory,
     ProfileValidatorLoader,
@@ -29,6 +30,7 @@ __all__ = [
     "ProfileValidatorFactory",
     "ProfileValidatorLoader",
     "ConstraintValidationResult",
+    "CvTermSearch",
     "checkers",
     "default",
 ]

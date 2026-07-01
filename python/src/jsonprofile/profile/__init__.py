@@ -1,4 +1,4 @@
-from jsonprofile.profile import model
+from jsonprofile.profile import constraints, model
 from jsonprofile.profile.base import (
     BaseCvTerm,
     Category,
@@ -9,7 +9,16 @@ from jsonprofile.profile.base import (
     JsonProfileBaseModel,
     JsonProfileMessage,
 )
-from jsonprofile.profile.constraints import constraints
+from jsonprofile.profile.model import (
+    EnforcedRequirement,
+    FieldRequirement,
+    FieldRequirementGroup,
+    JsonProfile,
+    JsonProfileConfiguration,
+    ProfileValidatorDefinition,
+    ValidationRuntimeConfiguration,
+    WasmFileDefinition,
+)
 from jsonprofile.profile.profile_validator import (
     validate_profile,
     validate_profile_file,
@@ -28,4 +37,12 @@ __all__ = [
     "validate_profile_file",
     "model",
     "constraints",
+    "EnforcedRequirement",
+    "FieldRequirement",
+    "FieldRequirementGroup",
+    "JsonProfile",
+    "JsonProfileConfiguration",
+    "ProfileValidatorDefinition",
+    "ValidationRuntimeConfiguration",
+    "WasmFileDefinition",
 ]
