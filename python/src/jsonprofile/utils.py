@@ -28,7 +28,13 @@ def sanitize_str(val: Optional[str], separators: Optional[list[str]] = None) -> 
 def to_jsonpath(reference: list[Union[str, int]]):
     if not reference:
         return "$"
-    return "$." + ".".join([str(x) for x in reference])
+    json_path = "$"
+    for item in reference:
+        if isinstance(item, int):
+            json_path += f"[{item}]"
+        else:
+            json_path += f".{item}"
+    return json_path
 
 
 def convert_full_path(full_path) -> str:

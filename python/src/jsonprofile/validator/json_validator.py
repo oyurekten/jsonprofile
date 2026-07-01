@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Annotated, Any, Union
 
 import jsonpath_ng
+from jsonschema import Draft7Validator, ValidationError, validators
+from jsonschema.exceptions import best_match
 from pydantic import Field
 
 from jsonprofile.profile.base import (
@@ -22,7 +24,7 @@ from jsonprofile.profile.model import (
     JsonProfileConfiguration,
     ValidationRuntimeConfiguration,
 )
-from jsonprofile.utils import convert_full_path
+from jsonprofile.utils import convert_full_path, to_jsonpath
 from jsonprofile.validator.base import CvTermSearch, ProfileValidatorFactory
 from jsonprofile.validator.context import (
     JsonProfileRunContext,
@@ -41,6 +43,10 @@ logger = logging.getLogger(__name__)
 class JsonValidator:
     def __init__(
         self,
+        json_schema: Annotated[
+            str | Path | dict,
+            Field(description="Json schema file path for the profile."),
+        ],
         profile: Annotated[
             None | str | Path | dict | JsonProfile,
             Field(
@@ -63,6 +69,11 @@ class JsonValidator:
             Field(description="Default cv term search implementation "),
         ] = None,
     ):
+
+        logger.info("Json schema will be loaded.")
+        self.json_schema = self.load_jsonschema(json_schema)
+        self.validate_jsonschema(self.json_schema)
+        logger.info("Json schema validated.")
         self.referenced_profiles = (
             referenced_profiles if referenced_profiles is not None else {}
         )
@@ -117,6 +128,22 @@ class JsonValidator:
             )
         )
         self.json_path_expressions: dict[JsonPath, Any] = {}
+
+    def load_jsonschema(self, json_schema: str | Path | dict) -> dict:
+        if isinstance(json_schema, str):
+            json_schema = Path(json_schema)
+        target_schema = None
+        if isinstance(json_schema, Path):
+            if not json_schema.exists():
+                raise ValueError(f"Json schema ({json_schema}) file does not exist.")
+            target_schema = json.loads(json_schema.read_text())
+        elif isinstance(json_schema, dict):
+            target_schema = json_schema
+        if not target_schema or not isinstance(target_schema, dict):
+            raise ValueError(
+                "Json schema load failure. Please provide schema file path or dict"
+            )
+        return target_schema
 
     def create_profile(
         self,
@@ -244,6 +271,34 @@ class JsonValidator:
         requirement_codes_str = ", ".join(requirement_codes)
         return requirement_codes_str
 
+    def validate_json_with_schema(
+        self, json_data: dict, json_schema: dict, context: JsonProfileRunContext
+    ) -> None:
+        validator = validators.validator_for(json_schema)
+        v = validator(json_schema)
+        for error in sorted(v.iter_errors(json_data), key=str):
+            best_error = best_match([error])
+            json_path = to_jsonpath(best_error.absolute_path)
+            context.message_collector.add_message(
+                json_path=json_path,
+                message=JsonProfileMessage(
+                    source=json_path,
+                    category=Category.FORMAT,
+                    name="jsonschema",
+                    enforcement_level=EnforcementLevel.REQUIRED,
+                    message=f"Json schema validation error: {best_error.message}",
+                ),
+            )
+
+    def validate_jsonschema(
+        self, json_schema: dict
+    ) -> tuple[bool, None | JsonProfileMessage]:
+        try:
+            Draft7Validator.check_schema(json_schema)
+
+        except ValidationError as ex:
+            raise ValueError(f"Json schema is not valid. {ex.message}") from ex
+
     def validate_dict(
         self,
         input_json: dict,
@@ -265,6 +320,9 @@ class JsonValidator:
             cv_term_search=self.default_cv_term_search,
             message_collector=message_collector,
             json_path_expressions=self.json_path_expressions or {},
+        )
+        self.validate_json_with_schema(
+            json_data=input_json, json_schema=self.json_schema, context=context
         )
         for (
             json_path,
@@ -328,7 +386,7 @@ class JsonValidator:
                 logger.warning(
                     "%s for %s is in skipped list.", field_requirement.code, json_path
                 )
-                context.message_collector.append_message(
+                context.message_collector.add_message(
                     json_path=json_path,
                     message=JsonProfileMessage(
                         code=field_requirement.code,
@@ -345,7 +403,7 @@ class JsonValidator:
             if runtime_config and runtime_config.skip_decimal_validations:
                 if isinstance(field_requirement.value_constraint, DecimalConstraint):
                     logger.warning("Decimal validations are skipped for %s", json_path)
-                    context.message_collector.append_message(
+                    context.message_collector.add_message(
                         json_path=json_path,
                         message=JsonProfileMessage(
                             code=field_requirement.code,
@@ -366,7 +424,7 @@ class JsonValidator:
         matches = jsonpath_expr.find(input_json)
         if not matches:
             if field_requirement.match_is_required:
-                context.message_collector.append_message(
+                context.message_collector.add_message(
                     json_path=json_path,
                     message=JsonProfileMessage(
                         code=field_requirement.code,
@@ -386,7 +444,7 @@ class JsonValidator:
                     field_requirement.required_properties
                     or field_requirement.recommended_properties
                 ) and not isinstance(x.value, Mapping):
-                    context.message_collector.append_message(
+                    context.message_collector.add_message(
                         json_path=source,
                         message=JsonProfileMessage(
                             code=field_requirement.code,
@@ -406,7 +464,7 @@ class JsonValidator:
                     ]
                     if not_defined_fields:
                         fields = ", ".join(not_defined_fields)
-                        context.message_collector.append_message(
+                        context.message_collector.add_message(
                             json_path=source,
                             message=JsonProfileMessage(
                                 code=field_requirement.code,
@@ -426,7 +484,7 @@ class JsonValidator:
 
                     if not_defined_fields:
                         fields = ", ".join(not_defined_fields)
-                        context.message_collector.append_message(
+                        context.message_collector.add_message(
                             json_path=source,
                             message=JsonProfileMessage(
                                 code=field_requirement.code,
@@ -455,7 +513,7 @@ class JsonValidator:
                             context=context,
                         )
                         if not res.is_valid:
-                            context.message_collector.append_message(
+                            context.message_collector.add_message(
                                 json_path=source,
                                 message=JsonProfileMessage(
                                     code=field_requirement.code,

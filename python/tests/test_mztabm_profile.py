@@ -20,10 +20,12 @@ def test_example_profile() -> None:
         "tests/resources/profiles/mztabm-default-profile-2.1.0-M.json"
     )
     input_json = "tests/data/manual_null_MTBLS263.mztab.json"
-
+    json_schema_path = "tests/resources/mztabm-schema-2.1.0-M.json"
     referenced_profiles = {default_profile_id: default_profile_path}
     validator = JsonValidator(
-        profile=mtbls_profile_file, referenced_profiles=referenced_profiles
+        json_schema=json_schema_path,
+        profile=mtbls_profile_file,
+        referenced_profiles=referenced_profiles,
     )
 
     runtime_config = ValidationRuntimeConfiguration()

@@ -31,7 +31,7 @@ class MessageCollector:
         self.messages: dict[JsonPath, dict[str, list[JsonProfileMessage]]] = {}
         self.code_messages: dict[str, list[JsonProfileMessage]] = {}
 
-    def append_message(self, json_path: JsonPath, message: JsonProfileMessage) -> bool:
+    def add_message(self, json_path: JsonPath, message: JsonProfileMessage) -> bool:
         if not self.is_open(message.code):
             if json_path not in self.messages:
                 self.messages[json_path] = {}
