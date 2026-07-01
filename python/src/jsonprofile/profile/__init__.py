@@ -1,4 +1,3 @@
-from jsonprofile.profile import constraints, model
 from jsonprofile.profile.base import (
     BaseCvTerm,
     Category,
@@ -35,8 +34,6 @@ __all__ = [
     "JsonProfileMessage",
     "validate_profile",
     "validate_profile_file",
-    "model",
-    "constraints",
     "EnforcedRequirement",
     "FieldRequirement",
     "FieldRequirementGroup",

@@ -71,7 +71,7 @@ class FieldRequirement(EnforcedRequirement):
     @field_validator("value_constraint", mode="before")
     @classmethod
     def populate_value_constraint(cls, value):
-        return populate_constraint_from_name(value)
+        return _populate_constraint_from_name(value)
 
 
 class FieldRequirementGroup(EnforcedRequirement):
@@ -298,7 +298,7 @@ class JsonProfile(JsonProfileBaseModel):
             return FieldRequirement.model_validate(value, by_alias=True)
 
 
-def populate_constraint_from_name(value):
+def _populate_constraint_from_name(value):
     if value is None or isinstance(value, Constraint):
         return value
     if not isinstance(value, dict):
@@ -320,11 +320,13 @@ def populate_constraint_from_name(value):
             for evaluation in precondition.get("evaluations", []):
                 if isinstance(evaluation, Mapping) and evaluation.get("constraint"):
                     constraint = evaluation["constraint"]
-                    evaluation["constraint"] = populate_constraint_from_name(constraint)
+                    evaluation["constraint"] = _populate_constraint_from_name(
+                        constraint
+                    )
 
     if constraint_class == ConstraintGroup:
         constraint_data["constraints"] = [
-            populate_constraint_from_name(constraint)
+            _populate_constraint_from_name(constraint)
             for constraint in constraint_data.get("constraints", [])
         ]
 

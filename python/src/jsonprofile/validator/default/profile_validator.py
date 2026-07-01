@@ -17,28 +17,6 @@ from jsonprofile.validator.decorators import (
 logger = logging.getLogger(__name__)
 
 
-ValidatorId = Annotated[
-    None | str,
-    Field(description="Profile validator identifier. None selects the default."),
-]
-ConstraintType = Annotated[
-    str,
-    Field(description="Constraint type discriminator handled by a checker."),
-]
-ConstraintName = Annotated[
-    Optional[str],
-    Field(description="Optional named checker for a constraint type."),
-]
-CheckerClass = Annotated[
-    type[ConstraintChecker],
-    Field(description="Constraint checker class to register."),
-]
-CheckerInstance = Annotated[
-    ConstraintChecker,
-    Field(description="Constraint checker instance to unregister."),
-]
-
-
 class DefaultProfileValidator(ProfileValidator):
     """Default profile validator backed by registered constraint checkers.
 
@@ -61,12 +39,17 @@ class DefaultProfileValidator(ProfileValidator):
             "ProfileValidatorFactory",
             Field(description="Factory that owns this profile validator."),
         ],
-        id: ValidatorId = "default",
+        id: Annotated[
+            None | str,
+            Field(
+                description="Profile validator identifier. None selects the default."
+            ),
+        ] = "default",
     ):
         """Create the default validator and load registered checker classes."""
 
         super().__init__(profile_validator_factory=profile_validator_factory, id=id)
-        self.id: ValidatorId = id
+        self.id = id
         self._registry: Annotated[
             dict[tuple[str, str], type[ConstraintChecker]],
             Field(description="Registered checker classes keyed by type and name."),
@@ -100,7 +83,15 @@ class DefaultProfileValidator(ProfileValidator):
         )
 
     def get_checker_by_name(
-        self, constraint_type: ConstraintType, constraint_name: ConstraintName
+        self,
+        constraint_type: Annotated[
+            str,
+            Field(description="Constraint type discriminator handled by a checker."),
+        ],
+        constraint_name: Annotated[
+            Optional[str],
+            Field(description="Optional named checker for a constraint type."),
+        ],
     ) -> Optional[ConstraintChecker]:
         """Resolve or instantiate a checker by constraint type and optional name."""
 
@@ -122,15 +113,27 @@ class DefaultProfileValidator(ProfileValidator):
 
     def register_checker(
         self,
-        constraint_type: ConstraintType,
-        constraint_name: ConstraintName,
-        checker: CheckerClass,
+        constraint_type: Annotated[
+            str,
+            Field(description="Constraint type discriminator handled by a checker."),
+        ],
+        constraint_name: Annotated[
+            Optional[str],
+            Field(description="Optional named checker for a constraint type."),
+        ],
+        checker: ConstraintChecker,
     ) -> None:
         """Register a checker class for a constraint type/name pair."""
 
         self._registry[(constraint_type, constraint_name)] = checker
 
-    def unregister_checker(self, checker: CheckerInstance) -> None:
+    def unregister_checker(
+        self,
+        checker: Annotated[
+            ConstraintChecker,
+            Field(description="Constraint checker instance to unregister."),
+        ],
+    ) -> None:
         """Remove a checker instance and its registered class from this validator."""
 
         matches = [k for k, v in self._registry.items() if v == checker.__class__]

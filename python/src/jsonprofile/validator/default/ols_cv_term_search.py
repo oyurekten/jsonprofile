@@ -14,18 +14,18 @@ from jsonprofile.validator.base import CvTermSearch
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar("T")
+_T = TypeVar("T")
 
 
-class OlsSearchModel(JsonProfileBaseModel, Generic[T]):
+class _OlsSearchModel(JsonProfileBaseModel, Generic[_T]):
     page: int
     num_elements: int
     total_pages: int
     total_elements: int
-    elements: list[T]
+    elements: list[_T]
 
 
-class ChildrenSearchModel(JsonProfileBaseModel):
+class _ChildrenSearchModel(JsonProfileBaseModel):
     curie: str
     has_hierarchical_children: bool
     has_direct_children: bool
@@ -52,12 +52,15 @@ class ChildrenSearchModel(JsonProfileBaseModel):
     ),
     cache=TTLCache(maxsize=2048, ttl=600),
 )
-def search_ols(
+def _search_ols(
     url: str, params: dict, headers: dict, timeout: int = 10
 ) -> tuple[int, dict[str, Any]]:
-    result = httpx2.get(url, params=params, headers=headers, timeout=timeout)
-    if result.status_code in {200, 201}:
-        return result.status_code, result.json()
+    try:
+        result = httpx2.get(url, params=params, headers=headers, timeout=timeout)
+        if result.status_code in {200, 201}:
+            return result.status_code, result.json()
+    except Exception as ex:
+        return 500, {"error": str(ex)}
     logger.warning(
         "Could not find CV term: %s %s",
         result.status_code,
@@ -90,7 +93,7 @@ class OlsCvTermSearch(CvTermSearch):
         excluded_cv_accessions: None | list[str] = None,
         recursive: bool = False,
     ) -> list[CvTerm]:
-        children: list[ChildrenSearchModel] = []
+        children: list[_ChildrenSearchModel] = []
         self.find_children_cv_terms(
             cv_term=cv_term,
             children=children,
@@ -111,7 +114,7 @@ class OlsCvTermSearch(CvTermSearch):
     def find_children_cv_terms(
         self,
         cv_term: CvTerm,
-        children: list[ChildrenSearchModel],
+        children: list[_ChildrenSearchModel],
         allow_only_leaf: bool = True,
         excluded_cv_accessions: None | list[str] = None,
         recursive: bool = False,
@@ -127,11 +130,11 @@ class OlsCvTermSearch(CvTermSearch):
         page = 0
         finished = False
         headers = {"Accept": "application/json"}
-        selected_terms: list[ChildrenSearchModel] = []
+        selected_terms: list[_ChildrenSearchModel] = []
         while not finished:
             params = {"page": page, "size": 100}
             page += 1
-            _, result_json = search_ols(url, params, headers, timeout=10)
+            _, result_json = _search_ols(url, params, headers, timeout=10)
             if not result_json:
                 logger.warning(
                     "Could not find children CV Terms for %s - %s",
@@ -139,7 +142,7 @@ class OlsCvTermSearch(CvTermSearch):
                     cv_term.name,
                 )
                 break
-            search = OlsSearchModel[ChildrenSearchModel].model_validate(result_json)
+            search = _OlsSearchModel[_ChildrenSearchModel].model_validate(result_json)
             selected_items = [x for x in search.elements if not x.is_obsolete]
             selected = []
             if excluded_cv_accessions:
@@ -217,7 +220,7 @@ class OlsCvTermSearch(CvTermSearch):
         headers = {"Accept": "application/json"}
         try:
             logger.debug("Searching %s", url)
-            status_code, result_json = search_ols(url, params, headers, timeout=10)
+            status_code, result_json = _search_ols(url, params, headers, timeout=10)
             if status_code == 404:
                 return None, []
             docs = result_json.get("response", {}).get("docs")
@@ -301,7 +304,7 @@ class OlsCvTermSearch(CvTermSearch):
         headers = {"Accept": "application/json"}
         try:
             logger.debug("Searching %s", url)
-            status_code, result_json = search_ols(url, params, headers, timeout=10)
+            status_code, result_json = _search_ols(url, params, headers, timeout=10)
             if status_code == 404:
                 self.search_cache[key] = None
                 return self.search_cache[key]
@@ -429,7 +432,7 @@ class OlsCvTermSearch(CvTermSearch):
         headers = {"Accept": "application/json"}
         try:
             logger.debug("Searching %s", url)
-            status_code, result_json = search_ols(url, params, headers, timeout=10)
+            status_code, result_json = _search_ols(url, params, headers, timeout=10)
             if status_code == 404:
                 self.search_cache[key] = (
                     False,

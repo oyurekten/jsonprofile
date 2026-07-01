@@ -1,4 +1,3 @@
-from jsonprofile.validator.checkers import custom_checker, default_checker
 from jsonprofile.validator.checkers.custom_checker import (
     AccessibleUrlChecker,
     OrcidChecker,
@@ -19,6 +18,8 @@ from jsonprofile.validator.checkers.default_checker import (
     NonNegativeIntegerConstraintChecker,
     NotNullConstraintChecker,
     OpaPolicyConstraintChecker,
+    OpaPolicyInput,
+    OpaPolicyOutput,
     ParentCVTermConstraintChecker,
     PositiveIntegerConstraintChecker,
     RegexConstraintChecker,
@@ -51,6 +52,6 @@ __all__ = [
     "StringConstraintChecker",
     "StringEnumConstraintChecker",
     "UriConstraintChecker",
-    "custom_checker",
-    "default_checker",
+    "OpaPolicyInput",
+    "OpaPolicyOutput",
 ]

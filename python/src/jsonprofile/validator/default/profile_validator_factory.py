@@ -59,49 +59,33 @@ class DefaultProfileValidatorLoader(ProfileValidatorLoader):
         return instance
 
 
-ValidatorLabel = Annotated[
-    None | str,
-    Field(description="Human-readable validator label. None selects the default."),
-]
-
-ValidatorId = Annotated[
-    None | str,
-    Field(description="Profile validator identifier. None selects the default."),
-]
-
-ConstraintType = Annotated[
-    str,
-    Field(description="Constraint type discriminator handled by a checker."),
-]
-ConstraintName = Annotated[
-    Optional[str],
-    Field(description="Optional named checker for a constraint type."),
-]
-
-CustomValidatorDefinitions = Annotated[
-    Optional[list[ProfileValidatorDefinition]],
-    Field(description="Custom profile validator definitions available to the factory."),
-]
-
-
-OpaFactory = Annotated[
-    Optional[OpaEngineFactory],
-    Field(description="Factory used by validators that evaluate OPA policies."),
-]
-
-
 class DefaultProfileValidatorFactory(ProfileValidatorFactory):
     """Factory that manages default and custom profile validators."""
 
     def __init__(
         self,
-        custom_validator_definitions: CustomValidatorDefinitions = None,
-        default_profile_validator_id: ValidatorId = None,
+        custom_validator_definitions: Annotated[
+            Optional[list[ProfileValidatorDefinition]],
+            Field(
+                description="Custom profile validator definitions "
+                "available to the factory."
+            ),
+        ] = None,
+        default_profile_validator_id: Annotated[
+            None | str,
+            Field(
+                description="Default Profile validator identifier. "
+                "None selects the default."
+            ),
+        ] = None,
         profile_validator_loader: Annotated[
             None | DefaultProfileValidatorLoader,
             Field(description="Loader used to instantiate custom profile validators."),
         ] = None,
-        opa_engine_factory: OpaFactory = None,
+        opa_engine_factory: Annotated[
+            Optional[OpaEngineFactory],
+            Field(description="Factory used by validators that evaluate OPA policies."),
+        ] = None,
         **kwargs: Annotated[Any, Field(description="Additional factory arguments.")],
     ):
         """Create a validator factory and register the built-in default validator."""
@@ -156,9 +140,15 @@ class DefaultProfileValidatorFactory(ProfileValidatorFactory):
             default = self.default_profile_validator_id == definition.validator_id
             self.register_profile_validator(definition=definition, default=default)
 
-        # for validator_id, checkers in self.initial_checker_classes.items():
-
-    def get_validator_by_label(self, label: ValidatorLabel) -> None | ProfileValidator:
+    def get_validator_by_label(
+        self,
+        label: Annotated[
+            None | str,
+            Field(
+                description="Human-readable validator label. None selects the default."
+            ),
+        ],
+    ) -> None | ProfileValidator:
         """Return the validator registered for a label, loading it if needed."""
 
         if not label:
@@ -177,7 +167,15 @@ class DefaultProfileValidatorFactory(ProfileValidatorFactory):
                 profile_validator = validator
         return profile_validator
 
-    def get_validator_by_id(self, validator_id: ValidatorId) -> None | ProfileValidator:
+    def get_validator_by_id(
+        self,
+        validator_id: Annotated[
+            None | str,
+            Field(
+                description="Profile validator identifier. None selects the default."
+            ),
+        ],
+    ) -> None | ProfileValidator:
         """Return the validator registered for an id, loading it if needed."""
 
         if not validator_id:
@@ -211,9 +209,23 @@ class DefaultProfileValidatorFactory(ProfileValidatorFactory):
 
     def get_checker_by_name(
         self,
-        constraint_type: ConstraintType,
-        constraint_name: ConstraintName = None,
-        validator_id: ValidatorId = None,
+        constraint_type: Annotated[
+            str,
+            Field(description="Constraint type discriminator handled by a checker."),
+        ],
+        constraint_name: Annotated[
+            Annotated[
+                Optional[str],
+                Field(description="Optional named checker for a constraint type."),
+            ],
+            Field(description="Name of the constraint to resolve."),
+        ] = None,
+        validator_id: Annotated[
+            None | str,
+            Field(
+                description="Profile validator identifier. None selects the default."
+            ),
+        ] = None,
     ) -> Optional[ConstraintChecker]:
         """Resolve a checker by validator id, constraint type, and optional name."""
 
@@ -252,7 +264,15 @@ class DefaultProfileValidatorFactory(ProfileValidatorFactory):
 
         return profile_validator
 
-    def unregister_profile_validator(self, validator_id: ValidatorId) -> None:
+    def unregister_profile_validator(
+        self,
+        validator_id: Annotated[
+            None | str,
+            Field(
+                description="Profile validator identifier. None selects the default."
+            ),
+        ],
+    ) -> None:
         """Remove a profile validator from the factory registries."""
 
         definition = self._validator_definitions.get(validator_id)

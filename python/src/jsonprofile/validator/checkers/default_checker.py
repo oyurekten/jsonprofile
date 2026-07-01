@@ -45,7 +45,7 @@ from jsonprofile.validator.decorators import constraint_checker
 logger = logging.getLogger(__name__)
 
 
-def extract_cv_info(value: Any) -> CvTerm:
+def _extract_cv_info(value: Any) -> CvTerm:
     """Extracts label, accession, name, and value from a CvTerm or dict."""
     if isinstance(value, CvTerm):
         return value
@@ -858,7 +858,7 @@ class CVTermConstraintChecker(ConstraintChecker):
         runtime_config = context.runtime_config
         param = None
         if value is not None and constraint.null_values:
-            param = extract_cv_info(value)
+            param = _extract_cv_info(value)
             if str(param) in constraint.null_values:
                 value = None
         if value is None:
@@ -867,7 +867,7 @@ class CVTermConstraintChecker(ConstraintChecker):
             message = "value is not defined"
         else:
             if not param:
-                param = extract_cv_info(value)
+                param = _extract_cv_info(value)
             name_req = False
             value_req = False
             if not param.cv_label and not param.cv_accession and not param.name:
@@ -931,7 +931,7 @@ class CVListConstraintChecker(ConstraintChecker):
         runtime_config = context.runtime_config
         cv_term_search = context.cv_term_search
         if value is not None and constraint.null_values:
-            param = extract_cv_info(value)
+            param = _extract_cv_info(value)
             if str(param) in constraint.null_values:
                 value = None
         if value is None:
@@ -939,7 +939,7 @@ class CVListConstraintChecker(ConstraintChecker):
                 evaluation = True
             message = "value is null"
         else:
-            param = extract_cv_info(value)
+            param = _extract_cv_info(value)
             name_req = False
             value_req = False
             if not param.cv_label and not param.cv_accession and not param.name:
@@ -1029,7 +1029,7 @@ class CVTermEnumConstraintChecker(ConstraintChecker):
     ) -> Tuple[bool, Optional[str]]:
         evaluation = False
         if value is not None and constraint.null_values:
-            param = extract_cv_info(value)
+            param = _extract_cv_info(value)
             if str(param) in constraint.null_values:
                 value = None
         if value is None:
@@ -1037,7 +1037,7 @@ class CVTermEnumConstraintChecker(ConstraintChecker):
                 evaluation = True
             message = "value is null"
         else:
-            param = extract_cv_info(value)
+            param = _extract_cv_info(value)
             name_req = False
             value_req = False
             if not param.cv_label and not param.cv_accession and not param.name:
@@ -1115,7 +1115,7 @@ class ParentCVTermConstraintChecker(ConstraintChecker):
         runtime_config = context.runtime_config
         cv_term_search = context.cv_term_search
         if value is not None and constraint.null_values:
-            param = extract_cv_info(value)
+            param = _extract_cv_info(value)
             if str(param) in constraint.null_values:
                 value = None
         if value is None:
@@ -1123,7 +1123,7 @@ class ParentCVTermConstraintChecker(ConstraintChecker):
                 evaluation = True
             message = "value is null"
         else:
-            param = extract_cv_info(value)
+            param = _extract_cv_info(value)
             name_req = False
             value_req = False
             if not param.cv_label and not param.cv_accession and not param.name:
@@ -1228,7 +1228,7 @@ class CVTermValueConstraintChecker(ConstraintChecker):
         if value is None:
             return True, None
 
-        param = extract_cv_info(value)
+        param = _extract_cv_info(value)
 
         if constraint.key_cv_term:
             key_matches = False
@@ -1276,7 +1276,7 @@ class ConstraintGroupChecker(ConstraintChecker):
             return True, None
         evaluation = False
         if value is not None and constraint.null_values:
-            param = extract_cv_info(value)
+            param = _extract_cv_info(value)
             if str(param) in constraint.null_values:
                 value = None
         is_and = constraint.join_operator == "and"

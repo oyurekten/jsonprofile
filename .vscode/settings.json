@@ -21,5 +21,14 @@
         "GRADLE_USER_HOME": "${workspaceFolder}/.cache/gradle",
         "PRE_COMMIT_HOME": "${workspaceFolder}/.cache/pre-commit",
         "UV_CACHE_DIR": "${workspaceFolder}/.cache/uv"
-    }
+    },
+    "cSpell.words": [
+        "bioregistry",
+        "commitizen",
+        "electrospray",
+        "ORCID",
+        "pyproject",
+        "pytest",
+        "sprintf"
+    ]
 }

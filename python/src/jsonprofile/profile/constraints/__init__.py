@@ -1,13 +1,16 @@
 from jsonprofile.profile.constraints.constraints import (
     DEFAULT_CONSTRAINTS,
     DEFAULT_CONSTRAINTS_MAP,
+    BaseCvTermConstraint,
     BooleanConstraint,
     CollectionConstraint,
+    Constraint,
     ConstraintGroup,
     CustomConstraint,
     CVListConstraint,
     CVTermConstraint,
     CVTermEnumConstraint,
+    CVTermValueConstraint,
     DateTimeConstraint,
     DecimalConstraint,
     DefaultConstraintType,
@@ -28,12 +31,15 @@ from jsonprofile.profile.constraints.constraints import (
 )
 
 __all__ = [
+    "BaseCvTermConstraint",
+    "Constraint",
     "BooleanConstraint",
     "CollectionConstraint",
     "ConstraintGroup",
     "CVListConstraint",
     "CVTermConstraint",
     "CVTermEnumConstraint",
+    "CVTermValueConstraint",
     "CustomConstraint",
     "DateTimeConstraint",
     "DecimalConstraint",
