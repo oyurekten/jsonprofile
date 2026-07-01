@@ -599,14 +599,14 @@ class CVTermValueConstraint(Constraint):
             description="The CV term whose value slot should be validated. "
             "When the field contains this term, the value_constraint is applied."
         ),
-    ] = None
+    ]
     value_constraint: Annotated[
         Optional["DefaultConstraintType"],
         Field(
             description="Constraint applied to the value slot of the "
             "matched CV term. Determines the expected type and format."
         ),
-    ] = None
+    ]
 
 
 class OpaPolicyConstraint(Constraint):

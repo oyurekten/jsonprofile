@@ -1213,54 +1213,36 @@ class CVTermValueConstraintChecker(ConstraintChecker):
         root: dict[str, Any],
         context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
-        runtime_config = context.runtime_config
-        checker = CVTermConstraintChecker()
-
-        is_valid, msg = checker.validate(
-            constraint=constraint,
-            value=value,
-            root=root,
-            context=context,
-        )
-        if not is_valid:
-            return is_valid, msg
-
-        if value is None:
-            return True, None
 
         param = _extract_cv_info(value)
+        base_cv_term = BaseCvTerm.model_validate(param, from_attributes=True)
 
-        if constraint.key_cv_term:
-            key_matches = False
-            if (
-                constraint.key_cv_term.cv_accession
-                and constraint.key_cv_term.cv_accession == param.cv_accession
-            ):
-                key_matches = True
-            elif (
-                not constraint.key_cv_term.cv_accession
-                and constraint.key_cv_term.name == param.name
-            ):
-                key_matches = True
+        if str(base_cv_term).lower() == str(constraint.key_cv_term).lower():
+            if constraint.value_constraint:
+                checker = context.profile_validator_factory.get_checker(
+                    constraint.value_constraint
+                )
+                res = checker.validate_constraint(
+                    constraint.value_constraint,
+                    param.value,
+                    root=root,
+                    context=context,
+                )
+                evaluation = res.is_valid
+                message = res.message
+            else:
+                evaluation = True
+                message = "No value constraint defined."
+        else:
+            evaluation = True
+            message = (
+                f"CV term '{param}' does not match "
+                f"the key CV term '{constraint.key_cv_term}'"
+            )
 
-            skip = False
-            if runtime_config and runtime_config.skip_decimal_validations:
-                if isinstance(constraint, DecimalConstraint):
-                    skip = True
-            if not skip:
-                if key_matches and constraint.value_constraint:
-                    checker = context.profile_validator_factory.get_checker(
-                        constraint.value_constraint
-                    )
-                    res = checker.validate_constraint(
-                        constraint.value_constraint,
-                        param.value,
-                        root=root,
-                        context=context,
-                    )
-                    return res.is_valid, res.message
-
-        return True, None
+        if constraint.negated:
+            evaluation = not evaluation
+        return evaluation, message
 
 
 @constraint_checker(ConstraintGroup)

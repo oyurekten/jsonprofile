@@ -14,6 +14,7 @@ from jsonprofile.profile.constraints.constraints import (
     DEFAULT_CONSTRAINTS_MAP,
     Constraint,
     ConstraintGroup,
+    CVTermValueConstraint,
     DefaultConstraintType,
 )
 
@@ -329,6 +330,12 @@ def _populate_constraint_from_name(value):
             _populate_constraint_from_name(constraint)
             for constraint in constraint_data.get("constraints", [])
         ]
+    elif constraint_class == CVTermValueConstraint:
+        value_constraint = constraint_data.get("value_constraint")
+        if value_constraint and isinstance(value_constraint, Mapping):
+            constraint_data["value_constraint"] = _populate_constraint_from_name(
+                value_constraint
+            )
 
     return constraint_class.model_validate(constraint_data)
 
