@@ -73,7 +73,7 @@ class JsonValidator:
         logger.info("Json schema will be loaded.")
         self.json_schema = self.load_jsonschema(json_schema)
         self.validate_jsonschema(self.json_schema)
-        logger.info("Json schema validated.")
+        logger.debug("Json schema validated.")
         self.referenced_profiles = (
             referenced_profiles if referenced_profiles is not None else {}
         )
@@ -316,6 +316,25 @@ class JsonValidator:
         except ValidationError as ex:
             raise ValueError(f"Json schema is not valid. {ex.message}") from ex
 
+    def find_all_constraints(
+        self,
+        requirement: FieldRequirement | FieldRequirementGroup,
+        constraints: set[tuple[str, None | str]],
+    ):
+        if requirement is None:
+            return
+        if isinstance(requirement, FieldRequirement):
+            if requirement.value_constraint:
+                constraints.add(
+                    (
+                        requirement.value_constraint.type,
+                        requirement.value_constraint.name or None,
+                    )
+                )
+        elif isinstance(requirement, FieldRequirementGroup):
+            for req in requirement.requirements:
+                self.find_all_constraints(req, constraints)
+
     def validate_dict(
         self,
         input_json: dict,
@@ -339,6 +358,18 @@ class JsonValidator:
                     "Skipping key. Field requirement is not defined for '%s'", json_path
                 )
                 continue
+
+            if runtime_config.skip_decimal_validations:
+                all_field_constraints: set[tuple[str, None | str]] = set()
+                self.find_all_constraints(
+                    requirement=requirement_definition,
+                    constraints=all_field_constraints,
+                )
+                is_decimal = [x for x, _ in all_field_constraints if x == "decimal"]
+                if len(all_field_constraints) == 1 and is_decimal:
+                    logger.warning(
+                        "Decimal validations are skipped for '%s'", json_path
+                    )
             requirement_group = None
             if isinstance(requirement_definition, FieldRequirement):
                 requirement_group = FieldRequirementGroup(

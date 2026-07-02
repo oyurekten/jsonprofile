@@ -23,10 +23,11 @@ JsonPath = Annotated[
 class Category(str, enum.Enum):
     """High-level category for validation messages."""
 
+    PARSE = "parse"
     FORMAT = "format"
-    LOGICAL = "logical"
     CROSS_CHECK = "cross_check"
     PROFILE = "profile"
+    SCHEMA = "schema"
 
 
 class JsonProfileBaseModel(BaseModel):
