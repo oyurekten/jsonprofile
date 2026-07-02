@@ -422,7 +422,7 @@ class JsonValidator:
             "Profile requirements are evaluated in %.6f seconds",
             requirements_end - requirements_start,
         )
-        if logger.level == logging.DEBUG:
+        if logger.getEffectiveLevel() == logging.DEBUG:
             for json_path, elapsed_time in requirement_evaluation_times.items():
                 logger.debug("%s\t%0.6f", json_path, elapsed_time)
 
