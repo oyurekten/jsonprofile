@@ -74,6 +74,9 @@ class JsonValidator:
         self.json_schema = self.load_jsonschema(json_schema)
         self.validate_jsonschema(self.json_schema)
         logger.debug("Json schema validated.")
+        self.schema_validator = validators.validator_for(self.json_schema)(
+            self.json_schema
+        )
         self.referenced_profiles = (
             referenced_profiles if referenced_profiles is not None else {}
         )
@@ -272,23 +275,28 @@ class JsonValidator:
         return requirement_codes_str
 
     def validate_json_with_schema(
-        self, json_data: dict, json_schema: dict, context: JsonProfileRunContext
+        self, json_data: dict, context: JsonProfileRunContext
     ) -> None:
-        validator = validators.validator_for(json_schema)
-        v = validator(json_schema)
-        for error in sorted(v.iter_errors(json_data), key=str):
+        logging.info("Json schema validation started.")
+        start = time.perf_counter()
+        for error in sorted(self.schema_validator.iter_errors(json_data), key=str):
             best_error = best_match([error])
             json_path = to_jsonpath(best_error.absolute_path)
             context.message_collector.add_message(
                 json_path=json_path,
                 message=JsonProfileMessage(
                     source=json_path,
-                    category=Category.FORMAT,
+                    category=Category.SCHEMA,
                     name="jsonschema",
                     enforcement_level=EnforcementLevel.REQUIRED,
                     message=f"Json schema validation error: {best_error.message}",
                 ),
             )
+        end = time.perf_counter()
+        logger.info(
+            "Json data is validated with its source jsonschema in %.6f seconds",
+            end - start,
+        )
 
     def create_context(
         self, runtime_config: None | ValidationRuntimeConfiguration = None
@@ -344,15 +352,8 @@ class JsonValidator:
             runtime_config = ValidationRuntimeConfiguration()
 
         context = self.create_context(runtime_config=runtime_config)
-        start = time.perf_counter()
-        self.validate_json_with_schema(
-            json_data=input_json, json_schema=self.json_schema, context=context
-        )
-        end = time.perf_counter()
-        logger.info(
-            "Json data is validated with its source jsonschema in %.6f seconds",
-            end - start,
-        )
+
+        self.validate_json_with_schema(json_data=input_json, context=context)
         requirements_start = time.perf_counter()
         requirement_evaluation_times: dict[str, str] = {}
         for (
@@ -419,7 +420,7 @@ class JsonValidator:
         requirements_end = time.perf_counter()
         logger.info(
             "Profile requirements are evaluated in %.6f seconds",
-            requirements_start - requirements_end,
+            requirements_end - requirements_start,
         )
         if logger.level == logging.DEBUG:
             for json_path, elapsed_time in requirement_evaluation_times.items():
