@@ -1365,7 +1365,13 @@ class OpaPolicyConstraintChecker(ConstraintChecker):
                     value=value, root=root, config=config, constraint=constraint
                 )
                 input_data = opa_input.model_dump(by_alias=True)
-                entrypoint = constraint.entrypoint or 0
+                runtime_config = context.runtime_config
+                runtime_entrypoints = runtime_config.opa_policy_entrypoints or {}
+                entrypoint = runtime_entrypoints.get(label)
+                if entrypoint is None:
+                    entrypoint = runtime_config.opa_policy_entrypoint
+                if entrypoint is None:
+                    entrypoint = constraint.entrypoint
                 start = time.perf_counter()
 
                 result = engine.evaluate(input_data=input_data, entrypoint=entrypoint)
@@ -1380,7 +1386,7 @@ class OpaPolicyConstraintChecker(ConstraintChecker):
                 if not result:
                     raise ValueError(
                         "OPA policy decision is empty. "
-                        f"Check input shape and entrypoint: {entrypoint}"
+                        f"Check input shape and entrypoint: {entrypoint or '<default>'}"
                     )
                 decision = OpaPolicyOutput.model_validate(result[0])
                 evaluation = decision.evaluation

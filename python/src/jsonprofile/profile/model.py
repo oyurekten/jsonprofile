@@ -245,6 +245,19 @@ class ValidationRuntimeConfiguration(JsonProfileBaseModel):
         ),
     ] = None
 
+    opa_policy_entrypoint: Annotated[
+        None | str | int,
+        Field(description="OPA policy entrypoint used for this validation run."),
+    ] = None
+
+    opa_policy_entrypoints: Annotated[
+        None | dict[str, str | int],
+        Field(
+            description="OPA policy entrypoints keyed by WASM file key. "
+            "The matching key overrides `opa_policy_entrypoint`."
+        ),
+    ] = None
+
 
 class JsonProfile(JsonProfileBaseModel):
     """A JSON profile containing metadata, configuration, and field requirements."""

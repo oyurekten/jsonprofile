@@ -623,9 +623,12 @@ class OpaPolicyConstraint(Constraint):
         ),
     ] = None
     entrypoint: Annotated[
-        str,
-        Field(description="OPA policy entrypoint to evaluate."),
-    ]
+        Optional[str],
+        Field(
+            description="Default OPA policy entrypoint to evaluate. "
+            "Runtime configuration can override it."
+        ),
+    ] = None
 
 
 class CustomConstraint(Constraint):

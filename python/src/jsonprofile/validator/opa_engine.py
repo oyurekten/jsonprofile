@@ -172,6 +172,7 @@ def _builtin_time_parse_ns(*args):
 class OpaEngine:
     def __init__(self, wasm_path: str):
         try:
+            self._bundle_data = None
             if tarfile.is_tarfile(wasm_path):
                 with tarfile.open(wasm_path, "r:*") as tar:
                     wasm_members = [
@@ -234,6 +235,7 @@ class OpaEngine:
                         f = tar.extractfile(member)
                         if f is not None:
                             data = json.load(f)
+                            self._bundle_data = data
                             self.policy.set_data(data)
                             logger.info(
                                 "Bundle data loaded from %s/%s", wasm_path, member.name
@@ -257,11 +259,26 @@ class OpaEngine:
             except OSError:
                 pass
 
-    def evaluate(self, input_data: dict, entrypoint: None | str | int) -> dict:
+    def evaluate(
+        self,
+        input_data: dict,
+        entrypoint: None | str | int = None,
+        data: Optional[dict] = None,
+    ) -> dict:
         """
         Evaluate physical input data against the loaded OPA WASM rules.
+
+        Args:
+            input_data: OPA input document.
+            entrypoint: Optional OPA WASM entrypoint for this evaluation.
+            data: Optional OPA data document for this evaluation. When omitted,
+                bundle data loaded from data.json is restored if available.
         """
         input_data = _sanitize_json_value(input_data)
+        if data is not None:
+            self.policy.set_data(_sanitize_json_value(data))
+        elif self._bundle_data is not None:
+            self.policy.set_data(_sanitize_json_value(self._bundle_data))
         result = self.policy.evaluate(input_data, entrypoint=entrypoint)
         # Return the raw OPA evaluation result so callers can inspect
         # the returned list of evaluation records
