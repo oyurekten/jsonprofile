@@ -352,8 +352,8 @@ class JsonValidator:
             runtime_config = ValidationRuntimeConfiguration()
 
         context = self.create_context(runtime_config=runtime_config)
-
-        self.validate_json_with_schema(json_data=input_json, context=context)
+        if not runtime_config.skip_jsonschema_validation:
+            self.validate_json_with_schema(json_data=input_json, context=context)
         requirements_start = time.perf_counter()
         requirement_evaluation_times: dict[str, str] = {}
         for (

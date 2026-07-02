@@ -218,6 +218,10 @@ class ValidationRuntimeConfiguration(JsonProfileBaseModel):
             description="Requirement codes that should be skipped during validation."
         ),
     ] = None
+    skip_jsonschema_validation: Annotated[
+        None | bool,
+        Field(description="Skips jsonschema validation if it is set `true`."),
+    ] = None
 
     max_messages_for_each_requirement: Annotated[
         None | int,
