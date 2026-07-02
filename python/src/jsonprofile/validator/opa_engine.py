@@ -44,6 +44,37 @@ def _entrypoint_candidates(entrypoint: str) -> list[str]:
     return unique_candidates
 
 
+def _data_path_candidates(path: str) -> list[list[str]]:
+    """Return common OPA data path spellings as path segments."""
+    stripped = path.strip().strip("/")
+    if stripped.startswith("data."):
+        stripped = stripped.removeprefix("data.")
+
+    candidates = [stripped.split("/"), stripped.split(".")]
+    unique_candidates = []
+    for candidate in candidates:
+        candidate = [part for part in candidate if part]
+        if candidate and candidate not in unique_candidates:
+            unique_candidates.append(candidate)
+    return unique_candidates
+
+
+def _iter_data_paths(value, prefix: tuple[str, ...] = ()):
+    """Yield slash-separated paths for keys inside a JSON-like document."""
+    if isinstance(value, dict):
+        if prefix:
+            yield "/".join(prefix)
+        for key, item in value.items():
+            yield from _iter_data_paths(item, (*prefix, str(key)))
+    elif isinstance(value, list):
+        if prefix:
+            yield "/".join(prefix)
+        for index, item in enumerate(value):
+            yield from _iter_data_paths(item, (*prefix, str(index)))
+    elif prefix:
+        yield "/".join(prefix)
+
+
 def _builtin_time_format(*args):
     """OPA time.format: format nanoseconds into a time string.
 
@@ -274,7 +305,12 @@ class OpaEngine:
             except OSError:
                 pass
 
-    def _resolve_entrypoint(self, entrypoint: None | str | int) -> None | str | int:
+    def list_entrypoints(self) -> list[str]:
+        """Return the OPA entrypoints compiled into the WASM policy."""
+        entrypoints = getattr(self.policy, "entrypoints", None) or {}
+        return list(entrypoints)
+
+    def resolve_entrypoint(self, entrypoint: None | str | int) -> None | str | int:
         """Resolve dynamic entrypoint strings to a compiled WASM entrypoint."""
         if entrypoint is None or isinstance(entrypoint, int):
             return entrypoint
@@ -283,15 +319,26 @@ class OpaEngine:
         if not entrypoints:
             return entrypoint
 
-        for candidate in _entrypoint_candidates(entrypoint):
+        candidates = _entrypoint_candidates(entrypoint)
+        for candidate in candidates:
             if candidate in entrypoints:
                 return candidate
+
+        lower_matches = [
+            value
+            for value in entrypoints
+            if any(value.lower() == candidate.lower() for candidate in candidates)
+        ]
+        if len(lower_matches) == 1:
+            return lower_matches[0]
 
         suffix_matches = [
             value
             for value in entrypoints
             if value.endswith(f"/{entrypoint}")
             or value.rsplit("/", 1)[-1] == entrypoint
+            or value.lower().endswith(f"/{entrypoint.lower()}")
+            or value.rsplit("/", 1)[-1].lower() == entrypoint.lower()
         ]
         if len(suffix_matches) == 1:
             return suffix_matches[0]
@@ -301,6 +348,32 @@ class OpaEngine:
             f"The specified entrypoint '{entrypoint}' is not valid. "
             f"Available entrypoints: {available or '<none>'}"
         )
+
+    def get_data(self, path: None | str = None, default=None):
+        """Return bundle data, or a value inside bundle data by OPA-style path."""
+        if path is None or path == "":
+            return self._bundle_data
+        for candidate in _data_path_candidates(path):
+            value = self._bundle_data
+            for part in candidate:
+                if isinstance(value, dict) and part in value:
+                    value = value[part]
+                elif isinstance(value, list) and part.isdigit():
+                    index = int(part)
+                    if index >= len(value):
+                        break
+                    value = value[index]
+                else:
+                    break
+            else:
+                return value
+        return default
+
+    def list_data_paths(self) -> list[str]:
+        """Return slash-separated paths available in bundle data."""
+        if self._bundle_data is None:
+            return []
+        return list(_iter_data_paths(self._bundle_data))
 
     def evaluate(
         self,
@@ -322,7 +395,7 @@ class OpaEngine:
             self.policy.set_data(_sanitize_json_value(data))
         elif self._bundle_data is not None:
             self.policy.set_data(_sanitize_json_value(self._bundle_data))
-        entrypoint = self._resolve_entrypoint(entrypoint)
+        entrypoint = self.resolve_entrypoint(entrypoint)
         if entrypoint is None:
             result = self.policy.evaluate(input_data)
         else:

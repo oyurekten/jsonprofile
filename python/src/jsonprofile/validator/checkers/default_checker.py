@@ -1373,8 +1373,8 @@ class OpaPolicyConstraintChecker(ConstraintChecker):
                 if entrypoint is None:
                     entrypoint = constraint.entrypoint
                 start = time.perf_counter()
-
-                result = engine.evaluate(input_data=input_data, data=entrypoint)
+                data = constraint.entrypoint
+                result = engine.evaluate(input_data=input_data, data=data)
                 end = time.perf_counter()
                 logger.info("Policy Engine Execution time: %.6f seconds", (end - start))
                 if result is None:
