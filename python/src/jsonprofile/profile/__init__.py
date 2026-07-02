@@ -1,3 +1,4 @@
+from jsonprofile.profile import constraints
 from jsonprofile.profile.base import (
     BaseCvTerm,
     Category,
@@ -42,4 +43,5 @@ __all__ = [
     "ProfileValidatorDefinition",
     "ValidationRuntimeConfiguration",
     "WasmFileDefinition",
+    "constraints",
 ]

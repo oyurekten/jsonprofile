@@ -290,6 +290,23 @@ class JsonValidator:
                 ),
             )
 
+    def create_context(
+        self, runtime_config: None | ValidationRuntimeConfiguration = None
+    ) -> JsonProfileRunContext:
+        runtime_config = runtime_config or ValidationRuntimeConfiguration()
+        return JsonProfileRunContext(
+            runtime_config=runtime_config or ValidationRuntimeConfiguration(),
+            profile_config=self.json_profile.configuration
+            or JsonProfileConfiguration(),
+            opa_engine_factory=self.opa_engine_factory,
+            profile_validator_factory=self.profile_validator_factory,
+            cv_term_search=self.default_cv_term_search,
+            message_collector=MessageCollector(
+                runtime_config.max_messages_for_each_requirement
+            ),
+            json_path_expressions=self.json_path_expressions or {},
+        )
+
     def validate_jsonschema(
         self, json_schema: dict
     ) -> tuple[bool, None | JsonProfileMessage]:
@@ -307,20 +324,8 @@ class JsonValidator:
         if not runtime_config:
             runtime_config = ValidationRuntimeConfiguration()
 
-        max_message = (
-            runtime_config.max_messages_for_each_requirement if runtime_config else None
-        )
-        profile_config = self.json_profile.configuration or JsonProfileConfiguration()
-        message_collector = MessageCollector(max_message)
-        context = JsonProfileRunContext(
-            runtime_config=runtime_config or ValidationRuntimeConfiguration(),
-            profile_config=profile_config or JsonProfileConfiguration(),
-            opa_engine_factory=self.opa_engine_factory,
-            profile_validator_factory=self.profile_validator_factory,
-            cv_term_search=self.default_cv_term_search,
-            message_collector=message_collector,
-            json_path_expressions=self.json_path_expressions or {},
-        )
+        context = self.create_context(runtime_config=runtime_config)
+
         self.validate_json_with_schema(
             json_data=input_json, json_schema=self.json_schema, context=context
         )
