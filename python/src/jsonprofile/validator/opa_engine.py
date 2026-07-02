@@ -29,6 +29,21 @@ def _sanitize_json_value(value):
     return value
 
 
+def _entrypoint_candidates(entrypoint: str) -> list[str]:
+    """Return common OPA entrypoint spellings for a caller-provided value."""
+    stripped = entrypoint.strip().lstrip("/")
+    candidates = [entrypoint, stripped]
+    if stripped.startswith("data."):
+        candidates.append(stripped.removeprefix("data.").replace(".", "/"))
+    candidates.append(stripped.replace(".", "/"))
+
+    unique_candidates = []
+    for candidate in candidates:
+        if candidate and candidate not in unique_candidates:
+            unique_candidates.append(candidate)
+    return unique_candidates
+
+
 def _builtin_time_format(*args):
     """OPA time.format: format nanoseconds into a time string.
 
@@ -259,6 +274,34 @@ class OpaEngine:
             except OSError:
                 pass
 
+    def _resolve_entrypoint(self, entrypoint: None | str | int) -> None | str | int:
+        """Resolve dynamic entrypoint strings to a compiled WASM entrypoint."""
+        if entrypoint is None or isinstance(entrypoint, int):
+            return entrypoint
+
+        entrypoints = getattr(self.policy, "entrypoints", None) or {}
+        if not entrypoints:
+            return entrypoint
+
+        for candidate in _entrypoint_candidates(entrypoint):
+            if candidate in entrypoints:
+                return candidate
+
+        suffix_matches = [
+            value
+            for value in entrypoints
+            if value.endswith(f"/{entrypoint}")
+            or value.rsplit("/", 1)[-1] == entrypoint
+        ]
+        if len(suffix_matches) == 1:
+            return suffix_matches[0]
+
+        available = ", ".join(str(value) for value in entrypoints)
+        raise ValueError(
+            f"The specified entrypoint '{entrypoint}' is not valid. "
+            f"Available entrypoints: {available or '<none>'}"
+        )
+
     def evaluate(
         self,
         input_data: dict,
@@ -279,7 +322,11 @@ class OpaEngine:
             self.policy.set_data(_sanitize_json_value(data))
         elif self._bundle_data is not None:
             self.policy.set_data(_sanitize_json_value(self._bundle_data))
-        result = self.policy.evaluate(input_data, entrypoint=entrypoint)
+        entrypoint = self._resolve_entrypoint(entrypoint)
+        if entrypoint is None:
+            result = self.policy.evaluate(input_data)
+        else:
+            result = self.policy.evaluate(input_data, entrypoint=entrypoint)
         # Return the raw OPA evaluation result so callers can inspect
         # the returned list of evaluation records
         return result[0].get("result") if result and result[0] else []
