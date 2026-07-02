@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Optional
 from urllib.request import urlopen
 
-import jsonschema
+import jsonschema_rs
 from opa_wasmtime import OPAPolicy
 
 logger = logging.getLogger(__name__)
@@ -165,10 +165,13 @@ def _builtin_json_match_schema(*args):
             schema = json.loads(schema)
         except json.JSONDecodeError:
             return [False, ["invalid JSON schema"]]
-    if jsonschema is None:
+    if jsonschema_rs is None:
         return [True, []]
-    validator = jsonschema.Draft7Validator(schema)
-    errors = sorted(validator.iter_errors(document), key=lambda e: list(e.path))
+    validator = jsonschema_rs.Draft7Validator(schema)
+    errors = sorted(
+        validator.iter_errors(document),
+        key=lambda e: list(getattr(e, "instance_path", [])),
+    )
     if not errors:
         return [True, []]
     return [False, [e.message for e in errors]]

@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import Annotated, Any, Union
 
 import jsonpath_ng
-from jsonschema import Draft7Validator, ValidationError, validators
-from jsonschema.exceptions import best_match
+import jsonschema_rs
+from jsonschema_rs import ValidationError
 from pydantic import Field
 
 from jsonprofile.profile.base import (
@@ -74,9 +74,7 @@ class JsonValidator:
         self.json_schema = self.load_jsonschema(json_schema)
         self.validate_jsonschema(self.json_schema)
         logger.debug("Json schema validated.")
-        self.schema_validator = validators.validator_for(self.json_schema)(
-            self.json_schema
-        )
+        self.schema_validator = jsonschema_rs.validator_for(self.json_schema)
         self.referenced_profiles = (
             referenced_profiles if referenced_profiles is not None else {}
         )
@@ -274,22 +272,60 @@ class JsonValidator:
         requirement_codes_str = ", ".join(requirement_codes)
         return requirement_codes_str
 
+    @staticmethod
+    def _iter_error_context(error):
+        yield error
+        context = getattr(getattr(error, "kind", None), "context", None)
+        if context is None:
+            return
+        if isinstance(context, list):
+            for item in context:
+                if isinstance(item, list):
+                    for nested_item in item:
+                        yield from JsonValidator._iter_error_context(nested_item)
+                else:
+                    yield from JsonValidator._iter_error_context(item)
+
+    @staticmethod
+    def best_match(errors):
+        def has_context(error) -> bool:
+            return getattr(getattr(error, "kind", None), "context", None) is not None
+
+        errors = [
+            nested_error
+            for error in errors
+            for nested_error in JsonValidator._iter_error_context(error)
+        ]
+        if not errors:
+            return None
+
+        return max(
+            errors,
+            key=lambda e: (
+                len(getattr(e, "instance_path", []) or []),
+                not has_context(e),
+                str(e.schema_path),
+            ),
+        )
+
     def validate_json_with_schema(
         self, json_data: dict, context: JsonProfileRunContext
     ) -> None:
         logging.info("Json schema validation started.")
         start = time.perf_counter()
+
         for error in sorted(self.schema_validator.iter_errors(json_data), key=str):
-            best_error = best_match([error])
-            json_path = to_jsonpath(best_error.absolute_path)
+            error = self.best_match([error]) or error
+            json_path = to_jsonpath(error.instance_path)
             context.message_collector.add_message(
                 json_path=json_path,
                 message=JsonProfileMessage(
+                    code="SCHEMA-0001",
                     source=json_path,
                     category=Category.SCHEMA,
                     name="jsonschema",
                     enforcement_level=EnforcementLevel.REQUIRED,
-                    message=f"Json schema validation error: {best_error.message}",
+                    message=f"Json schema validation error: {error.message}",
                 ),
             )
         end = time.perf_counter()
@@ -319,8 +355,7 @@ class JsonValidator:
         self, json_schema: dict
     ) -> tuple[bool, None | JsonProfileMessage]:
         try:
-            Draft7Validator.check_schema(json_schema)
-
+            jsonschema_rs.meta.validate(json_schema)
         except ValidationError as ex:
             raise ValueError(f"Json schema is not valid. {ex.message}") from ex
 
