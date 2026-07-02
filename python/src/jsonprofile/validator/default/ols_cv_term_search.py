@@ -219,7 +219,7 @@ class OlsCvTermSearch(CvTermSearch):
 
         headers = {"Accept": "application/json"}
         try:
-            logger.debug("Searching %s", url)
+            logger.debug("Searching %s: %s in %s ontology", url, curie, source)
             status_code, result_json = _search_ols(url, params, headers, timeout=10)
             if status_code == 404:
                 return None, []
@@ -303,7 +303,7 @@ class OlsCvTermSearch(CvTermSearch):
 
         headers = {"Accept": "application/json"}
         try:
-            logger.debug("Searching %s", url)
+            logger.debug("Searching %s: %s in %s ontology", url, label, source)
             status_code, result_json = _search_ols(url, params, headers, timeout=10)
             if status_code == 404:
                 self.search_cache[key] = None
@@ -455,7 +455,7 @@ class OlsCvTermSearch(CvTermSearch):
                 ):
                     if parent_cv_term:
                         logger.debug(
-                            "CV term %s - %s is child of %s %s",
+                            "CV term with %s %s is child of %s %s",
                             cv_term.cv_accession,
                             cv_term.name,
                             (parent_cv_term.cv_accession if parent_cv_term else None),
@@ -463,7 +463,7 @@ class OlsCvTermSearch(CvTermSearch):
                         )
                     else:
                         logger.debug(
-                            "CV term %s - %s is valid CV term",
+                            "CV term with %s and %s is valid CV term",
                             accession,
                             cv_term.name,
                         )
