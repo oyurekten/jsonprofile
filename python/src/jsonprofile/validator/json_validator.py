@@ -344,14 +344,24 @@ class JsonValidator:
             runtime_config = ValidationRuntimeConfiguration()
 
         context = self.create_context(runtime_config=runtime_config)
-
+        start = time.perf_counter()
         self.validate_json_with_schema(
             json_data=input_json, json_schema=self.json_schema, context=context
         )
+        end = time.perf_counter()
+        logger.info(
+            "Json data is validated with its source jsonschema in %.6f seconds",
+            end - start,
+        )
+        requirements_start = time.perf_counter()
+        requirement_evaluation_times: dict[str, str] = {}
         for (
             json_path,
             requirement_definition,
         ) in self.json_profile.requirements.items():
+            source_json_path = json_path
+            requirement_evaluation_times[source_json_path] = 0
+            json_path_eval_start = time.perf_counter()
             json_path = json_path or "$"
             if not requirement_definition:
                 logger.info(
@@ -401,6 +411,19 @@ class JsonValidator:
                         field_requirement.code,
                         (end - start),
                     )
+            json_path_eval_end = time.perf_counter()
+            requirement_evaluation_times[source_json_path] = (
+                json_path_eval_end - json_path_eval_start
+            )
+
+        requirements_end = time.perf_counter()
+        logger.info(
+            "Profile requirements are evaluated in %.6f seconds",
+            requirements_start - requirements_end,
+        )
+        if logger.level == logging.DEBUG:
+            for json_path, elapsed_time in requirement_evaluation_times.items():
+                logger.debug("%s\t%0.6f", json_path, elapsed_time)
 
         return context.message_collector.process_messages()
 

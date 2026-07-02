@@ -188,6 +188,11 @@ class ConstraintChecker(abc.ABC):
                     sub_jsonpath = f"${sub_jsonpath}"
                 elif not sub_jsonpath.startswith("."):
                     sub_jsonpath = f"$.{sub_jsonpath}"
+            parts = sub_jsonpath.split(".")
+            if len(parts) == 2 and parts[0] == "$":
+                if "]" not in parts[1]:
+                    return getattr(value, parts[1], None)
+
             sub_jsonpath_expr = context.json_path_expressions.get(sub_jsonpath)
             if not sub_jsonpath_expr:
                 sub_jsonpath_expr = jsonpath_ng.parse(sub_jsonpath)
