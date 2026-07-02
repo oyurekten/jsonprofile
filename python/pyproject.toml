@@ -13,6 +13,7 @@ dependencies = [
     "jsonschema>=4.26.0",
     "jsonschema-rs>=0.46.9",
     "opa-wasmtime>=0.1.1",
+    "orjson>=3.11.9",
     "pydantic>=2.12.4",
     "pyyaml>=6.0.3",
     "rfc3986>=2.0.0",
@@ -21,7 +22,7 @@ dependencies = [
 dev = [
     "pre-commit>=3.10.1",
     "pytest>=9.0.3",
-    "ruff>=0.14.4",
+    "ruff>=0.15.20",
     "uv-build>=0.9.8",
     "mkdocs-material>=9.7.0",
 ]
@@ -37,6 +38,9 @@ select = ["E", "F", "C", "I", "G", "SLF", "PTH", "Q", "T"]
 ignore = [ "C901"]
 
 fixable = ["ALL"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["jsonprofile"]
 
 [tool.pytest.ini_options]
 addopts = "-v"

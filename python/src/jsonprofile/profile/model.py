@@ -1,6 +1,4 @@
-import json
 from collections.abc import Mapping
-from pathlib import Path
 from typing import Annotated, Any, Optional, Union
 
 from pydantic import Field, field_validator
@@ -355,10 +353,3 @@ def _populate_constraint_from_name(value):
             )
 
     return constraint_class.model_validate(constraint_data)
-
-
-if __name__ == "__main__":
-    with Path("../shared/schema/jsonprofile.schema.json").open(
-        "w", encoding="utf-8"
-    ) as f:
-        json.dump(JsonProfile.model_json_schema(), f, indent=2)

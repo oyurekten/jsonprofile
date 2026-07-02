@@ -1,11 +1,12 @@
-import json
 import logging
-from pathlib import Path
+import pathlib
+
+import orjson
 
 from jsonprofile.profile.base import EnforcementLevel
 from jsonprofile.profile.model import ValidationRuntimeConfiguration
 from jsonprofile.utils import setup_basic_logging_config
-from jsonprofile.validator.json_validator import JsonValidator
+from jsonprofile.validator import JsonValidator
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ def test_example_profile() -> None:
 
     runtime_config = ValidationRuntimeConfiguration()
 
-    input_data = json.loads(Path(input_json).read_text())
+    input_data = orjson.loads(pathlib.Path(input_json).read_bytes())
     result = validator.validate_dict(input_data, runtime_config=runtime_config)
 
     if result.errors:

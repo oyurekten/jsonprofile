@@ -1,4 +1,3 @@
-import json
 import logging
 import math
 import os
@@ -13,6 +12,7 @@ from typing import Optional
 from urllib.request import urlopen
 
 import jsonschema_rs
+import orjson
 from opa_wasmtime import OPAPolicy
 
 logger = logging.getLogger(__name__)
@@ -157,13 +157,13 @@ def _builtin_json_match_schema(*args):
     # OPA accepts either objects or JSON strings
     if isinstance(document, str):
         try:
-            document = json.loads(document)
-        except json.JSONDecodeError:
+            document = orjson.loads(document)
+        except orjson.JSONDecodeError:
             return [False, ["invalid JSON document"]]
     if isinstance(schema, str):
         try:
-            schema = json.loads(schema)
-        except json.JSONDecodeError:
+            schema = orjson.loads(schema)
+        except orjson.JSONDecodeError:
             return [False, ["invalid JSON schema"]]
     if jsonschema_rs is None:
         return [True, []]
@@ -283,7 +283,7 @@ class OpaEngine:
                     if member.name in data_names:
                         f = tar.extractfile(member)
                         if f is not None:
-                            data = json.load(f)
+                            data = orjson.loads(f.read())
                             self._bundle_data = data
                             self.policy.set_data(data)
                             logger.info(

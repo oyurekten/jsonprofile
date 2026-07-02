@@ -1,7 +1,7 @@
-import json
 from pathlib import Path
 
 import jsonpath_ng
+import orjson
 
 from jsonprofile.profile.base import Category, EnforcementLevel, JsonProfileMessage
 from jsonprofile.profile.model import (
@@ -39,7 +39,7 @@ def validate_profile_file(
             )
         ]
     try:
-        profile_json = json.loads(file_path.read_text())
+        profile_json = orjson.loads(file_path.read_bytes())
     except Exception as ex:
         return False, [
             JsonProfileMessage(

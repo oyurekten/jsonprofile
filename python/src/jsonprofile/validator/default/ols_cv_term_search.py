@@ -1,4 +1,3 @@
-import json
 import logging
 import re
 from typing import Any, Generic, TypeVar
@@ -6,6 +5,7 @@ from urllib.parse import quote
 
 import bioregistry
 import httpx2
+import orjson
 from cachetools import TTLCache, cached
 from pydantic import field_validator
 
@@ -47,8 +47,8 @@ class _ChildrenSearchModel(JsonProfileBaseModel):
 @cached(
     key=lambda url, params, headers, *args, **kwargs: (
         url,
-        json.dumps(params, sort_keys=True),
-        json.dumps(headers, sort_keys=True),
+        orjson.dumps(params, orjson.OPT_SORT_KEYS),
+        orjson.dumps(headers, orjson.OPT_SORT_KEYS),
     ),
     cache=TTLCache(maxsize=2048, ttl=600),
 )
@@ -64,7 +64,7 @@ def _search_ols(
     logger.warning(
         "Could not find CV term: %s %s",
         result.status_code,
-        json.dumps(params, sort_keys=True),
+        orjson.dumps(params, orjson.OPT_SORT_KEYS),
     )
     return result.status_code, {}
 

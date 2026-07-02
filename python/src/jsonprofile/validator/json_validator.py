@@ -1,4 +1,3 @@
-import json
 import logging
 import time
 from collections.abc import Mapping
@@ -7,6 +6,7 @@ from typing import Annotated, Any, Union
 
 import jsonpath_ng
 import jsonschema_rs
+import orjson
 from jsonschema_rs import ValidationError
 from pydantic import Field
 
@@ -137,7 +137,7 @@ class JsonValidator:
         if isinstance(json_schema, Path):
             if not json_schema.exists():
                 raise ValueError(f"Json schema ({json_schema}) file does not exist.")
-            target_schema = json.loads(json_schema.read_text())
+            target_schema = orjson.loads(json_schema.read_bytes())
         elif isinstance(json_schema, dict):
             target_schema = json_schema
         if not target_schema or not isinstance(target_schema, dict):
@@ -162,7 +162,7 @@ class JsonValidator:
         if isinstance(profile, Path):
             if not profile.exists():
                 raise ValueError(f"Json profile ({profile}) file does not exist.")
-            profile_json = json.loads(profile.read_text())
+            profile_json = orjson.loads(profile.read_bytes())
             target_profile = JsonProfile.model_validate(profile_json)
         elif isinstance(profile, dict):
             target_profile = JsonProfile.model_validate(profile, by_alias=True)
@@ -202,7 +202,7 @@ class JsonValidator:
         if not runtime_config:
             runtime_config = ValidationRuntimeConfiguration()
 
-        input_json = json.loads(json_file_path.read_text())
+        input_json = orjson.loads(json_file_path.read_bytes())
 
         return self.validate_dict(input_json, runtime_config=runtime_config)
 
