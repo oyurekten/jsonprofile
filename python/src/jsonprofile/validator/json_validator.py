@@ -213,7 +213,16 @@ class JsonValidator:
                 input_profile.configuration = JsonProfileConfiguration(
                     wasm_file_definitions={}
                 )
+            logger.info(
+                "Profile %s does not extend any parent profile.",
+                input_profile.name,
+            )
             return input_profile
+        logger.info(
+            "Profile %s extends %s profile. Updating configuration and requirements.",
+            input_profile.name,
+            parent_profile.name,
+        )
         new_requirements = input_profile.requirements
         input_profile.requirements = parent_profile.requirements
 
@@ -228,6 +237,7 @@ class JsonValidator:
             if val is None:
                 parent_val = getattr(parent_config, field)
                 setattr(config, field, parent_val)
+        merge_actions: list[str] = []
 
         for key, value in new_requirements.items():
             new_codes = JsonValidator.get_requirement_codes(value)
@@ -236,14 +246,16 @@ class JsonValidator:
                     input_profile.requirements[key]
                 )
                 if value is None:
+                    merge_actions.append(f"{key}[{old_codes}] -> X")
                     del input_profile.requirements[key]
-                    logger.info(
+                    logger.debug(
                         "Deleted: Dropped profile requirement(s) for '%s': %s",
                         key,
                         old_codes,
                     )
                 else:
-                    logger.info(
+                    merge_actions.append(f"{key}[{old_codes}] -> key[{new_codes}]")
+                    logger.debug(
                         "Overridden: "
                         "Requirement updates for '%s'. old codes: %s, new: %s",
                         key,
@@ -252,13 +264,17 @@ class JsonValidator:
                     )
 
             else:
-                logger.info(
+                merge_actions.append(f"X -> key[{new_codes}]")
+                logger.debug(
                     "Added: New profile requirement(s) for '%s': %s ",
                     key,
                     new_codes,
                 )
             input_profile.requirements[key] = value
-
+        if merge_actions:
+            logger.info("Profile merge results:")
+            for action in merge_actions:
+                logger.info(action)
         return input_profile
 
     @staticmethod

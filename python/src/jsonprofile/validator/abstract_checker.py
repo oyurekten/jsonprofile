@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import abc
 import logging
-from typing import TYPE_CHECKING, Any, Literal, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Literal, Mapping, Optional, Tuple
 
 import jsonpath_ng
 
@@ -189,9 +189,9 @@ class ConstraintChecker(abc.ABC):
                 elif not sub_jsonpath.startswith("."):
                     sub_jsonpath = f"$.{sub_jsonpath}"
             parts = sub_jsonpath.split(".")
-            if len(parts) == 2 and parts[0] == "$":
+            if isinstance(value, Mapping) and len(parts) == 2 and parts[0] == "$":
                 if "]" not in parts[1]:
-                    return getattr(value, parts[1], None)
+                    return value.get(parts[1], None)
 
             sub_jsonpath_expr = context.json_path_expressions.get(sub_jsonpath)
             if not sub_jsonpath_expr:

@@ -1365,16 +1365,10 @@ class OpaPolicyConstraintChecker(ConstraintChecker):
                     value=value, root=root, config=config, constraint=constraint
                 )
                 input_data = opa_input.model_dump(by_alias=True)
-                runtime_config = context.runtime_config
-                runtime_entrypoints = runtime_config.opa_policy_entrypoints or {}
-                entrypoint = runtime_entrypoints.get(label)
-                if entrypoint is None:
-                    entrypoint = runtime_config.opa_policy_entrypoint
-                if entrypoint is None:
-                    entrypoint = constraint.entrypoint
+
+                entrypoint = constraint.entrypoint
                 start = time.perf_counter()
-                data = constraint.entrypoint
-                result = engine.evaluate(input_data=input_data, data=data)
+                result = engine.evaluate(input_data=input_data, entrypoint=entrypoint)
                 end = time.perf_counter()
                 logger.info("Policy Engine Execution time: %.6f seconds", (end - start))
                 if result is None:
