@@ -8,6 +8,7 @@ from jsonprofile.profile.model import (
     FieldRequirement,
     FieldRequirementGroup,
     JsonProfile,
+    OpaFieldRequirement,
 )
 
 
@@ -75,7 +76,7 @@ def validate_profile(profile: dict | JsonProfile):
             )
 
         requirements = []
-        if isinstance(definition, FieldRequirement):
+        if isinstance(definition, (FieldRequirement, OpaFieldRequirement)):
             requirements = [definition]
         elif isinstance(definition, FieldRequirementGroup):
             requirements = definition.requirements
@@ -90,7 +91,7 @@ def validate_profile(profile: dict | JsonProfile):
             continue
         for requirement in requirements:
             if not requirement.code:
-                if isinstance(requirement, FieldRequirement):
+                if isinstance(requirement, (FieldRequirement, OpaFieldRequirement)):
                     message = f"Requirement '{key}' code is not defined."
                 else:
                     index = requirements.index(requirement)

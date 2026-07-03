@@ -1309,12 +1309,22 @@ class OpaPolicyInput(JsonProfileBaseModel):
     value: Any
     root: dict
     config: Optional[JsonProfileConfiguration] = None
-    constraint: OpaPolicyConstraint
+    constraint: None | OpaPolicyConstraint
 
 
-class OpaPolicyOutput(JsonProfileBaseModel):
+class OpaPolicyDecisionOutput(JsonProfileBaseModel):
     evaluation: Optional[bool] = None
     message: Optional[str] = None
+
+
+class OpaPolicyMessage(JsonProfileBaseModel):
+    policy_id: Optional[str] = None
+    message: Optional[str] = None
+    source: Optional[str] = None
+
+
+class OpaPolicyMessagesOutput(JsonProfileBaseModel):
+    messages: Optional[list[OpaPolicyMessage]] = None
 
 
 @constraint_checker(OpaPolicyConstraint)
@@ -1370,7 +1380,9 @@ class OpaPolicyConstraintChecker(ConstraintChecker):
                 start = time.perf_counter()
                 result = engine.evaluate(input_data=input_data, entrypoint=entrypoint)
                 end = time.perf_counter()
-                logger.info("Policy Engine Execution time: %.6f seconds", (end - start))
+                logger.debug(
+                    "Policy Engine Execution time: %.6f seconds", (end - start)
+                )
                 if result is None:
                     raise ValueError("OPA policy decision is not valid")
                 if isinstance(result, dict):
@@ -1382,7 +1394,7 @@ class OpaPolicyConstraintChecker(ConstraintChecker):
                         "OPA policy decision is empty. "
                         f"Check input shape and entrypoint: {entrypoint or '<default>'}"
                     )
-                decision = OpaPolicyOutput.model_validate(result[0])
+                decision = OpaPolicyDecisionOutput.model_validate(result[0])
                 evaluation = decision.evaluation
                 message = decision.message
                 if evaluation is None:

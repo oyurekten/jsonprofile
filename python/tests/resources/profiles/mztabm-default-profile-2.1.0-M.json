@@ -20,10 +20,7 @@
                     "code": "D-0010",
                     "description": "Verifies that smallMoleculeSummary and smallMoleculeEvidence rows define the same number of abundance_assay values as assays declared in metadata.",
                     "enforcement_level": "required",
-                    "value_constraint": {
-                        "type": "opa-policy",
-                        "entrypoint": "mztabm/policies/policy_D_0010"
-                    }
+                    "entrypoint": "mztabm/policies/policy_d_0020"
                 }
             ]
         },

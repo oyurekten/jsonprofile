@@ -110,9 +110,14 @@ class JsonProfileRunContext(JsonProfileBaseModel):
     ]
     message_collector: Annotated[
         MessageCollector,
-        Field(description="Message"),
+        Field(description="Message collector"),
     ]
     json_path_expressions: Annotated[
         dict[JsonPath, Any],
-        Field(description="Message"),
+        Field(description="json path expression cache"),
+    ] = {}
+
+    custom_context_data: Annotated[
+        dict[str, Any],
+        Field(description="Custom context data"),
     ] = {}

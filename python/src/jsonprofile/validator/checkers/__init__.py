@@ -18,8 +18,9 @@ from jsonprofile.validator.checkers.default_checker import (
     NonNegativeIntegerConstraintChecker,
     NotNullConstraintChecker,
     OpaPolicyConstraintChecker,
+    OpaPolicyDecisionOutput,
     OpaPolicyInput,
-    OpaPolicyOutput,
+    OpaPolicyMessagesOutput,
     ParentCVTermConstraintChecker,
     PositiveIntegerConstraintChecker,
     RegexConstraintChecker,
@@ -53,5 +54,6 @@ __all__ = [
     "StringEnumConstraintChecker",
     "UriConstraintChecker",
     "OpaPolicyInput",
-    "OpaPolicyOutput",
+    "OpaPolicyDecisionOutput",
+    "OpaPolicyMessagesOutput",
 ]

@@ -73,11 +73,38 @@ class FieldRequirement(EnforcedRequirement):
         return _populate_constraint_from_name(value)
 
 
+class OpaFieldRequirement(EnforcedRequirement):
+    """Requirement will be evaluated and messages are produced by OPA engine"""
+
+    wasm_file_key: Annotated[
+        Optional[str],
+        Field(
+            description="OPA policy WASM file key defined in profile configuration. "
+            "If omitted, the default policy file is used."
+        ),
+    ] = None
+    entrypoint: Annotated[
+        Optional[str],
+        Field(
+            description="OPA policy data path to evaluate requirement."
+            " e.g. policies/policy_0001"
+        ),
+    ] = None
+
+    match_is_required: Annotated[
+        Optional[bool],
+        Field(
+            description="Whether the target JSONPath must match at least one value. "
+            "Field must be defined and value can be null, string, object, etc."
+        ),
+    ] = None
+
+
 class FieldRequirementGroup(EnforcedRequirement):
     """Group of requirements combined by valid-count bounds."""
 
     requirements: Annotated[
-        list[Union[FieldRequirement, "FieldRequirementGroup"]],
+        list[Union[FieldRequirement, OpaFieldRequirement, "FieldRequirementGroup"]],
         Field(
             min_length=1,
             description="Requirements that belong to this group.",
@@ -293,6 +320,7 @@ class JsonProfile(JsonProfileBaseModel):
         if (
             value is None
             or isinstance(value, FieldRequirement)
+            or isinstance(value, OpaFieldRequirement)
             or isinstance(value, FieldRequirementGroup)
             or not isinstance(value, dict)
         ):

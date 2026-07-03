@@ -22,10 +22,15 @@ from jsonprofile.profile.model import (
     FieldRequirementGroup,
     JsonProfile,
     JsonProfileConfiguration,
+    OpaFieldRequirement,
     ValidationRuntimeConfiguration,
 )
 from jsonprofile.utils import convert_full_path, to_jsonpath
 from jsonprofile.validator.base import CvTermSearch, ProfileValidatorFactory
+from jsonprofile.validator.checkers.default_checker import (
+    OpaPolicyInput,
+    OpaPolicyMessagesOutput,
+)
 from jsonprofile.validator.context import (
     JsonProfileRunContext,
     JsonValidationResult,
@@ -401,7 +406,7 @@ class JsonValidator:
     ) -> JsonValidationResult:
         if not runtime_config:
             runtime_config = ValidationRuntimeConfiguration()
-
+        runtime_config.skipped_requirements = runtime_config.skipped_requirements or []
         context = self.create_context(runtime_config=runtime_config)
         if not runtime_config.skip_jsonschema_validation:
             self.validate_json_with_schema(json_data=input_json, context=context)
@@ -438,7 +443,9 @@ class JsonValidator:
                         "Decimal validations are skipped for '%s'", json_path
                     )
             requirement_group = None
-            if isinstance(requirement_definition, FieldRequirement):
+            if isinstance(
+                requirement_definition, (FieldRequirement, OpaFieldRequirement)
+            ):
                 requirement_group = FieldRequirementGroup(
                     requirements=[requirement_definition]
                 )
@@ -452,13 +459,47 @@ class JsonValidator:
                 logger.info("Field key is not defined. $ will be used.")
                 json_path = "$"
             for field_requirement in requirement_group.requirements:
+                if field_requirement.code in runtime_config.skipped_requirements:
+                    logger.warning(
+                        "%s for %s is in skipped list.",
+                        field_requirement.code,
+                        json_path,
+                    )
+                    constraint_name = (
+                        field_requirement.value_constraint.type
+                        if field_requirement.value_constraint
+                        else "field-requirement"
+                    )
+                    context.message_collector.add_message(
+                        json_path=json_path,
+                        message=JsonProfileMessage(
+                            code=field_requirement.code,
+                            source=json_path,
+                            category=Category.PROFILE,
+                            name=constraint_name,
+                            enforcement_level=EnforcementLevel.RECOMMENDED,
+                            message=f"{field_requirement.code} of '{json_path}' "
+                            "is in skipped list.",
+                        ),
+                    )
+                    continue
+
                 start = time.perf_counter()
-                self.validate_requirement(
-                    field_requirement=field_requirement,
-                    json_path=json_path,
-                    input_json=input_json,
-                    context=context,
-                )
+                if isinstance(field_requirement, OpaFieldRequirement):
+                    self.validate_opa_field_requirement(
+                        field_requirement=field_requirement,
+                        json_path=json_path,
+                        input_json=input_json,
+                        context=context,
+                    )
+
+                else:
+                    self.validate_requirement(
+                        field_requirement=field_requirement,
+                        json_path=json_path,
+                        input_json=input_json,
+                        context=context,
+                    )
 
                 end = time.perf_counter()
                 duration = end - start
@@ -484,38 +525,91 @@ class JsonValidator:
 
         return context.message_collector.process_messages()
 
-    def validate_requirement(
+    def validate_opa_field_requirement(
         self,
-        field_requirement: FieldRequirement,
+        field_requirement: FieldRequirement | OpaFieldRequirement,
         json_path: JsonPath,
         input_json: dict,
         context: JsonProfileRunContext,
     ):
+        config = context.profile_config
+        label = field_requirement.wasm_file_key or "default"
+        wasm_file_path = None
+        wasm_file_download_url = None
+        if config and config.wasm_file_definitions:
+            opa_config = config.wasm_file_definitions.get(label)
+            if not opa_config:
+                raise ValueError("OPA policy file not found")
+            wasm_file_path = opa_config.wasm_file_path
+            wasm_file_download_url = opa_config.wasm_file_download_url
+
+        engine = context.profile_validator_factory.opa_engine_factory.get_opa_engine(
+            wasm_file_path=wasm_file_path,
+            wasm_file_download_url=wasm_file_download_url,
+        )
+        sub_jsonpath_expr = context.json_path_expressions.get(json_path)
+        if not sub_jsonpath_expr:
+            sub_jsonpath_expr = jsonpath_ng.parse(json_path)
+            context.json_path_expressions[json_path] = sub_jsonpath_expr
+
+        sub_input_value = [a.value for a in sub_jsonpath_expr.find(input_json)]
+        if len(sub_input_value) == 1:
+            sub_input_value = sub_input_value[0]
+        elif len(sub_input_value) == 0:
+            sub_input_value = None
+        opa_input = OpaPolicyInput(
+            value=sub_input_value, root=input_json, config=config, constraint=None
+        )
+        input_data = opa_input.model_dump(by_alias=True)
+
+        entrypoint = field_requirement.entrypoint
+        start = time.perf_counter()
+        result = engine.evaluate(input_data=input_data, entrypoint=entrypoint)
+        end = time.perf_counter()
+        logger.debug("Policy Engine Execution time: %.6f seconds", (end - start))
+        if result is None:
+            raise ValueError("OPA policy decision is not valid")
+        if isinstance(result, dict):
+            result = [result]
+        if not isinstance(result, list):
+            raise ValueError("OPA policy decision is not valid")
+        if not result:
+            raise ValueError(
+                "OPA policy decision is empty. "
+                f"Check input shape and entrypoint: {entrypoint or '<default>'}"
+            )
+        messages_output = OpaPolicyMessagesOutput.model_validate(result[0])
+
+        for item in messages_output.messages or []:
+            added = context.message_collector.add_message(
+                json_path=json_path,
+                message=JsonProfileMessage(
+                    code=field_requirement.code,
+                    category=Category.PROFILE,
+                    name="opa-field-requirement",
+                    source=item.source,
+                    message=item.message,
+                    enforcement_level=field_requirement.enforcement_level,
+                ),
+            )
+            if not added:
+                break
+
+    def validate_requirement(
+        self,
+        field_requirement: FieldRequirement | OpaFieldRequirement,
+        json_path: JsonPath,
+        input_json: dict,
+        context: JsonProfileRunContext,
+    ):
+        runtime_config = context.runtime_config
+
         constraint_name = (
             field_requirement.value_constraint.type
             if field_requirement.value_constraint
             else "field-requirement"
         )
-        runtime_config = context.runtime_config
-        if runtime_config and runtime_config.skipped_requirements:
-            if field_requirement.code in runtime_config.skipped_requirements:
-                logger.warning(
-                    "%s for %s is in skipped list.", field_requirement.code, json_path
-                )
-                context.message_collector.add_message(
-                    json_path=json_path,
-                    message=JsonProfileMessage(
-                        code=field_requirement.code,
-                        source=json_path,
-                        category=Category.PROFILE,
-                        name=constraint_name,
-                        enforcement_level=EnforcementLevel.RECOMMENDED,
-                        message=f"{field_requirement.code} of '{json_path}' "
-                        "is in skipped list.",
-                    ),
-                )
-                return
-        if field_requirement and field_requirement.value_constraint:
+        if field_requirement.value_constraint:
             if runtime_config and runtime_config.skip_decimal_validations:
                 if isinstance(field_requirement.value_constraint, DecimalConstraint):
                     logger.warning("Decimal validations are skipped for %s", json_path)
