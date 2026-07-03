@@ -90,6 +90,7 @@ def validate_profile(profile: dict | JsonProfile):
             )
             continue
         for requirement in requirements:
+            is_opa_field_requirement = isinstance(requirement, OpaFieldRequirement)
             if not requirement.code:
                 if isinstance(requirement, (FieldRequirement, OpaFieldRequirement)):
                     message = f"Requirement '{key}' code is not defined."
@@ -120,7 +121,7 @@ def validate_profile(profile: dict | JsonProfile):
                     )
                 unique_requirement_codes.add(requirement.code)
 
-            if requirement.value_constraint:
+            if not is_opa_field_requirement and requirement.value_constraint:
                 if requirement.value_constraint.precondition:
                     evaluations = requirement.value_constraint.precondition.evaluations
 
