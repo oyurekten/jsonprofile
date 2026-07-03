@@ -220,7 +220,10 @@ class ValidationRuntimeConfiguration(JsonProfileBaseModel):
         None | bool,
         Field(description="Skips jsonschema validation if it is set `true`."),
     ] = None
-
+    skip_profile_validation: Annotated[
+        None | bool,
+        Field(description="Skips profile validation if it is set `true`."),
+    ] = None
     max_messages_for_each_requirement: Annotated[
         None | int,
         Field(
