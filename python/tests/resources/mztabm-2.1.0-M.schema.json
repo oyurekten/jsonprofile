@@ -4154,7 +4154,7 @@
               "items": {
                 "anyOf": [
                   {
-                    "type": "array"
+                    "type": "number"
                   },
                   {
                     "type": "null"

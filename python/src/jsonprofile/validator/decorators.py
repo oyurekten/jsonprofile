@@ -46,7 +46,7 @@ def constraint_checker(
                 f"{constraint_type} {constraint_name} checker is already in registry"
             )
         checkers[key] = checker_class
-        logger.info(
+        logger.debug(
             "Registering constraint checker '%s' %s %s",
             constraint_class.__name__,
             constraint_name,

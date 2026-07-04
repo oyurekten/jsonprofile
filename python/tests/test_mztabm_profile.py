@@ -16,12 +16,12 @@ def test_example_profile() -> None:
     mtbls_profile_file = (
         "tests/resources/profiles/mztabm-metabolights-profile-2.1.0-M.json"
     )
-    default_profile_id = "https://github.com/HUPO-PSI/mzTab-M/tree/main/schema/mztabm-default-profile-2.1.0-M.json"
+    default_profile_id = "https://github.com/HUPO-PSI/mzTab-M/tree/main/schema/profiles/mztabm-default-profile-2.1.0-M.json"
     default_profile_path = (
         "tests/resources/profiles/mztabm-default-profile-2.1.0-M.json"
     )
     input_json = "tests/data/manual_null_MTBLS263.mztab.json"
-    json_schema_path = "tests/resources/mztabm-schema-2.1.0-M.json"
+    json_schema_path = "tests/resources/mztabm-2.1.0-M.schema.json"
     referenced_profiles = {default_profile_id: default_profile_path}
     validator = JsonValidator(
         json_schema=json_schema_path,
