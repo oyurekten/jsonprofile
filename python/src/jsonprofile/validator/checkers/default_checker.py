@@ -36,6 +36,7 @@ from jsonprofile.profile.constraints.constraints import (
 )
 from jsonprofile.profile.model import (
     JsonProfileConfiguration,
+    ValidationRuntimeConfiguration,
 )
 from jsonprofile.utils import convert_full_path, is_non_string_container
 from jsonprofile.validator.abstract_checker import ConstraintChecker
@@ -1306,11 +1307,13 @@ class ConstraintGroupChecker(ConstraintChecker):
 
 
 class OpaPolicyInput(JsonProfileBaseModel):
-    policy_id: str
+    policy_ids: list[str]
     value: Any
     root: dict
     config: Optional[JsonProfileConfiguration] = None
-    constraint: None | OpaPolicyConstraint
+    runtime_config: Optional[ValidationRuntimeConfiguration] = None
+    constraint: None | OpaPolicyConstraint = None
+    kwargs: None | dict[str, Any] = None
 
 
 class OpaPolicyDecisionOutput(JsonProfileBaseModel):

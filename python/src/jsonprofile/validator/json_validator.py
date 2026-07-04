@@ -460,7 +460,50 @@ class JsonValidator:
             if not json_path:
                 logger.info("Field key is not defined. $ will be used.")
                 json_path = "$"
+            opa_field_requirements = [
+                x
+                for x in requirement_group.requirements
+                if isinstance(x, OpaFieldRequirement)
+            ]
+            wasm_file_reqs: dict[str, list[OpaFieldRequirement]] = {}
+            for opa_field in opa_field_requirements:
+                if opa_field.code in runtime_config.skipped_requirements:
+                    logger.warning(
+                        "%s for %s is in skipped list.", opa_field.code, json_path
+                    )
+                    constraint_name = (
+                        opa_field.value_constraint.type
+                        if opa_field.value_constraint
+                        else "field-requirement"
+                    )
+                    context.message_collector.add_message(
+                        json_path=json_path,
+                        message=JsonProfileMessage(
+                            code=opa_field.code,
+                            source=json_path,
+                            category=Category.PROFILE,
+                            name=constraint_name,
+                            enforcement_level=EnforcementLevel.RECOMMENDED,
+                            message=f"{opa_field.code} of '{json_path}' "
+                            "is in skipped list.",
+                        ),
+                    )
+                    continue
+                if opa_field.wasm_file_key not in wasm_file_reqs:
+                    wasm_file_reqs[opa_field.wasm_file_key] = []
+                wasm_file_reqs[opa_field.wasm_file_key].append(opa_field)
+            for opa_fields in wasm_file_reqs.values():
+                self.validate_opa_field_requirement(
+                    opa_field_requirements=opa_fields,
+                    json_path=json_path,
+                    input_json=input_json,
+                    context=context,
+                )
+
             for field_requirement in requirement_group.requirements:
+                if isinstance(field_requirement, OpaFieldRequirement):
+                    continue
+
                 if field_requirement.code in runtime_config.skipped_requirements:
                     logger.warning(
                         "%s for %s is in skipped list.",
@@ -487,21 +530,13 @@ class JsonValidator:
                     continue
 
                 start = time.perf_counter()
-                if isinstance(field_requirement, OpaFieldRequirement):
-                    self.validate_opa_field_requirement(
-                        field_requirement=field_requirement,
-                        json_path=json_path,
-                        input_json=input_json,
-                        context=context,
-                    )
 
-                else:
-                    self.validate_requirement(
-                        field_requirement=field_requirement,
-                        json_path=json_path,
-                        input_json=input_json,
-                        context=context,
-                    )
+                self.validate_requirement(
+                    field_requirement=field_requirement,
+                    json_path=json_path,
+                    input_json=input_json,
+                    context=context,
+                )
 
                 end = time.perf_counter()
                 duration = end - start
@@ -529,13 +564,20 @@ class JsonValidator:
 
     def validate_opa_field_requirement(
         self,
-        field_requirement: OpaFieldRequirement,
+        opa_field_requirements: list[OpaFieldRequirement],
         json_path: JsonPath,
         input_json: dict,
         context: JsonProfileRunContext,
     ):
+        if not opa_field_requirements:
+            return
+        policy_ids = [x.policy_id for x in opa_field_requirements]
+        policy_id_reqs = {x.policy_id: x for x in opa_field_requirements}
+
+        wasm_file_key = opa_field_requirements[0].wasm_file_key
+
         config = context.profile_config
-        label = field_requirement.wasm_file_key or "default"
+        label = wasm_file_key or "default"
         wasm_file_path = None
         wasm_file_download_url = None
         if config and config.wasm_file_definitions:
@@ -561,7 +603,7 @@ class JsonValidator:
         elif len(sub_input_value) == 0:
             sub_input_value = None
         opa_input = OpaPolicyInput(
-            policy_id=field_requirement.policy_id,
+            policy_ids=policy_ids,
             value=sub_input_value,
             root=input_json,
             config=config,
@@ -582,7 +624,7 @@ class JsonValidator:
         if not result:
             raise ValueError(
                 "OPA policy decision is empty. "
-                f"Check input policy id {field_requirement.policy_id} "
+                f"Check input policy ids {', '.join(policy_ids)} "
                 f"and entrypoint: {entrypoint or '<default>'}"
             )
         messages_output = OpaPolicyMessagesOutput.model_validate(result[0])
@@ -591,12 +633,14 @@ class JsonValidator:
             added = context.message_collector.add_message(
                 json_path=json_path,
                 message=JsonProfileMessage(
-                    code=field_requirement.code,
+                    code=policy_id_reqs.get(item.policy_id).code,
                     category=Category.PROFILE,
                     name="opa-field-requirement",
                     source=item.source,
                     message=item.message,
-                    enforcement_level=field_requirement.enforcement_level,
+                    enforcement_level=policy_id_reqs.get(
+                        item.policy_id
+                    ).enforcement_level,
                 ),
             )
             if not added:
