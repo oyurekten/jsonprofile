@@ -3262,11 +3262,17 @@
                     "description": "WASM file that contains OPA policy implementation",
                     "title": "Wasm File Path",
                     "type": "string"
+                },
+                "entrypoint": {
+                    "description": "WASM file entrypoint",
+                    "title": "Wasm File entrypoint",
+                    "type": "string"
                 }
             },
             "required": [
                 "wasm_file_download_url",
-                "wasm_file_path"
+                "wasm_file_path",
+                "entrypoint"
             ],
             "title": "WasmFileDefinition",
             "type": "object"

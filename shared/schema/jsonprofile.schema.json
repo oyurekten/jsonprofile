@@ -4576,11 +4576,17 @@
           "description": "Local path to the WASM file that implements the OPA policy.",
           "title": "Wasm File Path",
           "type": "string"
+        },
+        "entrypoint": {
+          "description": "Entrypoint.",
+          "title": "Entrypoint",
+          "type": "string"
         }
       },
       "required": [
         "wasm_file_download_url",
-        "wasm_file_path"
+        "wasm_file_path",
+        "entrypoint"
       ],
       "title": "WasmFileDefinition",
       "type": "object"

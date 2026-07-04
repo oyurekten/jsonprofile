@@ -622,12 +622,10 @@ class OpaPolicyConstraint(Constraint):
             "If omitted, the default policy file is used."
         ),
     ] = None
-    entrypoint: Annotated[
-        Optional[str],
-        Field(
-            description="OPA policy data path to evaluate. e.g. policies/policy_0001"
-        ),
-    ] = None
+    policy_id: Annotated[
+        str,
+        Field(description="OPA policy id. policy_0001, policy_d_01010, etc."),
+    ]
 
 
 class CustomConstraint(Constraint):

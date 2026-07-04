@@ -7,7 +7,8 @@
         "wasm_file_definitions": {
             "default": {
                 "wasm_file_path": "tests/resources/mztabm-default-2.1.0-M.wasm",
-                "wasm_file_download_url": "https://github.com/HUPO-PSI/mzTab-M/raw/refs/heads/development/mztab_m_io/resources/mztabm-default-2.1.0-M.wasm"
+                "wasm_file_download_url": "https://github.com/HUPO-PSI/mzTab-M/raw/refs/heads/development/mztab_m_io/resources/mztabm-default-2.1.0-M.wasm",
+                "entrypoint": "mztabm/policies"
             }
         }
     },
@@ -20,7 +21,7 @@
                     "code": "D-0010",
                     "description": "Verifies that smallMoleculeSummary and smallMoleculeEvidence rows define the same number of abundance_assay values as assays declared in metadata.",
                     "enforcement_level": "required",
-                    "entrypoint": "mztabm/policies/policy_d_0020"
+                    "policy_id": "policy_d_0020"
                 }
             ]
         },

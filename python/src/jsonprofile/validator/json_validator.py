@@ -251,7 +251,7 @@ class JsonValidator:
                     input_profile.requirements[key]
                 )
                 if value is None:
-                    merge_actions.append(f"{key}[{old_codes}] -> X")
+                    merge_actions.append(f"Deleted: {key}[{old_codes}] -> {key}[]")
                     del input_profile.requirements[key]
                     logger.debug(
                         "Deleted: Dropped profile requirement(s) for '%s': %s",
@@ -259,7 +259,9 @@ class JsonValidator:
                         old_codes,
                     )
                 else:
-                    merge_actions.append(f"{key}[{old_codes}] -> key[{new_codes}]")
+                    merge_actions.append(
+                        f"Overridden: {key}[{old_codes}] -> {key}[{new_codes}]"
+                    )
                     logger.debug(
                         "Overridden: "
                         "Requirement updates for '%s'. old codes: %s, new: %s",
@@ -269,7 +271,7 @@ class JsonValidator:
                     )
 
             else:
-                merge_actions.append(f"X -> key[{new_codes}]")
+                merge_actions.append(f"Added: {key}[] -> {key}[{new_codes}]")
                 logger.debug(
                     "Added: New profile requirement(s) for '%s': %s ",
                     key,
@@ -527,7 +529,7 @@ class JsonValidator:
 
     def validate_opa_field_requirement(
         self,
-        field_requirement: FieldRequirement | OpaFieldRequirement,
+        field_requirement: OpaFieldRequirement,
         json_path: JsonPath,
         input_json: dict,
         context: JsonProfileRunContext,
@@ -542,6 +544,7 @@ class JsonValidator:
                 raise ValueError("OPA policy file not found")
             wasm_file_path = opa_config.wasm_file_path
             wasm_file_download_url = opa_config.wasm_file_download_url
+            entrypoint = opa_config.entrypoint
 
         engine = context.profile_validator_factory.opa_engine_factory.get_opa_engine(
             wasm_file_path=wasm_file_path,
@@ -558,11 +561,14 @@ class JsonValidator:
         elif len(sub_input_value) == 0:
             sub_input_value = None
         opa_input = OpaPolicyInput(
-            value=sub_input_value, root=input_json, config=config, constraint=None
+            policy_id=field_requirement.policy_id,
+            value=sub_input_value,
+            root=input_json,
+            config=config,
+            constraint=None,
         )
         input_data = opa_input.model_dump(by_alias=True)
 
-        entrypoint = field_requirement.entrypoint
         start = time.perf_counter()
         result = engine.evaluate(input_data=input_data, entrypoint=entrypoint)
         end = time.perf_counter()
@@ -576,7 +582,8 @@ class JsonValidator:
         if not result:
             raise ValueError(
                 "OPA policy decision is empty. "
-                f"Check input shape and entrypoint: {entrypoint or '<default>'}"
+                f"Check input policy id {field_requirement.policy_id} "
+                f"and entrypoint: {entrypoint or '<default>'}"
             )
         messages_output = OpaPolicyMessagesOutput.model_validate(result[0])
 

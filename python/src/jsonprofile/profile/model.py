@@ -83,21 +83,13 @@ class OpaFieldRequirement(EnforcedRequirement):
             "If omitted, the default policy file is used."
         ),
     ] = None
-    entrypoint: Annotated[
-        Optional[str],
+    policy_id: Annotated[
+        str,
         Field(
-            description="OPA policy data path to evaluate requirement."
-            " e.g. policies/policy_0001"
+            description="OPA policy policy_0001 to evaluate requirement."
+            " e.g. policy_0001"
         ),
-    ] = None
-
-    match_is_required: Annotated[
-        Optional[bool],
-        Field(
-            description="Whether the target JSONPath must match at least one value. "
-            "Field must be defined and value can be null, string, object, etc."
-        ),
-    ] = None
+    ]
 
 
 class FieldRequirementGroup(EnforcedRequirement):
@@ -171,6 +163,10 @@ class WasmFileDefinition(JsonProfileBaseModel):
         Field(
             description="Local path to the WASM file that implements the OPA policy."
         ),
+    ]
+    entrypoint: Annotated[
+        str,
+        Field(description="Entrypoint to evaluate policies."),
     ]
 
 

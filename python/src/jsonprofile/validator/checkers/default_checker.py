@@ -1306,6 +1306,7 @@ class ConstraintGroupChecker(ConstraintChecker):
 
 
 class OpaPolicyInput(JsonProfileBaseModel):
+    policy_id: str
     value: Any
     root: dict
     config: Optional[JsonProfileConfiguration] = None
@@ -1358,12 +1359,15 @@ class OpaPolicyConstraintChecker(ConstraintChecker):
                 label = constraint.wasm_file_key or "default"
                 wasm_file_path = None
                 wasm_file_download_url = None
+                entrypoint = None
+
                 if config and config.wasm_file_definitions:
                     opa_config = config.wasm_file_definitions.get(label)
                     if not opa_config:
                         raise ValueError("OPA policy file not found")
                     wasm_file_path = opa_config.wasm_file_path
                     wasm_file_download_url = opa_config.wasm_file_download_url
+                    entrypoint = opa_config.entrypoint
 
                 engine = (
                     context.profile_validator_factory.opa_engine_factory.get_opa_engine(
@@ -1372,11 +1376,13 @@ class OpaPolicyConstraintChecker(ConstraintChecker):
                     )
                 )
                 opa_input = OpaPolicyInput(
-                    value=value, root=root, config=config, constraint=constraint
+                    policy_id=constraint.policy_id,
+                    value=value,
+                    root=root,
+                    config=config,
+                    constraint=constraint,
                 )
                 input_data = opa_input.model_dump(by_alias=True)
-
-                entrypoint = constraint.entrypoint
                 start = time.perf_counter()
                 result = engine.evaluate(input_data=input_data, entrypoint=entrypoint)
                 end = time.perf_counter()
