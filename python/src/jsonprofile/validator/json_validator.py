@@ -472,8 +472,8 @@ class JsonValidator:
                         "%s for %s is in skipped list.", opa_field.code, json_path
                     )
                     constraint_name = (
-                        opa_field.value_constraint.type
-                        if opa_field.value_constraint
+                        opa_field.policy_id
+                        if opa_field.policy_id
                         else "field-requirement"
                     )
                     context.message_collector.add_message(
@@ -493,12 +493,25 @@ class JsonValidator:
                     wasm_file_reqs[opa_field.wasm_file_key] = []
                 wasm_file_reqs[opa_field.wasm_file_key].append(opa_field)
             for opa_fields in wasm_file_reqs.values():
-                self.validate_opa_field_requirement(
-                    opa_field_requirements=opa_fields,
-                    json_path=json_path,
-                    input_json=input_json,
-                    context=context,
-                )
+                if opa_fields:
+                    start = time.perf_counter()
+
+                    self.validate_opa_field_requirement(
+                        opa_field_requirements=opa_fields,
+                        json_path=json_path,
+                        input_json=input_json,
+                        context=context,
+                    )
+
+                    end = time.perf_counter()
+                    duration = end - start
+                    if duration > 0.5:
+                        logger.warning(
+                            "OPA policy requirement(s) execution time "
+                            "for %s: %.6f seconds",
+                            ", ".join([x.code for x in opa_fields]),
+                            (end - start),
+                        )
 
             for field_requirement in requirement_group.requirements:
                 if isinstance(field_requirement, OpaFieldRequirement):
@@ -569,8 +582,6 @@ class JsonValidator:
         input_json: dict,
         context: JsonProfileRunContext,
     ):
-        if not opa_field_requirements:
-            return
         policy_ids = [x.policy_id for x in opa_field_requirements]
         policy_id_reqs = {x.policy_id: x for x in opa_field_requirements}
 
