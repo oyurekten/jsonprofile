@@ -678,7 +678,7 @@
       },
       {
         "id": 4,
-        "cv_label": "CHMO",
+        "cv_label": "NCIT",
         "cv_accession": "NCIT:C25713",
         "name": "Variation"
       },

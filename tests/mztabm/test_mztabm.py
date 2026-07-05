@@ -1,6 +1,7 @@
-import json
 import shutil
 from pathlib import Path
+
+import orjson
 
 import mztab_m_io as mztabm
 
@@ -55,8 +56,8 @@ def test_load_from_dict():
     Load from dict
     """
     file_path = "tests/data/example/example.json"
-    with Path(file_path).open() as f:
-        mztabm_dict = json.load(f)
+    with Path(file_path).open("rb") as f:
+        mztabm_dict = orjson.loads(f.read())
     mztabm_model = mztabm.load_from_dict(mztabm_dict)
     assert mztabm_model
 

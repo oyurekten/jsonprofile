@@ -5,10 +5,17 @@ description="The Python3 language bindings for mzTab-M"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "cachetools>=7.1.4",
     "email-validator>=2.3.0",
+    "httpx2>=0.28.1",
+    "jsonpath-ng>=1.8.0",
+    "jsonprofile",
     "jsonschema>=4.26.0",
+    "opa-wasmtime>=0.1.1",
+    "orjson>=3.11.9",
     "pydantic>=2.12.4",
     "pyyaml>=6.0.3",
+    "rfc3986>=2.0.0",
 ]
 [dependency-groups]
 dev = [
@@ -17,6 +24,9 @@ dev = [
     "ruff>=0.14.4",
     "uv-build>=0.9.8",
     "mkdocs-material>=9.7.0",
+    "ipykernel>=7.3.0",
+    "pip>=26.1.2",
+    "tqdm>=4.68.3",
 ]
 [tool.ruff]
 target-version = "py310"
@@ -47,3 +57,6 @@ exclude = ["tests*", "docs*", "scripts*"]
 
 [tool.setuptools.package-data]
 "mztab_m_io" = ["**/*.json"]
+
+[tool.uv.sources]
+jsonprofile = { git = "https://github.com/oyurekten/jsonprofile.git", subdirectory = "python" }

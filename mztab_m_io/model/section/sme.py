@@ -10,21 +10,33 @@ from mztab_m_io.model.common import OptColumnMapping, Parameter, SpectraReferenc
 from mztab_m_io.model.section.base_table_section import BaseTableSection
 from mztab_m_io.model.serialization import (
     TableSerialization,
-    ValidationPolicy,
 )
 
 
 class SmallMoleculeEvidence(BaseTableSection):
+    """The small molecule evidence section is table-based,
+    representing evidence for identifications of small molecules/features,
+    from database search or any other process used to give putative identifications
+    to molecules. In a typical case, each row represents one result from a single
+    search or interpretation of a piece of evidence e.g. a database search with
+    a fragmentation spectrum. Multiple results from a given input data item
+    (e.g. one fragment spectrum) SHOULD share the same value under evidence_input_id.
+
+    The small molecule evidence section MUST always come
+    after the Small Molecule Feature Table. All table columns MUST be Tab separated.
+    There MUST NOT be any empty cells. Missing values MUST be reported using “null”.
+
+    The order of columns MUST follow the order specified below.
+    All columns are MANDATORY except for “opt_” columns.
+    """
+
     prefix: Annotated[
         str,
         Field(
             description="The small molecule evidence table row prefix. "
             "SME MUST be used for rows of the small "
             "molecule evidence table.",
-            json_schema_extra=TableSerialization(
-                ignore=True,
-                validation_policy=ValidationPolicy(required=True, pattern=r"SME"),
-            ).model_dump(),
+            json_schema_extra=TableSerialization(ignore=True).model_dump(),
         ),
     ] = "SME"
     header_prefix: Annotated[
@@ -33,10 +45,7 @@ class SmallMoleculeEvidence(BaseTableSection):
             description="The small molecule evidence table header prefix. "
             "SEH MUST be used for the small molecule evidence "
             "table header line (the column labels).",
-            json_schema_extra=TableSerialization(
-                ignore=True,
-                validation_policy=ValidationPolicy(required=True, pattern=r"SEH"),
-            ).model_dump(),
+            json_schema_extra=TableSerialization(ignore=True).model_dump(),
         ),
     ] = "SEH"
     sme_id: Annotated[
@@ -46,9 +55,7 @@ class SmallMoleculeEvidence(BaseTableSection):
             description="A within file unique identifier for the small "
             "molecule evidence result.",
             examples=[1],
-            json_schema_extra=TableSerialization(
-                validation_policy=ValidationPolicy(required=True),
-            ).model_dump(),
+            json_schema_extra=TableSerialization().model_dump(),
         ),
     ] = None
     evidence_input_id: Annotated[
@@ -65,9 +72,7 @@ class SmallMoleculeEvidence(BaseTableSection):
             "then the ID may be the spectrum reference, "
             "or for accurate mass search, the ms_run[2]:458.75.",
             examples=["ms_run[1]:mass=278.65;rt=376.5"],
-            json_schema_extra=TableSerialization(
-                validation_policy=ValidationPolicy(required=True),
-            ).model_dump(),
+            json_schema_extra=TableSerialization().model_dump(),
         ),
     ] = None
     database_identifier: Annotated[
@@ -86,9 +91,7 @@ class SmallMoleculeEvidence(BaseTableSection):
             "particular database, "
             "it MUST be reported as the database prefix followed by null.",
             examples=["CID:00027395"],
-            json_schema_extra=TableSerialization(
-                validation_policy=ValidationPolicy(required=True),
-            ).model_dump(),
+            json_schema_extra=TableSerialization().model_dump(),
         ),
     ] = None
     chemical_formula: Annotated[
@@ -152,9 +155,7 @@ class SmallMoleculeEvidence(BaseTableSection):
             description="A URI pointing to the small molecule's entry in a database "
             "(e.g., the small molecule's HMDB, Chebi or KEGG entry).",
             examples=["http://www.hmdb.ca/metabolites/HMDB00054"],
-            json_schema_extra=TableSerialization(
-                validation_policy=ValidationPolicy(value_constraint="any-url"),
-            ).model_dump(),
+            json_schema_extra=TableSerialization().model_dump(),
         ),
     ] = None
     derivatized_form: Annotated[
@@ -177,11 +178,7 @@ class SmallMoleculeEvidence(BaseTableSection):
             "classification is ambiguous with regards to identification "
             "evidence it MAY be null.",
             examples=["[M+H]+"],
-            json_schema_extra=TableSerialization(
-                validation_policy=ValidationPolicy(
-                    pattern=r"^\[\d*M([+-][\w\d]+)*\]\d*[+-]$"
-                ),
-            ).model_dump(),
+            json_schema_extra=TableSerialization().model_dump(),
         ),
     ] = None
     exp_mass_to_charge: Annotated[
@@ -191,9 +188,7 @@ class SmallMoleculeEvidence(BaseTableSection):
             "single identification event/search, then a single value e.g. "
             "for the protonated form SHOULD be reported here.",
             examples=[1234.5],
-            json_schema_extra=TableSerialization(
-                validation_policy=ValidationPolicy(required=True),
-            ).model_dump(),
+            json_schema_extra=TableSerialization().model_dump(),
         ),
     ] = None
     charge: Annotated[
@@ -203,9 +198,7 @@ class SmallMoleculeEvidence(BaseTableSection):
             "using positive integers "
             "both for positive and negative polarity modes.",
             examples=[1],
-            json_schema_extra=TableSerialization(
-                validation_policy=ValidationPolicy(required=True),
-            ).model_dump(),
+            json_schema_extra=TableSerialization().model_dump(),
         ),
     ] = None
     theoretical_mass_to_charge: Annotated[
@@ -214,15 +207,14 @@ class SmallMoleculeEvidence(BaseTableSection):
             description="The theoretical mass/charge value for the small molecule or "
             "the database mass/charge value (for a spectral library match).",
             examples=[1234.71],
-            json_schema_extra=TableSerialization(
-                validation_policy=ValidationPolicy(required=True),
-            ).model_dump(),
+            json_schema_extra=TableSerialization().model_dump(),
         ),
     ] = None
-    spectra_references: Annotated[
+    spectra_reference: Annotated[
         Optional[List[SpectraReference]],
         Field(
             validation_alias="spectra_ref",
+            serialization_alias="spectra_ref",
             description="Reference to a spectrum in a spectrum file, for example a "
             "fragmentation spectrum "
             "has been used to support the identification. "
@@ -241,10 +233,9 @@ class SmallMoleculeEvidence(BaseTableSection):
             "If a fragmentation spectrum has not been used, the value should indicate "
             "the ms_run to which "
             "is identification is mapped e.g. “ms_run[1]”. ",
-            examples=[["ms_run[1]:index=5"]],
+            examples=[["ms_run[1]:index=5"], ["ms_run[2]:index=3"]],
             json_schema_extra=TableSerialization(
-                list_concatenation_str="|",
-                validation_policy=ValidationPolicy(required=True, minimum=1),
+                list_concatenation_str="|"
             ).model_dump(),
         ),
     ] = None
@@ -254,9 +245,7 @@ class SmallMoleculeEvidence(BaseTableSection):
             description="The search engine or algorithm used for the "
             "identification. This SHOULD be specified using CV terms.",
             examples=["[MS, MS:1001477, SpectraST,]"],
-            json_schema_extra=TableSerialization(
-                validation_policy=ValidationPolicy(required=True),
-            ).model_dump(),
+            json_schema_extra=TableSerialization().model_dump(),
         ),
     ] = None
     ms_level: Annotated[
@@ -265,9 +254,7 @@ class SmallMoleculeEvidence(BaseTableSection):
             description="The MS level of the spectrum used for the identification. "
             "This SHOULD be specified using CV terms.",
             examples=["[MS, MS:1000511, ms level, 2]"],
-            json_schema_extra=TableSerialization(
-                validation_policy=ValidationPolicy(required=True),
-            ).model_dump(),
+            json_schema_extra=TableSerialization().model_dump(),
         ),
     ] = None
     id_confidence_measure: Annotated[
@@ -291,11 +278,7 @@ class SmallMoleculeEvidence(BaseTableSection):
             "Ties (equal score) are represented by using the same rank - "
             "defaults to 1 if there is no ranking system used.",
             examples=[1],
-            json_schema_extra=TableSerialization(
-                validation_policy=ValidationPolicy(
-                    required=True, value_constraint="positive-integer"
-                ),
-            ).model_dump(),
+            json_schema_extra=TableSerialization().model_dump(),
         ),
     ] = None
     opt: Annotated[

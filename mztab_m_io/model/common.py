@@ -16,11 +16,8 @@ from mztab_m_io.model.serialization import (
     MetadataSerialization,
     MzTabSerializableModel,
     SerializationContext,
-    ValidationPolicy,
 )
 from mztab_m_io.model.validation import ValidationContext
-
-AdductIon = Annotated[str, Field(pattern=r"^\[\d*M([+-][\w\d]+)*\]\d*[+-]$")]
 
 
 class Parameter(CompactObjectModel, IdentifiableModel, CustomSerializer):
@@ -35,9 +32,7 @@ class Parameter(CompactObjectModel, IdentifiableModel, CustomSerializer):
         Optional[str],
         Field(
             description="CV accession in CURIE format",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(value_constraint="curie")
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = ""
     name: Annotated[
@@ -56,6 +51,9 @@ class Parameter(CompactObjectModel, IdentifiableModel, CustomSerializer):
     ] = ""
 
     def to_tsv(self, context: SerializationContext) -> str:
+        return self.__str__()
+
+    def __str__(self):
         return (
             f"[{sanitize_str(self.cv_label)}, "
             f"{sanitize_str(self.cv_accession)}, "
@@ -169,7 +167,17 @@ class ExtendedParameter(Parameter):
         return handler(val)
 
 
-class Instrument(IdentifiableModel):
+class CustomParameterContainerModel(MzTabSerializableModel):
+    custom: Annotated[
+        Optional[List[ExtendedParameter]],
+        Field(
+            description="Additional user or cv parameters.",
+            json_schema_extra=MetadataSerialization().model_dump(),
+        ),
+    ] = None
+
+
+class Instrument(IdentifiableModel, CustomParameterContainerModel):
     name: Annotated[
         Optional[Parameter],
         Field(
@@ -223,41 +231,42 @@ class Protocol(IdentifiableModel):
         Optional[str],
         Field(
             description="The protocol name.",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(required=True)
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     type: Annotated[
         Optional[Parameter],
         Field(
             description="The protocol type, as defined by the parameter.",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(required=True)
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     description: Annotated[
         Optional[str],
         Field(
             description="Description of the protocol.",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy()
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
-    parameters: Annotated[
+    parameter: Annotated[
         Optional[List[ExtendedParameter]],
         Field(
             description="The protocol parameters.",
-            json_schema_extra=MetadataSerialization(
-                list_concatenation_str="|"
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
 
 
 class SampleProcessing(IdentifiableModel):
+    """A list of parameters describing a sample processing,
+    preparation or handling step similar to a biological or analytical methods report.
+    The order of the sample_processing items should reflect the order
+    these processing steps were performed in. If multiple parameters are given
+    for a step these MUST be separated by a “|”. If derivatization was performed,
+    it MUST be reported here as a general step, e.g. 'silylation' and
+    the actual derivatization agens MUST be specified in the Section 6.2.54 part.
+    """
+
     sample_processing: Annotated[
         Optional[List[Parameter]],
         Field(
@@ -270,7 +279,15 @@ class SampleProcessing(IdentifiableModel):
     ] = None
 
 
-class Software(IdentifiableModel):
+class Software(IdentifiableModel, CustomParameterContainerModel):
+    """Software used to analyze the data and obtain the reported results.
+    The parameter's value SHOULD contain the software's version.
+    The order (numbering) should reflect the order in which the tools were used.
+    A software setting used. This field MAY occur multiple times for a single software.
+    The value of this field is deliberately set as a String,
+    since there currently do not exist CV terms for every possible setting.
+    """
+
     parameter: Annotated[
         Optional[Parameter],
         Field(
@@ -292,24 +309,24 @@ class Software(IdentifiableModel):
     ] = None
 
 
-class PublicationItem(MzTabSerializableModel, CustomSerializer):
+class PublicationItem(CustomParameterContainerModel, CustomSerializer):
+    """A publication item, defined by a qualifier
+    and a native accession, e.g. pubmed id.
+    """
+
     type: Annotated[
         Optional[str],
         Field(
             description="The type qualifier of this publication item.",
             examples=["doi", "pubmed", "uri"],
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(pattern=r"doi|pubmed|uri")
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     accession: Annotated[
         Optional[str],
         Field(
             description="The native accession id for this publication item.",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(required=True)
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
 
@@ -339,7 +356,22 @@ class PublicationItem(MzTabSerializableModel, CustomSerializer):
         return handler(val)
 
 
-class Contact(IdentifiableModel):
+class Uri(IdentifiableModel):
+    """A URI pointing to the file's source data (e.g., a MetaboLights records)
+    or an external file with more details about the study design.."""
+
+    value: Annotated[
+        Optional[str],
+        Field(
+            description="The URI pointing to the external resource.",
+            json_schema_extra=MetadataSerialization(
+                object_level_value=True,
+            ).model_dump(),
+        ),
+    ] = None
+
+
+class Contact(IdentifiableModel, CustomParameterContainerModel):
     name: Annotated[
         Optional[str],
         Field(
@@ -358,40 +390,35 @@ class Contact(IdentifiableModel):
         Optional[str],
         Field(
             description="The contact's e-mail address.",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(
-                    value_constraint="email",
-                )
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     orcid: Annotated[
         Optional[str],
         Field(
             description="The contact's orcid id, without https prefix.",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(
-                    pattern=r"^[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9X]{1}$",
-                )
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
 
 
-class Uri(IdentifiableModel):
-    value: Annotated[
-        Optional[str],
-        Field(
-            description="The URI pointing to the external resource.",
-            json_schema_extra=MetadataSerialization(
-                object_level_value=True,
-                validation_policy=ValidationPolicy(value_constraint="any-url"),
-            ).model_dump(),
-        ),
-    ] = None
+class Sample(IdentifiableModel, CustomParameterContainerModel):
+    """Specification of sample.
+    (empty) name: A name for each sample to serve as a list of the samples that MUST be
+    reported in the following tables.
+    Samples MUST be reported if a statistical design is being captured
+    (i.e. bio or tech replicates).
+    If the type of replicates are not known, samples SHOULD NOT be reported.
+    species: The respective species of the samples analysed.
+    For more complex cases, such as metagenomics, optional columns
+    and userParams should be used.\ntissue: The respective tissue(s) of the sample.
+    cell_type: The respective cell type(s) of the sample.
+    disease: The respective disease(s) of the sample.
+    description: A human readable description of the sample.
+    custom: Custom parameters describing the sample's additional properties.
+    Dates MUST be provided in ISO-8601 format.
+    """
 
-
-class Sample(IdentifiableModel):
     name: Annotated[
         Optional[str],
         Field(
@@ -399,13 +426,6 @@ class Sample(IdentifiableModel):
             json_schema_extra=MetadataSerialization(
                 object_level_value=True
             ).model_dump(),
-        ),
-    ] = None
-    custom: Annotated[
-        Optional[List[Parameter]],
-        Field(
-            description="Additional user or cv parameters.",
-            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     species: Annotated[
@@ -445,7 +465,33 @@ class Sample(IdentifiableModel):
     ] = None
 
 
-class MsRun(IdentifiableModel):
+class MsRun(IdentifiableModel, CustomParameterContainerModel):
+    """Specification of ms_run.
+    location: Location of the external data file
+    e.g. raw files on which analysis has been performed.
+    If the actual location of the MS run is unknown, a `null` MUST be used
+    as a place holder value, since the [1-n] cardinality is referenced elsewhere.
+    If pre-fractionation has been performed,
+    then [1-n] ms_runs SHOULD be created per assay.
+    instrument_ref: If different instruments are used in different runs,
+    instrument_ref can be used to link a specific instrument to a specific run.
+    format: Parameter specifying the data format of the external MS data file.
+    If ms_run[1-n]-format is present, ms_run[1-n]-id_format SHOULD also be present,
+    following the parameters specified in Table 1.
+    id_format: Parameter specifying the id format used in the external data file.
+    If ms_run[1-n]-id_format is present, ms_run[1-n]-format SHOULD also be present.
+    fragmentation_method: The type(s) of fragmentation used in a given ms run.
+    scan_polarity: The polarity mode of a given run.
+    Usually only one value SHOULD be given here except for the case of
+    mixed polarity runs.
+    hash: Hash value of the corresponding external MS data file defined
+    in ms_run[1-n]-location. If ms_run[1-n]-hash is present, ms_run[1-n]-hash_method
+    SHOULD also be present.\nhash_method: A parameter specifying the hash methods
+    used to generate the String in ms_run[1-n]-hash.
+    Specifics of the hash method used MAY follow the definitions of the mzML format.
+    If ms_run[1-n]-hash is present, ms_run[1-n]-hash_method SHOULD also be present.
+    """
+
     name: Annotated[
         Optional[str],
         Field(
@@ -457,11 +503,7 @@ class MsRun(IdentifiableModel):
         Optional[str],
         Field(
             description="The msRun's location URI.",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(
-                    required=True, value_constraint="any-url"
-                )
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     instrument_ref: Annotated[
@@ -516,43 +558,45 @@ class MsRun(IdentifiableModel):
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
-
-    parameters: Annotated[
+    parameter: Annotated[
         Optional[List[ExtendedParameter]],
         Field(
-            description="Additional parameters of the assay, separated by bars.",
-            json_schema_extra=MetadataSerialization(
-                list_concatenation_str="|"
-            ).model_dump(),
+            description="Additional user or cv parameters.",
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
 
 
-class Assay(IdentifiableModel):
+class Assay(IdentifiableModel, CustomParameterContainerModel):
+    """Specification of assay.
+    (empty) name: A name for each assay, to serve as a list of the assays
+    that MUST be reported in the following tables.
+    custom: Additional custom parameters or values for a given assay.
+    external_uri: An external reference uri to further information about the assay,
+    for example via a reference to an object within an ISA-TAB file.
+    sample_ref: An association from a given assay to the sample analysed.
+    ms_run_ref: An association from a given assay to the source MS run. All assays
+    MUST reference exactly one ms_run unless a workflow with pre-fractionation
+    is being encoded, in which case each assay MUST reference n ms_runs
+    where n fractions have been collected.
+    Multiple assays SHOULD reference the same ms_run
+    to capture multiplexed experimental designs.
+    """
+
     name: Annotated[
         Optional[str],
         Field(
             description="The assay name.",
             json_schema_extra=MetadataSerialization(
                 object_level_value=True,
-                validation_policy=ValidationPolicy(required=True),
             ).model_dump(),
         ),
     ] = None
-    custom: Annotated[
-        Optional[List[Parameter]],
-        Field(
-            description="Additional user or cv parameters.",
-            json_schema_extra=MetadataSerialization().model_dump(),
-        ),
-    ] = []
     external_uri: Annotated[
         Optional[str],
         Field(
             description="An external URI to further information about this assay.",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(value_constraint="any-url"),
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     sample_ref: Annotated[
@@ -572,9 +616,6 @@ class Assay(IdentifiableModel):
             json_schema_extra=MetadataSerialization(
                 referenced_field_name="ms_run",
                 list_concatenation_str="|",
-                validation_policy=ValidationPolicy(
-                    required=True, minimum=1, value_constraint="non-negative-integer"
-                ),
             ).model_dump(),
         ),
     ] = None
@@ -582,75 +623,75 @@ class Assay(IdentifiableModel):
         Optional[List[int]],
         Field(
             description="The protocol(s) referenced by this assay.",
+            examples=["MTD\tassay[1]-protocol_ref\tprotocol[1]| protocol[2]"],
             json_schema_extra=MetadataSerialization(
                 referenced_field_name="protocol",
                 list_concatenation_str="|",
-                validation_policy=ValidationPolicy(
-                    value_constraint="non-negative-integer"
-                ),
             ).model_dump(),
         ),
     ] = []
-    parameters: Annotated[
+    parameter: Annotated[
         Optional[List[ExtendedParameter]],
         Field(
             description="Additional parameters of the assay, separated by bars.",
-            json_schema_extra=MetadataSerialization(
-                list_concatenation_str="|"
-            ).model_dump(),
+            examples=[
+                "MTD\tassay[1]-parameter[1]\t[MS, MS:1000031, instrument model, "
+                "[MS, MS:1000449, LTQ Orbitrap,]]"
+            ],
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
 
 
-class CV(IdentifiableModel):
+class CV(IdentifiableModel, CustomParameterContainerModel):
+    """Specification of controlled vocabularies.
+    label: A string describing the labels of the controlled vocabularies/ontologies
+    used in the mzTab file as a short-hand e.g. 'MS' for PSI-MS.
+    full_name: A string describing the full names of the controlled
+    vocabularies/ontologies used in the mzTab file.
+    version: A string describing the version of the controlled vocabularies/ontologies
+    used in the mzTab file.
+    uri: A string containing the URIs of the controlled vocabularies/ontologies used in
+    the mzTab file.
+    """
+
     label: Annotated[
         Optional[str],
         Field(
             description="The abbreviated CV label.",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(required=True),
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     full_name: Annotated[
         Optional[str],
         Field(
             description="The full name of this CV, for humans.",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(required=True),
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     version: Annotated[
         Optional[str],
         Field(
             description="The CV version used when the file was generated.",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(required=True),
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     uri: Annotated[
         Optional[str],
         Field(
             description="A URI to the CV definition.",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(
-                    required=True, value_constraint="any-url"
-                ),
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
 
 
-class Database(IdentifiableModel):
+class Database(IdentifiableModel, CustomParameterContainerModel):
     param: Annotated[
         Parameter,
         Field(
             description="The database name.",
             json_schema_extra=MetadataSerialization(
                 object_level_value=True,
-                validation_policy=ValidationPolicy(required=True),
             ).model_dump(),
         ),
     ] = None
@@ -659,11 +700,7 @@ class Database(IdentifiableModel):
         Field(
             description="The prefix used in the “identifier” column of data tables. "
             "For the 'no database' case 'null' must be used.",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=(
-                    ValidationPolicy(required=True, enforcement_level="recommended")
-                )
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     version: Annotated[
@@ -673,9 +710,7 @@ class Database(IdentifiableModel):
             "has been performed. This may be a formal version number "
             "e.g. “1.4.1”, a date of access “2016-10-27” (ISO-8601 format) "
             "or “Unknown” if there is no suitable version that can be annotated.",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(required=True),
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     uri: Annotated[
@@ -683,12 +718,7 @@ class Database(IdentifiableModel):
         Field(
             description="The URI to the database. "
             "For the “no database” case, 'null' must be reported.",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(
-                    required=True,
-                    enforcement_level="recommended",
-                )
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
 
@@ -704,20 +734,49 @@ class Publication(IdentifiableModel):
             json_schema_extra=MetadataSerialization(
                 object_level_value=True,
                 list_concatenation_str="|",
-                validation_policy=ValidationPolicy(required=True, minimum=1),
             ).model_dump(),
         ),
     ] = None
 
 
-class StudyVariableGroup(IdentifiableModel):
+class StudyVariableGroup(IdentifiableModel, CustomParameterContainerModel):
+    """Specification of study_variable_group.
+    (empty) name/parameter: A parameter defining the group to which study
+    variables belong. This allows grouping of related study variables that belong to
+    the same experimental design factor in multi-factorial designs.
+    The parameter can be either a CV Parameter
+    (e.g., [OBI, OBI:0001667, organism development stage, ])
+    or a user-defined parameter (e.g., [,,sex,]).
+    For software that does not capture study variables,
+    a single study_variable_group MUST be reported,
+    linking to the single study variable, and MUST have the identifier `undefined`.
+    Added in mzTab-M 2.1.
+    description: A textual description of the study variable group.
+    type: The statistical type of the group variable, which determines how the values
+    should be interpreted in a statistical analysis context.
+    The type MUST be a term from the STATO ontology, and SHOULD be one of
+    [STATO, STATO:0000252, categorical variable],
+    [STATO, STATO:0000228, ordinal variable],
+    or [STATO, STATO:0000251, continuous variable].
+    datatype: The datatype of the group variable, used to disambiguate how the
+    associated values are encoded and parsed. Optional, but producers SHOULD provide it
+    to simplify interpretation by downstream consumers.
+    Supported values are xsd:string, xsd:integer, xsd:decimal, xsd:boolean,
+    xsd:date, xsd:time, xsd:dateTime, xsd:anyURI, and Parameter
+    (for values reported as user-defined or CV Parameters).
+    Date, time and dateTime values MUST be encoded in ISO 8601 format.
+    Writers MUST ensure that all study_variable values linked to the same
+    study_variable_group share the declared datatype and reporting convention.
+    unit: An optional parameter specifying the unit of
+    the study variable group (e.g., day, hour, concentration, etc.).
+    """
+
     name: Annotated[
         Optional[Parameter],
         Field(
             description="The study variable group name.",
             json_schema_extra=MetadataSerialization(
-                object_level_value=True,
-                validation_policy=ValidationPolicy(required=True),
+                object_level_value=True
             ).model_dump(),
         ),
     ] = None
@@ -739,15 +798,18 @@ class StudyVariableGroup(IdentifiableModel):
     ] = None
     datatype: Annotated[
         Optional[
-            Literal[
-                "xsd:string",
-                "xsd:integer",
-                "xsd:decimal",
-                "xsd:boolean",
-                "xsd:date",
-                "xsd:time",
-                "xsd:dateTime",
-                "xsd:anyURI",
+            Union[
+                Literal[
+                    "xsd:string",
+                    "xsd:integer",
+                    "xsd:decimal",
+                    "xsd:boolean",
+                    "xsd:date",
+                    "xsd:time",
+                    "xsd:dateTime",
+                    "xsd:anyURI",
+                ],
+                Parameter,
             ]
         ],
         Field(
@@ -765,14 +827,35 @@ class StudyVariableGroup(IdentifiableModel):
     ] = None
 
 
-class StudyVariable(IdentifiableModel):
+class StudyVariable(IdentifiableModel, CustomParameterContainerModel):
+    """Specification of study_variable.
+    (empty) name: A name for each study variable (experimental condition or factor),
+    to serve as a list of the study variables that MUST be reported in the following
+    tables. For software that does not capture study variables,
+    a single study variable MUST be reported, linking to all assays.
+    This single study variable MUST have the identifier “undefined“.
+    assay_refs: Bar-separated references to the IDs of assays grouped
+    in the study variable.
+    average_function: The function used to calculate the study variable quantification
+    value and the operation used is not arithmetic mean (default)
+    e.g. “geometric mean”, “median”. The 1-n refers to different study variables.
+    variation_function: The function used to calculate
+    the study variable quantification variation value if it is reported
+    and the operation used is not coefficient of variation (default)
+    e.g. “standard error”.
+    description: A textual description of the study variable.
+    """
+
     name: Annotated[
-        Optional[str],
+        Optional[Union[str, Parameter]],
         Field(
-            description="The study variable name.",
+            description="The study variable value. Encoded according to the datatype "
+            "declared on the referenced study_variable_group: either a literal value "
+            "(for xsd:* datatypes) "
+            "or a Parameter (for the Parameter datatype, "
+            "e.g. `[NO, NO:12345, Male,]` or `[,,Male,]`).",
             json_schema_extra=MetadataSerialization(
                 object_level_value=True,
-                validation_policy=ValidationPolicy(required=True),
             ).model_dump(),
         ),
     ] = None
@@ -782,9 +865,6 @@ class StudyVariable(IdentifiableModel):
             description="The study variable group this study variable belongs to.",
             json_schema_extra=MetadataSerialization(
                 referenced_field_name="study_variable_group",
-                validation_policy=ValidationPolicy(
-                    value_constraint="non-negative-integer"
-                ),
             ).model_dump(),
         ),
     ] = None
@@ -795,9 +875,6 @@ class StudyVariable(IdentifiableModel):
             json_schema_extra=MetadataSerialization(
                 referenced_field_name="assay",
                 list_concatenation_str="|",
-                validation_policy=ValidationPolicy(
-                    value_constraint="non-negative-integer"
-                ),
             ).model_dump(),
         ),
     ] = None
@@ -808,9 +885,6 @@ class StudyVariable(IdentifiableModel):
             json_schema_extra=MetadataSerialization(
                 referenced_field_name="ms_run",
                 list_concatenation_str="|",
-                validation_policy=ValidationPolicy(
-                    value_constraint="non-negative-integer"
-                ),
             ).model_dump(),
         ),
     ] = None
@@ -841,30 +915,30 @@ class StudyVariable(IdentifiableModel):
             json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
-    factors: Annotated[
-        Optional[List[Parameter]],
-        Field(
-            description="Parameters indicating which factors were used "
-            "for the assays referenced by this study variable, and at which levels.",
-            json_schema_extra=MetadataSerialization(
-                list_concatenation_str="|"
-            ).model_dump(),
-        ),
-    ] = None
 
 
 class SpectraReference(MzTabSerializableModel, CustomSerializer):
+    """Reference to a spectrum in a spectrum file, for example a fragmentation spectrum
+    has been used to support the identification. If a separate spectrum file has been
+    used for fragmentation spectrum, this MUST be reported in the metadata section
+    as additional ms_runs. The reference must be in the format
+    ms_run[1-n]:{SPECTRA_REF} where SPECTRA_REF MUST follow the format defined in 5.2
+    (including references to chromatograms where these are used to
+    inform identification). Multiple spectra MUST be referenced
+    using a | delimited list for the (rare) cases in which search engines have combined
+    or aggregated multiple spectra in advance of the search to make identifications.
+
+    If a fragmentation spectrum has not been used, the value should indicate the ms_run
+    to which is identification is mapped e.g. “ms_run[1]”.
+    """
+
     ms_run_ref: Annotated[
         Optional[int],
         Field(
             validation_alias="ms_run",
-            # alias="ms_run_ref",
+            serialization_alias="ms_run",
             description="Reference to MsRun",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(
-                    required=True, value_constraint="positive-integer"
-                )
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     reference: Annotated[
@@ -872,9 +946,7 @@ class SpectraReference(MzTabSerializableModel, CustomSerializer):
         Field(
             description="The (vendor-dependent) reference string "
             "to the actual mass spectrum.",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(required=True)
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
 
@@ -919,9 +991,7 @@ class ColumnParameterMapping(
         Optional[str],
         Field(
             description="The fully qualified target column name.",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(required=True)
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     param: Annotated[
@@ -930,7 +1000,6 @@ class ColumnParameterMapping(
             description="The parameter defining the unit.",
             json_schema_extra=MetadataSerialization(
                 object_level_value=True,
-                validation_policy=ValidationPolicy(required=True),
             ).model_dump(),
         ),
     ] = None
@@ -991,24 +1060,17 @@ class OptionalTableColumn(abc.ABC):
 
 class OptColumnMapping(MzTabSerializableModel, OptionalTableColumn):
     identifier: Annotated[
-        Union[None, Parameter, str],
+        Union[None, str],
         Field(
             description="The fully qualified column name.",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(
-                    required=True,
-                    pattern=r"^global|ms_run\[\d+\]|assay\[\d+\]|study_variable\[\d+\]",
-                )
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     param: Annotated[
         Optional[Parameter],
         Field(
             description="The fully qualified column parameter.",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(required=True)
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     value: Annotated[
@@ -1020,7 +1082,7 @@ class OptColumnMapping(MzTabSerializableModel, OptionalTableColumn):
     ] = None
 
     def get_header(self) -> str:
-        if self.param and self.param.cv_accession:
+        if self.param and self.param.cv_accession and self.param.cv_label:
             return (
                 f"opt_{self.identifier}_cv_{self.param.cv_accession}_{self.param.name}"
             )
@@ -1046,9 +1108,7 @@ class Comment(MzTabSerializableModel, CustomSerializer):
         str,
         Field(
             description="Comment prefix",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(required=True, pattern=r"COM")
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = "COM"
 
@@ -1056,9 +1116,7 @@ class Comment(MzTabSerializableModel, CustomSerializer):
         Optional[str],
         Field(
             description="message",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(required=True)
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = ""
 
@@ -1066,34 +1124,9 @@ class Comment(MzTabSerializableModel, CustomSerializer):
         Optional[int],
         Field(
             description="line number",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(value_constraint="positive-integer")
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
 
     def to_tsv(self, context: SerializationContext) -> str:
         return f"{self.prefix}\t{self.msg}"
-
-
-__all__ = [
-    "AdductIon",
-    "Parameter",
-    "Instrument",
-    "SampleProcessing",
-    "Software",
-    "PublicationItem",
-    "Contact",
-    "Uri",
-    "Sample",
-    "MsRun",
-    "Assay",
-    "CV",
-    "Database",
-    "Publication",
-    "StudyVariable",
-    "SpectraReference",
-    "ColumnParameterMapping",
-    "OptColumnMapping",
-    "Comment",
-]

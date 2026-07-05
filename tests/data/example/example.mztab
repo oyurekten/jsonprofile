@@ -183,7 +183,7 @@ MTD	small_molecule-identification_reliability	[MS, MS:1002896, compound identifi
 MTD	custom[1]	[, , blood metabolome, ]	
 MTD	custom[2]	[CHMO, CHMO:0000575, tandem mass spectrometry, ]	
 MTD	custom[3]	[CHMO, CHMO:0000796, high-performance liquid chromatography-mass spectrometry, ]	
-MTD	custom[4]	[CHMO, NCIT:C25713, Variation, ]
+MTD	custom[4]	[NCIT, NCIT:C25713, Variation, ]
 MTD	custom[5]	[, , untargeted metabolites, ]	
 SMH	SML_ID	SMF_ID_REFS	database_identifier	chemical_formula	smiles	inchi	chemical_name	uri	theoretical_neutral_mass	adduct_ions	reliability	best_id_confidence_measure	best_id_confidence_value	abundance_assay[1]	abundance_assay[2]	abundance_assay[3]	abundance_assay[4]	abundance_assay[5]	abundance_assay[6]	abundance_assay[7]	abundance_assay[8]	abundance_assay[9]	abundance_assay[10]	abundance_assay[11]	abundance_assay[12]	abundance_study_variable[1]	abundance_variation_study_variable[1]	abundance_study_variable[2]	abundance_variation_study_variable[2]	abundance_study_variable[3]	abundance_variation_study_variable[3]	abundance_study_variable[4]	abundance_variation_study_variable[4]
 SML	1	1	CHEBI:16761	C10H15N5O10P2	Nc1ncnc2n(cnc12)[C@@H]1O[C@H](COP(O)(=O)OP(O)(O)=O)[C@@H](O)[C@H]1O	"InChI=1S/C10H15N5O10P2/c11-8-5-9(13-2-12-8)15(3-14-5)10-7(17)6(16)4(24-10)1-23-27(21,22)25-26(18,19)20/h2-4,6-7,10,16-17H,1H2,(H,21,22)(H2,11,12,13)(H2,18,19,20)/t4-,6-,7-,10-/m1/s1"	ADP	null	428.03564	[M+H]+	1	[MS,MS:1003306,shared peak count,]	1	1.00E+08	104955987	9.97E+07	6.65E+07	5.96E+07	6.40E+07	null	null	null	null	null	null	null	null	null	null	null	null	null	null

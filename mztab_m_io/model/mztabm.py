@@ -1,16 +1,15 @@
-import json
 import pathlib
 import traceback
 from functools import partial
 from pathlib import Path
 from typing import Annotated, Any, Callable, List, Literal, Optional, Tuple
 
+import orjson
 import yaml
 from pydantic import Field
 
 from mztab_m_io.model.common import Comment
-from mztab_m_io.model.mztabm_parser_utils import check_ids, parse_tsv_file, update_ids
-from mztab_m_io.model.mztabm_validation import check_validation_policies, cross_check
+from mztab_m_io.model.mztabm_parser_utils import parse_tsv_file, update_ids
 from mztab_m_io.model.section.mtd import Metadata
 from mztab_m_io.model.section.sme import SmallMoleculeEvidence
 from mztab_m_io.model.section.smf import SmallMoleculeFeature
@@ -20,7 +19,6 @@ from mztab_m_io.model.serialization import (
     MetadataSerialization,
     MzTabSerializableModel,
     SerializationContext,
-    ValidationPolicy,
 )
 from mztab_m_io.model.validation import (
     Category,
@@ -31,8 +29,7 @@ from mztab_m_io.model.validation import (
 
 
 class MzTabM(MzTabSerializableModel, CustomSerializer):
-    """
-        mzTab-M is intended as a reporting standard for quantitative results
+    """mzTab-M is intended as a reporting standard for quantitative results
         from metabolomics/lipodomics approaches.
 
         This format is further intended to provide local LIMS systems
@@ -72,7 +69,6 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
             description="The metadata section contains general information "
             "about the mztab file content.",
             json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(required=True),
                 mztab_example="MTD\tmzTab-version\t2.0.0-M\nMTD\tmzTab-ID\tMTBL1234\n"
                 "MTD\ttitle\tEffects of Rapamycin on metabolite profile\n...\n",
             ).model_dump(),
@@ -99,11 +95,7 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
             "in the Small Molecule Feature section.  "
             "The order of columns MUST follow the order specified below.  "
             "All columns are MANDATORY except for “opt_” columns. ",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(
-                    required=True, minimum=1, enforcement_level="recommended"
-                )
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     small_molecule_feature: Annotated[
@@ -126,11 +118,7 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
             "MUST be reported using “null”.  "
             "The order of columns MUST follow the order specified below.  "
             "All columns are MANDATORY except for “opt_” columns. ",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(
-                    required=True, minimum=1, enforcement_level="recommended"
-                )
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     small_molecule_evidence: Annotated[
@@ -154,11 +142,7 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
             "MUST be reported using “null”.  "
             "The order of columns MUST follow the order specified below.  "
             "All columns are MANDATORY except for “opt_” columns. ",
-            json_schema_extra=MetadataSerialization(
-                validation_policy=ValidationPolicy(
-                    required=True, minimum=1, enforcement_level="recommended"
-                )
-            ).model_dump(),
+            json_schema_extra=MetadataSerialization().model_dump(),
         ),
     ] = None
     comment: Annotated[
@@ -195,19 +179,16 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
         self, context: Optional[ValidationContext] = None
     ) -> ValidationContext:
         if not context:
-            context = ValidationContext(messages=[], source_format="json")
+            context = ValidationContext(source_format="json")
         self.post_process_model(self, context)
-        # cross_check(self, context.messages)
-        # check_validation_policies([], self, context.messages)
         return context
 
     @classmethod
     def post_process_model(cls, model: "MzTabM", context: ValidationContext):
         if context.auto_complete_ids:
             update_ids(model)
-        check_ids(model, [], context.messages)
-        cross_check(model, context.messages)
-        check_validation_policies([], model, context.messages)
+        # check_ids(model, [], context.messages)
+        # cross_check(model, context.messages)
 
     @classmethod
     def from_dict(
@@ -217,7 +198,7 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
         source_format: Literal["tsv", "json", "yaml"] = "json",
     ) -> Tuple["MzTabM", ValidationContext]:
         if not context:
-            context = ValidationContext(source_format=source_format, messages=[])
+            context = ValidationContext(source_format=source_format)
         model = cls.model_validate(data, context=context, by_alias=True)
         cls.post_process_model(model, context)
         return model, context
@@ -234,12 +215,24 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
         )
 
     @classmethod
+    def _load_with_orjson(cls, io: Any):
+        if isinstance(io, (bytes, str)):
+            data = io
+        if hasattr(io, "read"):
+            data = io.read()
+        elif isinstance(io, Path):
+            data = io.read_bytes()
+        else:
+            raise ValueError("type(io) is not supported.")
+        return orjson.loads(data)
+
+    @classmethod
     def from_json_file(
         cls, io: Any, context: Optional[ValidationContext] = None
     ) -> Tuple["MzTabM", ValidationContext]:
         return cls._from_file(
             io,
-            loader=json.load,
+            loader=cls._load_with_orjson,
             source_format="json",
             context=context,
         )
@@ -314,7 +307,7 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
         context: Optional[SerializationContext] = None,
     ) -> SerializationContext:
         if not context:
-            context = SerializationContext(source_format=source_format, messages=[])
+            context = SerializationContext(convert_to=source_format)
         try:
             with Path(file_path).open("w") as f:
                 f.write(serializer(context))
@@ -323,8 +316,9 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
             context.success = False
             context.messages.append(
                 MzTabMessage(
+                    code="D-1012",
                     message_type=MessageType.ERROR,
-                    category=Category.FORMAT,
+                    category=Category.PARSE,
                     source="output file",
                     message=str(e),
                 )
@@ -353,7 +347,7 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
         context: Optional[ValidationContext] = None,
     ) -> Tuple["MzTabM", ValidationContext]:
         if not context:
-            context = ValidationContext(source_format=source_format, messages=[])
+            context = ValidationContext(source_format=source_format)
 
         try:
             if hasattr(io, "read"):
@@ -371,6 +365,7 @@ class MzTabM(MzTabSerializableModel, CustomSerializer):
             traceback.print_exc()
             context.messages.append(
                 MzTabMessage(
+                    code="D-1012",
                     message_type=MessageType.ERROR,
                     category=Category.FORMAT,
                     source="input file",

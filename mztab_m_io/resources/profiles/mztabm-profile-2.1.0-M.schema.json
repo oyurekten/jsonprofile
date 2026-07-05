@@ -1,0 +1,4752 @@
+{
+  "$defs": {
+    "BaseCvTerm": {
+      "description": "A lightweight reference to a controlled vocabulary (CV) term.\n\nUsed within constraint definitions to identify specific CV terms\nby their label, accession, or human-readable name.",
+      "properties": {
+        "cv_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "",
+          "description": "Short identifier of the controlled vocabulary (e.g. 'MS' for PSI-MS, 'UO' for Unit Ontology).",
+          "title": "Cv Label"
+        },
+        "cv_accession": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "",
+          "description": "Accession of the term in CURIE format (e.g. 'MS:1000073').",
+          "title": "Cv Accession"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "",
+          "description": "Human-readable name of the parameter term (e.g. 'electrospray ionization').",
+          "title": "Name"
+        }
+      },
+      "title": "BaseCvTerm",
+      "type": "object"
+    },
+    "BooleanConstraint": {
+      "description": "Validates that a value is boolean.",
+      "properties": {
+        "validator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label of the validator that should evaluate this constraint. If omitted, the default validator is used.",
+          "title": "Validator"
+        },
+        "type": {
+          "default": "boolean",
+          "description": "Constraint type discriminator.",
+          "title": "Type",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional constraint name used to select a custom checker.",
+          "title": "Name"
+        },
+        "precondition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Condition that must pass before this constraint is applied.",
+          "title": "Precondition"
+        },
+        "json_path": {
+          "anyOf": [
+            {
+              "description": "JSONPath expression used to select values in a JSON document.",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative JSONPath used to select the value passed to this constraint. If omitted, the current value is used.",
+          "title": "Json Path"
+        },
+        "default_precondition_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Evaluation result to use when the precondition has not input to evaluate. If omitted, a no input precondition is treated as valid.",
+          "title": "Default Precondition Evaluation"
+        },
+        "negated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the constraint should be negated. If set to true, the constraint is inverted.",
+          "title": "Negated"
+        },
+        "null_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that should be treated as null.",
+          "title": "Null Values"
+        },
+        "exceptional_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that bypass this constraint. If the input value is in this list, the constraint evaluates as valid.",
+          "title": "Exceptional Values"
+        },
+        "exceptional_false_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "String values that should be interpreted as false, such as '0' or 'no'. Values should be lowercase.",
+          "title": "Exceptional False Values"
+        },
+        "exceptional_true_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "String values that should be interpreted as true, such as '1' or 'yes'. Values should be lowercase.",
+          "title": "Exceptional True Values"
+        }
+      },
+      "title": "BooleanConstraint",
+      "type": "object"
+    },
+    "CVListConstraint": {
+      "description": "Restricts CV terms to those from specific controlled vocabularies.\n\nThe ``allowed_cv_list`` field specifies which CV namespace labels are\nallowed (e.g. ``['MS', 'UO']``).",
+      "properties": {
+        "validator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label of the validator that should evaluate this constraint. If omitted, the default validator is used.",
+          "title": "Validator"
+        },
+        "type": {
+          "default": "allowed-cv-list",
+          "description": "Constraint type discriminator.",
+          "title": "Type",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional constraint name used to select a custom checker.",
+          "title": "Name"
+        },
+        "precondition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Condition that must pass before this constraint is applied.",
+          "title": "Precondition"
+        },
+        "json_path": {
+          "anyOf": [
+            {
+              "description": "JSONPath expression used to select values in a JSON document.",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative JSONPath used to select the value passed to this constraint. If omitted, the current value is used.",
+          "title": "Json Path"
+        },
+        "default_precondition_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Evaluation result to use when the precondition has not input to evaluate. If omitted, a no input precondition is treated as valid.",
+          "title": "Default Precondition Evaluation"
+        },
+        "negated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the constraint should be negated. If set to true, the constraint is inverted.",
+          "title": "Negated"
+        },
+        "null_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "String values that should be treated as null CV terms.",
+          "title": "Null Values"
+        },
+        "exceptional_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/BaseCvTerm"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "CV terms that bypass this constraint.",
+          "title": "Exceptional Values"
+        },
+        "allow_user_defined_terms": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": false,
+          "description": "Whether user-defined terms (empty cv_label and cv_accession) are accepted alongside CV terms.",
+          "title": "Allow User Defined Terms"
+        },
+        "is_cv_term_value_required": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the CV term's value slot must be populated. When True, value MUST not be empty or null.",
+          "title": "Is Cv Term Value Required"
+        },
+        "allowed_cv_list": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "List of allowed CV namespace labels (e.g. ['MS', 'UO', 'PRIDE']). Use only uppercase letters. None means any CV namespace is accepted.",
+          "title": "Allowed Cv List"
+        }
+      },
+      "title": "CVListConstraint",
+      "type": "object"
+    },
+    "CVTermConstraint": {
+      "description": "Base constraint for values that must be controlled vocabulary terms.\n\nSubclasses refine which CV terms are acceptable (by list, by parent\nterm, or by CV namespace). This class captures the common options\nshared across all CV term constraints.",
+      "properties": {
+        "validator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label of the validator that should evaluate this constraint. If omitted, the default validator is used.",
+          "title": "Validator"
+        },
+        "type": {
+          "default": "cv-term",
+          "description": "Constraint type discriminator.",
+          "title": "Type",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional constraint name used to select a custom checker.",
+          "title": "Name"
+        },
+        "precondition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Condition that must pass before this constraint is applied.",
+          "title": "Precondition"
+        },
+        "json_path": {
+          "anyOf": [
+            {
+              "description": "JSONPath expression used to select values in a JSON document.",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative JSONPath used to select the value passed to this constraint. If omitted, the current value is used.",
+          "title": "Json Path"
+        },
+        "default_precondition_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Evaluation result to use when the precondition has not input to evaluate. If omitted, a no input precondition is treated as valid.",
+          "title": "Default Precondition Evaluation"
+        },
+        "negated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the constraint should be negated. If set to true, the constraint is inverted.",
+          "title": "Negated"
+        },
+        "null_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "String values that should be treated as null CV terms.",
+          "title": "Null Values"
+        },
+        "exceptional_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/BaseCvTerm"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "CV terms that bypass this constraint.",
+          "title": "Exceptional Values"
+        },
+        "allow_user_defined_terms": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether user-defined terms (empty cv_label and cv_accession) are accepted alongside CV terms.",
+          "title": "Allow User Defined Terms"
+        },
+        "is_cv_term_value_required": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the CV term's value slot must be populated. When True, value MUST not be empty or null.",
+          "title": "Is Cv Term Value Required"
+        }
+      },
+      "title": "CVTermConstraint",
+      "type": "object"
+    },
+    "CVTermEnumConstraint": {
+      "description": "Restricts the value to a specific set of CV terms.\n\nUnlike ``CVListConstraint`` which filters by CV namespace, this\nconstraint enumerates the exact terms that are acceptable.",
+      "properties": {
+        "validator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label of the validator that should evaluate this constraint. If omitted, the default validator is used.",
+          "title": "Validator"
+        },
+        "type": {
+          "default": "cv-term-enum",
+          "description": "Constraint type discriminator.",
+          "title": "Type",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional constraint name used to select a custom checker.",
+          "title": "Name"
+        },
+        "precondition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Condition that must pass before this constraint is applied.",
+          "title": "Precondition"
+        },
+        "json_path": {
+          "anyOf": [
+            {
+              "description": "JSONPath expression used to select values in a JSON document.",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative JSONPath used to select the value passed to this constraint. If omitted, the current value is used.",
+          "title": "Json Path"
+        },
+        "default_precondition_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Evaluation result to use when the precondition has not input to evaluate. If omitted, a no input precondition is treated as valid.",
+          "title": "Default Precondition Evaluation"
+        },
+        "negated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the constraint should be negated. If set to true, the constraint is inverted.",
+          "title": "Negated"
+        },
+        "null_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "String values that should be treated as null CV terms.",
+          "title": "Null Values"
+        },
+        "exceptional_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/BaseCvTerm"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "CV terms that bypass this constraint.",
+          "title": "Exceptional Values"
+        },
+        "allow_user_defined_terms": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether user-defined terms (empty cv_label and cv_accession) are accepted alongside CV terms.",
+          "title": "Allow User Defined Terms"
+        },
+        "is_cv_term_value_required": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the CV term's value slot must be populated. When True, value MUST not be empty or null.",
+          "title": "Is Cv Term Value Required"
+        },
+        "allowed_cv_terms": {
+          "description": "Explicit list of allowed CV terms. Each entry identifies a term by label, accession, or name.",
+          "items": {
+            "$ref": "#/$defs/BaseCvTerm"
+          },
+          "minItems": 1,
+          "title": "Allowed Cv Terms",
+          "type": "array"
+        },
+        "exceptional_cv_list": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "CV namespace labels that bypass this enum constraint.",
+          "title": "Exceptional Cv List"
+        }
+      },
+      "required": [
+        "allowed_cv_terms"
+      ],
+      "title": "CVTermEnumConstraint",
+      "type": "object"
+    },
+    "CollectionConstraint": {
+      "description": "Validates collection size and item matches against reference values.",
+      "properties": {
+        "validator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label of the validator that should evaluate this constraint. If omitted, the default validator is used.",
+          "title": "Validator"
+        },
+        "type": {
+          "default": "items-count",
+          "description": "Unique discriminator identifying the constraint type.",
+          "title": "Type",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional constraint name used to select a custom checker.",
+          "title": "Name"
+        },
+        "precondition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Condition that must pass before this constraint is applied.",
+          "title": "Precondition"
+        },
+        "json_path": {
+          "anyOf": [
+            {
+              "description": "JSONPath expression used to select values in a JSON document.",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative JSONPath used to select the value passed to this constraint. If omitted, the current value is used.",
+          "title": "Json Path"
+        },
+        "default_precondition_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Evaluation result to use when the precondition has not input to evaluate. If omitted, a no input precondition is treated as valid.",
+          "title": "Default Precondition Evaluation"
+        },
+        "negated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the constraint should be negated. If set to true, the constraint is inverted.",
+          "title": "Negated"
+        },
+        "null_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that should be treated as null.",
+          "title": "Null Values"
+        },
+        "exceptional_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that bypass this constraint. If the input value is in this list, the constraint evaluates as valid.",
+          "title": "Exceptional Values"
+        },
+        "min_occurs": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Minimum number of items allowed in the collection.",
+          "title": "Min Occurs"
+        },
+        "max_occurs": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum number of items allowed in the collection.",
+          "title": "Max Occurs"
+        },
+        "item_value_jsonpath_list": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative JSONPath expressions used to select values from each collection item before comparing against reference values. If omitted, the serialized collection item is compared.",
+          "title": "Item Value Jsonpath List"
+        },
+        "match_reference_values": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "boolean"
+              },
+              "type": "array"
+            },
+            {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/BaseCvTerm"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Reference values to compare with collection item values.",
+          "title": "Match Reference Values"
+        },
+        "min_match": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Minimum number of matching items required.",
+          "title": "Min Match"
+        },
+        "max_match": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum number of matching items allowed.",
+          "title": "Max Match"
+        },
+        "min_referenced_value_match": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Minimum number of reference values that must match at least one collection item.",
+          "title": "Min Referenced Value Match"
+        },
+        "max_reference_value_match": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum number of reference values that may match collection items.",
+          "title": "Max Reference Value Match"
+        }
+      },
+      "title": "CollectionConstraint",
+      "type": "object"
+    },
+    "ConstraintGroup": {
+      "description": "Combines multiple constraints using boolean or valid-count logic.",
+      "properties": {
+        "validator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label of the validator that should evaluate this constraint. If omitted, the default validator is used.",
+          "title": "Validator"
+        },
+        "type": {
+          "default": "group",
+          "description": "Constraint type discriminator.",
+          "title": "Type",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional constraint name used to select a custom checker.",
+          "title": "Name"
+        },
+        "precondition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Condition that must pass before this constraint is applied.",
+          "title": "Precondition"
+        },
+        "json_path": {
+          "anyOf": [
+            {
+              "description": "JSONPath expression used to select values in a JSON document.",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative JSONPath used to select the value passed to this constraint. If omitted, the current value is used.",
+          "title": "Json Path"
+        },
+        "default_precondition_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Evaluation result to use when the precondition has not input to evaluate. If omitted, a no input precondition is treated as valid.",
+          "title": "Default Precondition Evaluation"
+        },
+        "negated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the constraint should be negated. If set to true, the constraint is inverted.",
+          "title": "Negated"
+        },
+        "null_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that should be treated as null.",
+          "title": "Null Values"
+        },
+        "exceptional_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that bypass this constraint. If the input value is in this list, the constraint evaluates as valid.",
+          "title": "Exceptional Values"
+        },
+        "constraints": {
+          "description": "Constraints that belong to this group.",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/BooleanConstraint"
+              },
+              {
+                "$ref": "#/$defs/CollectionConstraint"
+              },
+              {
+                "$ref": "#/$defs/ConstraintGroup"
+              },
+              {
+                "$ref": "#/$defs/CVListConstraint"
+              },
+              {
+                "$ref": "#/$defs/CVTermConstraint"
+              },
+              {
+                "$ref": "#/$defs/CVTermEnumConstraint"
+              },
+              {
+                "$ref": "#/$defs/CustomConstraint"
+              },
+              {
+                "$ref": "#/$defs/DateTimeConstraint"
+              },
+              {
+                "$ref": "#/$defs/DecimalConstraint"
+              },
+              {
+                "$ref": "#/$defs/EmailConstraint"
+              },
+              {
+                "$ref": "#/$defs/IntegerConstraint"
+              },
+              {
+                "$ref": "#/$defs/IntegerEnumConstraint"
+              },
+              {
+                "$ref": "#/$defs/NonNegativeIntegerConstraint"
+              },
+              {
+                "$ref": "#/$defs/NotNullConstraint"
+              },
+              {
+                "$ref": "#/$defs/OpaPolicyConstraint"
+              },
+              {
+                "$ref": "#/$defs/ParentCVTermConstraint"
+              },
+              {
+                "$ref": "#/$defs/PositiveIntegerConstraint"
+              },
+              {
+                "$ref": "#/$defs/RegexConstraint"
+              },
+              {
+                "$ref": "#/$defs/StringEnumConstraint"
+              },
+              {
+                "$ref": "#/$defs/StringConstraint"
+              },
+              {
+                "$ref": "#/$defs/UriConstraint"
+              }
+            ],
+            "description": "Supported constraint definition for a profiled field."
+          },
+          "minItems": 1,
+          "title": "Constraints",
+          "type": "array"
+        },
+        "join_operator": {
+          "default": "and",
+          "description": "Boolean operator used to combine constraints.",
+          "enum": [
+            "and",
+            "or"
+          ],
+          "title": "Join Operator",
+          "type": "string"
+        },
+        "min_valid": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Minimum number of constraints that must be valid for the group to be valid.",
+          "title": "Min Valid"
+        },
+        "max_valid": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum number of constraints that may be valid for the group to be valid.",
+          "title": "Max Valid"
+        }
+      },
+      "required": [
+        "constraints"
+      ],
+      "title": "ConstraintGroup",
+      "type": "object"
+    },
+    "CustomConstraint": {
+      "description": "Runs a named custom constraint checker.",
+      "properties": {
+        "validator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label of the validator that should evaluate this constraint. If omitted, the default validator is used.",
+          "title": "Validator"
+        },
+        "type": {
+          "default": "custom",
+          "description": "Constraint type discriminator.",
+          "title": "Type",
+          "type": "string"
+        },
+        "name": {
+          "description": "Name used to resolve the custom constraint checker.",
+          "title": "Name",
+          "type": "string"
+        },
+        "precondition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Condition that must pass before this constraint is applied.",
+          "title": "Precondition"
+        },
+        "json_path": {
+          "anyOf": [
+            {
+              "description": "JSONPath expression used to select values in a JSON document.",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative JSONPath used to select the value passed to this constraint. If omitted, the current value is used.",
+          "title": "Json Path"
+        },
+        "default_precondition_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Evaluation result to use when the precondition has not input to evaluate. If omitted, a no input precondition is treated as valid.",
+          "title": "Default Precondition Evaluation"
+        },
+        "negated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the constraint should be negated. If set to true, the constraint is inverted.",
+          "title": "Negated"
+        },
+        "null_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that should be treated as null.",
+          "title": "Null Values"
+        },
+        "exceptional_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that bypass this constraint. If the input value is in this list, the constraint evaluates as valid.",
+          "title": "Exceptional Values"
+        },
+        "default_arguments": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Default arguments passed to the custom constraint checker.",
+          "title": "Default Arguments"
+        },
+        "value_jsonpath_arguments": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Mapping from argument names to relative JSONPath expressions resolved against the current value.",
+          "title": "Value Jsonpath Arguments"
+        },
+        "root_jsonpath_arguments": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Mapping from argument names to JSONPath expressions resolved against the root JSON document.",
+          "title": "Root Jsonpath Arguments"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "CustomConstraint",
+      "type": "object"
+    },
+    "CvTerm": {
+      "description": "Controlled vocabulary term with an optional user-provided value.",
+      "properties": {
+        "cv_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "",
+          "description": "Short identifier of the controlled vocabulary (e.g. 'MS' for PSI-MS, 'UO' for Unit Ontology).",
+          "title": "Cv Label"
+        },
+        "cv_accession": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "",
+          "description": "Accession of the term in CURIE format (e.g. 'MS:1000073').",
+          "title": "Cv Accession"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "",
+          "description": "Human-readable name of the controlled vocabulary term.",
+          "title": "Name"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "",
+          "description": "User-provided value associated with the term.",
+          "title": "Value"
+        }
+      },
+      "title": "CvTerm",
+      "type": "object"
+    },
+    "DateTimeConstraint": {
+      "description": "Validates that a string value represents a valid date, time,\nor datetime.\n\nWhen ``format`` is provided, the value must match that specific\npattern (e.g. ISO-8601). When omitted, ISO-8601 is accepted.",
+      "properties": {
+        "validator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label of the validator that should evaluate this constraint. If omitted, the default validator is used.",
+          "title": "Validator"
+        },
+        "type": {
+          "default": "time",
+          "description": "Constraint type discriminator.",
+          "title": "Type",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional constraint name used to select a custom checker.",
+          "title": "Name"
+        },
+        "precondition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Condition that must pass before this constraint is applied.",
+          "title": "Precondition"
+        },
+        "json_path": {
+          "anyOf": [
+            {
+              "description": "JSONPath expression used to select values in a JSON document.",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative JSONPath used to select the value passed to this constraint. If omitted, the current value is used.",
+          "title": "Json Path"
+        },
+        "default_precondition_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Evaluation result to use when the precondition has not input to evaluate. If omitted, a no input precondition is treated as valid.",
+          "title": "Default Precondition Evaluation"
+        },
+        "negated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the constraint should be negated. If set to true, the constraint is inverted.",
+          "title": "Negated"
+        },
+        "null_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that should be treated as null.",
+          "title": "Null Values"
+        },
+        "exceptional_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that bypass this constraint. If the input value is in this list, the constraint evaluates as valid.",
+          "title": "Exceptional Values"
+        },
+        "format": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Expected time/date format string (e.g. '%Y-%m-%d', '%Y-%m-%dT%H:%M:%SZ', '%H:%M:%S'). If omitted, ISO-8601 date, time, or datetime values are accepted.",
+          "title": "Format"
+        }
+      },
+      "title": "DateTimeConstraint",
+      "type": "object"
+    },
+    "DecimalConstraint": {
+      "description": "Validates that a value is a valid floating-point number.\n\nSupports optional range bounds, scientific notation control,\nand decimal precision limits.",
+      "properties": {
+        "validator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label of the validator that should evaluate this constraint. If omitted, the default validator is used.",
+          "title": "Validator"
+        },
+        "type": {
+          "default": "decimal",
+          "description": "Constraint type discriminator.",
+          "title": "Type",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional constraint name used to select a custom checker.",
+          "title": "Name"
+        },
+        "precondition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Condition that must pass before this constraint is applied.",
+          "title": "Precondition"
+        },
+        "json_path": {
+          "anyOf": [
+            {
+              "description": "JSONPath expression used to select values in a JSON document.",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative JSONPath used to select the value passed to this constraint. If omitted, the current value is used.",
+          "title": "Json Path"
+        },
+        "default_precondition_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Evaluation result to use when the precondition has not input to evaluate. If omitted, a no input precondition is treated as valid.",
+          "title": "Default Precondition Evaluation"
+        },
+        "negated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the constraint should be negated. If set to true, the constraint is inverted.",
+          "title": "Negated"
+        },
+        "null_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that should be treated as null.",
+          "title": "Null Values"
+        },
+        "exceptional_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that bypass this constraint. If the input value is in this list, the constraint evaluates as valid.",
+          "title": "Exceptional Values"
+        },
+        "minimum": {
+          "anyOf": [
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Minimum allowed value (inclusive). None means no lower bound.",
+          "title": "Minimum"
+        },
+        "maximum": {
+          "anyOf": [
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum allowed value (inclusive). None means no upper bound.",
+          "title": "Maximum"
+        },
+        "allow_scientific_notation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether scientific notation (e.g. '1.23e4') is accepted. None means no restriction.",
+          "title": "Allow Scientific Notation"
+        },
+        "min_scale": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Minimum number of digits after the decimal point. None means no minimum scale requirement.",
+          "title": "Min Scale"
+        },
+        "max_scale": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum number of digits after the decimal point. None means no maximum scale limit.",
+          "title": "Max Scale"
+        },
+        "allow_non_finite_values": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether NaN and positive or negative infinity are allowed.",
+          "title": "Allow Non Finite Values"
+        }
+      },
+      "title": "DecimalConstraint",
+      "type": "object"
+    },
+    "EmailConstraint": {
+      "description": "Validates that a string value is a well-formed email address.",
+      "properties": {
+        "validator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label of the validator that should evaluate this constraint. If omitted, the default validator is used.",
+          "title": "Validator"
+        },
+        "type": {
+          "default": "email",
+          "description": "Constraint type discriminator.",
+          "title": "Type",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional constraint name used to select a custom checker.",
+          "title": "Name"
+        },
+        "precondition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Condition that must pass before this constraint is applied.",
+          "title": "Precondition"
+        },
+        "json_path": {
+          "anyOf": [
+            {
+              "description": "JSONPath expression used to select values in a JSON document.",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative JSONPath used to select the value passed to this constraint. If omitted, the current value is used.",
+          "title": "Json Path"
+        },
+        "default_precondition_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Evaluation result to use when the precondition has not input to evaluate. If omitted, a no input precondition is treated as valid.",
+          "title": "Default Precondition Evaluation"
+        },
+        "negated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the constraint should be negated. If set to true, the constraint is inverted.",
+          "title": "Negated"
+        },
+        "null_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that should be treated as null.",
+          "title": "Null Values"
+        },
+        "exceptional_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that bypass this constraint. If the input value is in this list, the constraint evaluates as valid.",
+          "title": "Exceptional Values"
+        }
+      },
+      "title": "EmailConstraint",
+      "type": "object"
+    },
+    "EnforcementLevel": {
+      "description": "How strongly a profile requirement is enforced.",
+      "enum": [
+        "not-defined",
+        "optional",
+        "recommended",
+        "required"
+      ],
+      "title": "EnforcementLevel",
+      "type": "string"
+    },
+    "Evaluation": {
+      "description": "Evaluates a constraint against either the current value or another JSONPath.",
+      "properties": {
+        "root_value_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the evaluation JSONPath should be resolved from the root JSON document instead of the current value.",
+          "title": "Root Value Evaluation"
+        },
+        "json_path": {
+          "anyOf": [
+            {
+              "description": "JSONPath expression used to select values in a JSON document.",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "JSONPath used to select the value for this evaluation. If omitted, either the root document or current value is used depending on root_value_evaluation.",
+          "title": "Json Path"
+        },
+        "constraint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BooleanConstraint"
+            },
+            {
+              "$ref": "#/$defs/CollectionConstraint"
+            },
+            {
+              "$ref": "#/$defs/ConstraintGroup"
+            },
+            {
+              "$ref": "#/$defs/CVListConstraint"
+            },
+            {
+              "$ref": "#/$defs/CVTermConstraint"
+            },
+            {
+              "$ref": "#/$defs/CVTermEnumConstraint"
+            },
+            {
+              "$ref": "#/$defs/CustomConstraint"
+            },
+            {
+              "$ref": "#/$defs/DateTimeConstraint"
+            },
+            {
+              "$ref": "#/$defs/DecimalConstraint"
+            },
+            {
+              "$ref": "#/$defs/EmailConstraint"
+            },
+            {
+              "$ref": "#/$defs/IntegerConstraint"
+            },
+            {
+              "$ref": "#/$defs/IntegerEnumConstraint"
+            },
+            {
+              "$ref": "#/$defs/NonNegativeIntegerConstraint"
+            },
+            {
+              "$ref": "#/$defs/NotNullConstraint"
+            },
+            {
+              "$ref": "#/$defs/OpaPolicyConstraint"
+            },
+            {
+              "$ref": "#/$defs/ParentCVTermConstraint"
+            },
+            {
+              "$ref": "#/$defs/PositiveIntegerConstraint"
+            },
+            {
+              "$ref": "#/$defs/RegexConstraint"
+            },
+            {
+              "$ref": "#/$defs/StringEnumConstraint"
+            },
+            {
+              "$ref": "#/$defs/StringConstraint"
+            },
+            {
+              "$ref": "#/$defs/UriConstraint"
+            }
+          ],
+          "description": "Constraint applied during this evaluation.",
+          "title": "Constraint"
+        },
+        "default_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Evaluation result to use when the JSONPath query returns no value. If omitted, missing values are treated as valid.",
+          "title": "Default Evaluation"
+        },
+        "join_operator": {
+          "default": "and",
+          "description": "Boolean operator used when this evaluation has sub-results.",
+          "enum": [
+            "and",
+            "or"
+          ],
+          "title": "Join Operator",
+          "type": "string"
+        },
+        "min_valid": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Minimum number of sub-results that must be valid.",
+          "title": "Min Valid"
+        },
+        "max_valid": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum number of sub-results that may be valid.",
+          "title": "Max Valid"
+        }
+      },
+      "required": [
+        "constraint"
+      ],
+      "title": "Evaluation",
+      "type": "object"
+    },
+    "ExtendedCvTerm": {
+      "description": "Controlled vocabulary term whose value may be another CV term.",
+      "properties": {
+        "cv_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "",
+          "description": "Short identifier of the controlled vocabulary (e.g. 'MS' for PSI-MS, 'UO' for Unit Ontology).",
+          "title": "Cv Label"
+        },
+        "cv_accession": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "",
+          "description": "Accession of the term in CURIE format (e.g. 'MS:1000073').",
+          "title": "Cv Accession"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "",
+          "description": "Human-readable name of the controlled vocabulary term.",
+          "title": "Name"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/CvTerm"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "User-provided value associated with the term. The value may itself be represented as a controlled vocabulary term.",
+          "title": "Value"
+        }
+      },
+      "title": "ExtendedCvTerm",
+      "type": "object"
+    },
+    "FieldRequirement": {
+      "description": "Validation rules that apply to one profiled JSON field.",
+      "properties": {
+        "code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Stable requirement identifier. Use a unique code for each requirement so validation messages can be referenced and skipped reliably.",
+          "title": "Code"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Human-readable explanation of the requirement.",
+          "title": "Description"
+        },
+        "enforcement_level": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EnforcementLevel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "required",
+          "description": "Severity applied when the requirement is not satisfied.",
+          "title": "Enforcement Level"
+        },
+        "value_constraint": {
+          "anyOf": [
+            {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/BooleanConstraint"
+                },
+                {
+                  "$ref": "#/$defs/CollectionConstraint"
+                },
+                {
+                  "$ref": "#/$defs/ConstraintGroup"
+                },
+                {
+                  "$ref": "#/$defs/CVListConstraint"
+                },
+                {
+                  "$ref": "#/$defs/CVTermConstraint"
+                },
+                {
+                  "$ref": "#/$defs/CVTermEnumConstraint"
+                },
+                {
+                  "$ref": "#/$defs/CustomConstraint"
+                },
+                {
+                  "$ref": "#/$defs/DateTimeConstraint"
+                },
+                {
+                  "$ref": "#/$defs/DecimalConstraint"
+                },
+                {
+                  "$ref": "#/$defs/EmailConstraint"
+                },
+                {
+                  "$ref": "#/$defs/IntegerConstraint"
+                },
+                {
+                  "$ref": "#/$defs/IntegerEnumConstraint"
+                },
+                {
+                  "$ref": "#/$defs/NonNegativeIntegerConstraint"
+                },
+                {
+                  "$ref": "#/$defs/NotNullConstraint"
+                },
+                {
+                  "$ref": "#/$defs/OpaPolicyConstraint"
+                },
+                {
+                  "$ref": "#/$defs/ParentCVTermConstraint"
+                },
+                {
+                  "$ref": "#/$defs/PositiveIntegerConstraint"
+                },
+                {
+                  "$ref": "#/$defs/RegexConstraint"
+                },
+                {
+                  "$ref": "#/$defs/StringEnumConstraint"
+                },
+                {
+                  "$ref": "#/$defs/StringConstraint"
+                },
+                {
+                  "$ref": "#/$defs/UriConstraint"
+                }
+              ],
+              "description": "Supported constraint definition for a profiled field."
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Constraint that validates the field value.",
+          "title": "Value Constraint"
+        },
+        "match_is_required": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the target JSONPath must match at least one value. Field must be defined and value can be null, string, object, etc.",
+          "title": "Match Is Required"
+        },
+        "required_properties": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Object properties that must be present when the field value is an object.",
+          "title": "Required Properties"
+        },
+        "recommended_properties": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Object properties that should be present when the field value is an object.",
+          "title": "Recommended Properties"
+        }
+      },
+      "title": "FieldRequirement",
+      "type": "object"
+    },
+    "FieldRequirementGroup": {
+      "description": "Group of requirements combined by valid-count bounds.",
+      "properties": {
+        "code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Stable requirement identifier. Use a unique code for each requirement so validation messages can be referenced and skipped reliably.",
+          "title": "Code"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Human-readable explanation of the requirement.",
+          "title": "Description"
+        },
+        "enforcement_level": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EnforcementLevel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "required",
+          "description": "Severity applied when the requirement is not satisfied.",
+          "title": "Enforcement Level"
+        },
+        "requirements": {
+          "description": "Requirements that belong to this group.",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/FieldRequirement"
+              },
+              {
+                "$ref": "#/$defs/OpaFieldRequirement"
+              },
+              {
+                "$ref": "#/$defs/FieldRequirementGroup"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Requirements",
+          "type": "array"
+        },
+        "min_valid": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Minimum number of requirements that must be valid for the group to be true.",
+          "title": "Min Valid"
+        },
+        "max_valid": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum number of requirements that can be valid for the group to be true.",
+          "title": "Max Valid"
+        }
+      },
+      "required": [
+        "requirements"
+      ],
+      "title": "FieldRequirementGroup",
+      "type": "object"
+    },
+    "IntegerConstraint": {
+      "description": "Validates that a value is a valid integer within an optional range.\n\nUse ``PositiveIntegerConstraint`` or ``NonNegativeIntegerConstraint``\nfor common presets.",
+      "properties": {
+        "validator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label of the validator that should evaluate this constraint. If omitted, the default validator is used.",
+          "title": "Validator"
+        },
+        "type": {
+          "default": "integer",
+          "description": "Constraint type discriminator.",
+          "title": "Type",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional constraint name used to select a custom checker.",
+          "title": "Name"
+        },
+        "precondition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Condition that must pass before this constraint is applied.",
+          "title": "Precondition"
+        },
+        "json_path": {
+          "anyOf": [
+            {
+              "description": "JSONPath expression used to select values in a JSON document.",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative JSONPath used to select the value passed to this constraint. If omitted, the current value is used.",
+          "title": "Json Path"
+        },
+        "default_precondition_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Evaluation result to use when the precondition has not input to evaluate. If omitted, a no input precondition is treated as valid.",
+          "title": "Default Precondition Evaluation"
+        },
+        "negated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the constraint should be negated. If set to true, the constraint is inverted.",
+          "title": "Negated"
+        },
+        "null_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that should be treated as null.",
+          "title": "Null Values"
+        },
+        "exceptional_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that bypass this constraint. If the input value is in this list, the constraint evaluates as valid.",
+          "title": "Exceptional Values"
+        },
+        "minimum": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Minimum allowed value (inclusive). None means no lower bound.",
+          "title": "Minimum"
+        },
+        "maximum": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum allowed value (inclusive). None means no upper bound.",
+          "title": "Maximum"
+        }
+      },
+      "title": "IntegerConstraint",
+      "type": "object"
+    },
+    "IntegerEnumConstraint": {
+      "description": "Validates that an integer value is one of a fixed set of allowed options.\n\nEach option maps an integer value to a display value, integer code,\nor ``ExtendedCvTerm`` metadata.",
+      "properties": {
+        "validator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label of the validator that should evaluate this constraint. If omitted, the default validator is used.",
+          "title": "Validator"
+        },
+        "type": {
+          "default": "integer-enum",
+          "description": "Constraint type discriminator.",
+          "title": "Type",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional constraint name used to select a custom checker.",
+          "title": "Name"
+        },
+        "precondition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Condition that must pass before this constraint is applied.",
+          "title": "Precondition"
+        },
+        "json_path": {
+          "anyOf": [
+            {
+              "description": "JSONPath expression used to select values in a JSON document.",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative JSONPath used to select the value passed to this constraint. If omitted, the current value is used.",
+          "title": "Json Path"
+        },
+        "default_precondition_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Evaluation result to use when the precondition has not input to evaluate. If omitted, a no input precondition is treated as valid.",
+          "title": "Default Precondition Evaluation"
+        },
+        "negated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the constraint should be negated. If set to true, the constraint is inverted.",
+          "title": "Negated"
+        },
+        "null_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that should be treated as null.",
+          "title": "Null Values"
+        },
+        "exceptional_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that bypass this constraint. If the input value is in this list, the constraint evaluates as valid.",
+          "title": "Exceptional Values"
+        },
+        "options": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/ExtendedCvTerm"
+              }
+            ]
+          },
+          "description": "Mapping from allowed integer values to display labels, integer codes, or CV term definitions.",
+          "title": "Options",
+          "type": "object"
+        }
+      },
+      "required": [
+        "options"
+      ],
+      "title": "IntegerEnumConstraint",
+      "type": "object"
+    },
+    "JsonProfileConfiguration": {
+      "description": "Optional configuration shared by validators for a profile.",
+      "properties": {
+        "supported_cv_lists": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Controlled vocabulary lists supported by this profile.",
+          "title": "Supported Cv Lists"
+        },
+        "supported_cv_list_enforcement_level": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EnforcementLevel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enforcement level used when a value references an unsupported controlled vocabulary list.",
+          "title": "Supported Cv List Enforcement Level"
+        },
+        "custom_validator_definitions": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/ProfileValidatorDefinition"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Custom profile validators available to this profile.",
+          "title": "Custom Validator Definitions"
+        },
+        "default_validator_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Key of the validator used by default. If omitted, only the built-in JSON Schema validator is used.",
+          "title": "Default Validator Key"
+        },
+        "profile_validator_factory_class": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Fully qualified profile validator factory classes for each scheme or programming language. e.g., python, java, etc. If omitted, the default factory is used.",
+          "title": "Profile Validator Factory Class"
+        },
+        "profile_validator_factory_class_arguments": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Keyword arguments passed to the profile validator factory.",
+          "title": "Profile Validator Factory Class Arguments"
+        },
+        "default_wasm_file_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label of the wasm file used by default. WASM file with 'default' label will be used.",
+          "title": "Default Wasm File Key"
+        },
+        "wasm_file_definitions": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/WasmFileDefinition"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Named OPA policy WASM file label and definitions available to constraints.",
+          "title": "Wasm File Definitions"
+        }
+      },
+      "title": "JsonProfileConfiguration",
+      "type": "object"
+    },
+    "NonNegativeIntegerConstraint": {
+      "description": "Validates that a value is a non-negative integer (>= 0).\n\nConvenience subclass of ``IntegerConstraint`` with ``minimum=0``.",
+      "properties": {
+        "validator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label of the validator that should evaluate this constraint. If omitted, the default validator is used.",
+          "title": "Validator"
+        },
+        "type": {
+          "default": "non-negative-integer",
+          "description": "Constraint type discriminator.",
+          "title": "Type",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional constraint name used to select a custom checker.",
+          "title": "Name"
+        },
+        "precondition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Condition that must pass before this constraint is applied.",
+          "title": "Precondition"
+        },
+        "json_path": {
+          "anyOf": [
+            {
+              "description": "JSONPath expression used to select values in a JSON document.",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative JSONPath used to select the value passed to this constraint. If omitted, the current value is used.",
+          "title": "Json Path"
+        },
+        "default_precondition_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Evaluation result to use when the precondition has not input to evaluate. If omitted, a no input precondition is treated as valid.",
+          "title": "Default Precondition Evaluation"
+        },
+        "negated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the constraint should be negated. If set to true, the constraint is inverted.",
+          "title": "Negated"
+        },
+        "null_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that should be treated as null.",
+          "title": "Null Values"
+        },
+        "exceptional_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that bypass this constraint. If the input value is in this list, the constraint evaluates as valid.",
+          "title": "Exceptional Values"
+        },
+        "minimum": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": 0,
+          "description": "Minimum allowed value (inclusive). Defaults to 0.",
+          "title": "Minimum"
+        },
+        "maximum": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum allowed value (inclusive). None means no upper bound.",
+          "title": "Maximum"
+        }
+      },
+      "title": "NonNegativeIntegerConstraint",
+      "type": "object"
+    },
+    "NotNullConstraint": {
+      "description": "Validates that a value is not null or one of the configured null values.",
+      "properties": {
+        "validator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label of the validator that should evaluate this constraint. If omitted, the default validator is used.",
+          "title": "Validator"
+        },
+        "type": {
+          "default": "not-null",
+          "description": "Unique discriminator identifying the constraint type.",
+          "title": "Type",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional constraint name used to select a custom checker.",
+          "title": "Name"
+        },
+        "precondition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Condition that must pass before this constraint is applied.",
+          "title": "Precondition"
+        },
+        "json_path": {
+          "anyOf": [
+            {
+              "description": "JSONPath expression used to select values in a JSON document.",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative JSONPath used to select the value passed to this constraint. If omitted, the current value is used.",
+          "title": "Json Path"
+        },
+        "default_precondition_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Evaluation result to use when the precondition has not input to evaluate. If omitted, a no input precondition is treated as valid.",
+          "title": "Default Precondition Evaluation"
+        },
+        "negated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the constraint should be negated. If set to true, the constraint is inverted.",
+          "title": "Negated"
+        },
+        "null_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that should be treated as null.",
+          "title": "Null Values"
+        },
+        "exceptional_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that are accepted even when they would otherwise fail the not-null check.",
+          "title": "Exceptional Values"
+        },
+        "case_sensitive": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the comparison should be case-sensitive.",
+          "title": "Case Sensitive"
+        }
+      },
+      "title": "NotNullConstraint",
+      "type": "object"
+    },
+    "OpaFieldRequirement": {
+      "description": "Requirement will be evaluated and messages are produced by OPA engine",
+      "properties": {
+        "code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Stable requirement identifier. Use a unique code for each requirement so validation messages can be referenced and skipped reliably.",
+          "title": "Code"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Human-readable explanation of the requirement.",
+          "title": "Description"
+        },
+        "enforcement_level": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EnforcementLevel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "required",
+          "description": "Severity applied when the requirement is not satisfied.",
+          "title": "Enforcement Level"
+        },
+        "wasm_file_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "OPA policy WASM file key defined in profile configuration. If omitted, the default policy file is used.",
+          "title": "Wasm File Key"
+        },
+        "policy_id": {
+          "description": "OPA policy policy_0001 to evaluate requirement. e.g. policy_0001",
+          "title": "Policy Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "policy_id"
+      ],
+      "title": "OpaFieldRequirement",
+      "type": "object"
+    },
+    "OpaPolicyConstraint": {
+      "description": "Evaluates an Open Policy Agent policy against the input value.",
+      "properties": {
+        "validator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label of the validator that should evaluate this constraint. If omitted, the default validator is used.",
+          "title": "Validator"
+        },
+        "type": {
+          "default": "opa-policy",
+          "description": "Constraint type discriminator.",
+          "title": "Type",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional constraint name used to select a custom checker.",
+          "title": "Name"
+        },
+        "precondition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Condition that must pass before this constraint is applied.",
+          "title": "Precondition"
+        },
+        "json_path": {
+          "anyOf": [
+            {
+              "description": "JSONPath expression used to select values in a JSON document.",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative JSONPath used to select the value passed to this constraint. If omitted, the current value is used.",
+          "title": "Json Path"
+        },
+        "default_precondition_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Evaluation result to use when the precondition has not input to evaluate. If omitted, a no input precondition is treated as valid.",
+          "title": "Default Precondition Evaluation"
+        },
+        "negated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the constraint should be negated. If set to true, the constraint is inverted.",
+          "title": "Negated"
+        },
+        "null_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that should be treated as null.",
+          "title": "Null Values"
+        },
+        "exceptional_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that bypass this constraint. If the input value is in this list, the constraint evaluates as valid.",
+          "title": "Exceptional Values"
+        },
+        "wasm_file_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "OPA policy WASM file key defined in profile configuration. If omitted, the default policy file is used.",
+          "title": "Wasm File Key"
+        },
+        "policy_id": {
+          "description": "OPA policy id. policy_0001, policy_d_01010, etc.",
+          "title": "Policy Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "policy_id"
+      ],
+      "title": "OpaPolicyConstraint",
+      "type": "object"
+    },
+    "ParentCVTermConstraint": {
+      "description": "Restricts the value to CV terms that are descendants of\nspecified parent terms in the ontology hierarchy.\n\nSupports exclusion of specific terms or name patterns to\nfilter out unwanted branches of the ontology tree.",
+      "properties": {
+        "validator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label of the validator that should evaluate this constraint. If omitted, the default validator is used.",
+          "title": "Validator"
+        },
+        "type": {
+          "default": "parent-cv-term",
+          "description": "Constraint type discriminator.",
+          "title": "Type",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional constraint name used to select a custom checker.",
+          "title": "Name"
+        },
+        "precondition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Condition that must pass before this constraint is applied.",
+          "title": "Precondition"
+        },
+        "json_path": {
+          "anyOf": [
+            {
+              "description": "JSONPath expression used to select values in a JSON document.",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative JSONPath used to select the value passed to this constraint. If omitted, the current value is used.",
+          "title": "Json Path"
+        },
+        "default_precondition_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Evaluation result to use when the precondition has not input to evaluate. If omitted, a no input precondition is treated as valid.",
+          "title": "Default Precondition Evaluation"
+        },
+        "negated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the constraint should be negated. If set to true, the constraint is inverted.",
+          "title": "Negated"
+        },
+        "null_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "String values that should be treated as null CV terms.",
+          "title": "Null Values"
+        },
+        "exceptional_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/BaseCvTerm"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "CV terms that bypass this constraint.",
+          "title": "Exceptional Values"
+        },
+        "allow_user_defined_terms": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether user-defined terms (empty cv_label and cv_accession) are accepted alongside CV terms.",
+          "title": "Allow User Defined Terms"
+        },
+        "is_cv_term_value_required": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the CV term's value slot must be populated. When True, value MUST not be empty or null.",
+          "title": "Is Cv Term Value Required"
+        },
+        "parent_cv_terms": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/BaseCvTerm"
+              },
+              "minItems": 1,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "List of parent CV terms. Valid values must be descendants of at least one of these terms.",
+          "title": "Parent Cv Terms"
+        },
+        "excluded_cv_terms": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/BaseCvTerm"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "CV terms to exclude even if they are descendants of a parent term.",
+          "title": "Excluded Cv Terms"
+        }
+      },
+      "title": "ParentCVTermConstraint",
+      "type": "object"
+    },
+    "PositiveIntegerConstraint": {
+      "description": "Validates that a value is a positive integer (>= 1).\n\nConvenience subclass of ``IntegerConstraint`` with ``minimum=1``.",
+      "properties": {
+        "validator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label of the validator that should evaluate this constraint. If omitted, the default validator is used.",
+          "title": "Validator"
+        },
+        "type": {
+          "default": "positive-integer",
+          "description": "Constraint type discriminator.",
+          "title": "Type",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional constraint name used to select a custom checker.",
+          "title": "Name"
+        },
+        "precondition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Condition that must pass before this constraint is applied.",
+          "title": "Precondition"
+        },
+        "json_path": {
+          "anyOf": [
+            {
+              "description": "JSONPath expression used to select values in a JSON document.",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative JSONPath used to select the value passed to this constraint. If omitted, the current value is used.",
+          "title": "Json Path"
+        },
+        "default_precondition_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Evaluation result to use when the precondition has not input to evaluate. If omitted, a no input precondition is treated as valid.",
+          "title": "Default Precondition Evaluation"
+        },
+        "negated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the constraint should be negated. If set to true, the constraint is inverted.",
+          "title": "Negated"
+        },
+        "null_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that should be treated as null.",
+          "title": "Null Values"
+        },
+        "exceptional_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that bypass this constraint. If the input value is in this list, the constraint evaluates as valid.",
+          "title": "Exceptional Values"
+        },
+        "minimum": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": 1,
+          "description": "Minimum allowed value (inclusive). Defaults to 1.",
+          "title": "Minimum"
+        },
+        "maximum": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum allowed value (inclusive). None means no upper bound.",
+          "title": "Maximum"
+        }
+      },
+      "title": "PositiveIntegerConstraint",
+      "type": "object"
+    },
+    "Precondition": {
+      "description": "Condition that controls whether a constraint should be evaluated.",
+      "properties": {
+        "evaluations": {
+          "description": "Evaluations that must be checked before the constraint runs.",
+          "items": {
+            "$ref": "#/$defs/Evaluation"
+          },
+          "minItems": 1,
+          "title": "Evaluations",
+          "type": "array"
+        },
+        "join_operator": {
+          "default": "and",
+          "description": "Boolean operator used to combine evaluations.",
+          "enum": [
+            "and",
+            "or"
+          ],
+          "title": "Join Operator",
+          "type": "string"
+        },
+        "min_valid": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Minimum number of evaluations that must be true.",
+          "title": "Min Valid"
+        },
+        "max_valid": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum number of evaluations that may be true.",
+          "title": "Max Valid"
+        }
+      },
+      "required": [
+        "evaluations"
+      ],
+      "title": "Precondition",
+      "type": "object"
+    },
+    "ProfileValidatorDefinition": {
+      "description": "Definition of a profile validator implementation.",
+      "properties": {
+        "label": {
+          "description": "Profile validator label used to reference this validator from profiles and constraints.",
+          "title": "Label",
+          "type": "string"
+        },
+        "validator_id": {
+          "description": "Unique identifier of the profile validator.",
+          "title": "Validator Id",
+          "type": "string"
+        },
+        "profile_validator_class": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Mapping from runtime or language name to the fully qualified validator class name.",
+          "title": "Profile Validator Class",
+          "type": "object"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Human-readable description of the custom validator.",
+          "title": "Description"
+        }
+      },
+      "required": [
+        "label",
+        "validator_id",
+        "profile_validator_class"
+      ],
+      "title": "ProfileValidatorDefinition",
+      "type": "object"
+    },
+    "RegexConstraint": {
+      "description": "Validates a string value against a regular expression pattern.\n\nUse for structured identifiers or format patterns that can be\nexpressed as a single regex (e.g. ORCID, adduct ion notation).",
+      "properties": {
+        "validator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label of the validator that should evaluate this constraint. If omitted, the default validator is used.",
+          "title": "Validator"
+        },
+        "type": {
+          "default": "regex",
+          "description": "Constraint type discriminator.",
+          "title": "Type",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional constraint name used to select a custom checker.",
+          "title": "Name"
+        },
+        "precondition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Condition that must pass before this constraint is applied.",
+          "title": "Precondition"
+        },
+        "json_path": {
+          "anyOf": [
+            {
+              "description": "JSONPath expression used to select values in a JSON document.",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative JSONPath used to select the value passed to this constraint. If omitted, the current value is used.",
+          "title": "Json Path"
+        },
+        "default_precondition_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Evaluation result to use when the precondition has not input to evaluate. If omitted, a no input precondition is treated as valid.",
+          "title": "Default Precondition Evaluation"
+        },
+        "negated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the constraint should be negated. If set to true, the constraint is inverted.",
+          "title": "Negated"
+        },
+        "null_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that should be treated as null.",
+          "title": "Null Values"
+        },
+        "exceptional_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that bypass this constraint. If the input value is in this list, the constraint evaluates as valid.",
+          "title": "Exceptional Values"
+        },
+        "pattern": {
+          "description": "Regular expression pattern the value must fully match.",
+          "minLength": 2,
+          "title": "Pattern",
+          "type": "string"
+        },
+        "case_sensitive": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": true,
+          "description": "Whether the pattern match is case-sensitive. Defaults to True.",
+          "title": "Case Sensitive"
+        }
+      },
+      "required": [
+        "pattern"
+      ],
+      "title": "RegexConstraint",
+      "type": "object"
+    },
+    "StringConstraint": {
+      "description": "Validates that a string value's length falls within a range.\n\nAt least one of ``minimum`` or ``maximum`` should be set.",
+      "properties": {
+        "validator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label of the validator that should evaluate this constraint. If omitted, the default validator is used.",
+          "title": "Validator"
+        },
+        "type": {
+          "default": "string-length",
+          "description": "Constraint type discriminator.",
+          "title": "Type",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional constraint name used to select a custom checker.",
+          "title": "Name"
+        },
+        "precondition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Condition that must pass before this constraint is applied.",
+          "title": "Precondition"
+        },
+        "json_path": {
+          "anyOf": [
+            {
+              "description": "JSONPath expression used to select values in a JSON document.",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative JSONPath used to select the value passed to this constraint. If omitted, the current value is used.",
+          "title": "Json Path"
+        },
+        "default_precondition_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Evaluation result to use when the precondition has not input to evaluate. If omitted, a no input precondition is treated as valid.",
+          "title": "Default Precondition Evaluation"
+        },
+        "negated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the constraint should be negated. If set to true, the constraint is inverted.",
+          "title": "Negated"
+        },
+        "null_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that should be treated as null.",
+          "title": "Null Values"
+        },
+        "exceptional_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that bypass this constraint. If the input value is in this list, the constraint evaluates as valid.",
+          "title": "Exceptional Values"
+        },
+        "minimum": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Minimum number of characters (inclusive). None means no lower bound.",
+          "title": "Minimum"
+        },
+        "maximum": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum number of characters (inclusive). None means no upper bound.",
+          "title": "Maximum"
+        }
+      },
+      "title": "StringConstraint",
+      "type": "object"
+    },
+    "StringEnumConstraint": {
+      "description": "Validates that a string value is one of a fixed set of allowed options.\n\nOptions may be a simple list of strings or a mapping from a string key\nto a display value, integer code, or ``ExtendedCvTerm`` metadata.",
+      "properties": {
+        "validator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label of the validator that should evaluate this constraint. If omitted, the default validator is used.",
+          "title": "Validator"
+        },
+        "type": {
+          "default": "string-enum",
+          "description": "Constraint type discriminator.",
+          "title": "Type",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional constraint name used to select a custom checker.",
+          "title": "Name"
+        },
+        "precondition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Condition that must pass before this constraint is applied.",
+          "title": "Precondition"
+        },
+        "json_path": {
+          "anyOf": [
+            {
+              "description": "JSONPath expression used to select values in a JSON document.",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative JSONPath used to select the value passed to this constraint. If omitted, the current value is used.",
+          "title": "Json Path"
+        },
+        "default_precondition_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Evaluation result to use when the precondition has not input to evaluate. If omitted, a no input precondition is treated as valid.",
+          "title": "Default Precondition Evaluation"
+        },
+        "negated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the constraint should be negated. If set to true, the constraint is inverted.",
+          "title": "Negated"
+        },
+        "null_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that should be treated as null.",
+          "title": "Null Values"
+        },
+        "exceptional_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that bypass this constraint. If the input value is in this list, the constraint evaluates as valid.",
+          "title": "Exceptional Values"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/$defs/ExtendedCvTerm"
+                  }
+                ]
+              },
+              "type": "object"
+            }
+          ],
+          "description": "Allowed string values, or a mapping from allowed values to display labels, integer codes, or CV term definitions.",
+          "title": "Options"
+        }
+      },
+      "required": [
+        "options"
+      ],
+      "title": "StringEnumConstraint",
+      "type": "object"
+    },
+    "UriConstraint": {
+      "description": "Validates that a string value is a well-formed URI.\n\nOptionally restricts accepted URI schemes (e.g. only ``https``,\n``ftp``).",
+      "properties": {
+        "validator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label of the validator that should evaluate this constraint. If omitted, the default validator is used.",
+          "title": "Validator"
+        },
+        "type": {
+          "default": "uri",
+          "description": "Constraint type discriminator.",
+          "title": "Type",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional constraint name used to select a custom checker.",
+          "title": "Name"
+        },
+        "precondition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Condition that must pass before this constraint is applied.",
+          "title": "Precondition"
+        },
+        "json_path": {
+          "anyOf": [
+            {
+              "description": "JSONPath expression used to select values in a JSON document.",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative JSONPath used to select the value passed to this constraint. If omitted, the current value is used.",
+          "title": "Json Path"
+        },
+        "default_precondition_evaluation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Evaluation result to use when the precondition has not input to evaluate. If omitted, a no input precondition is treated as valid.",
+          "title": "Default Precondition Evaluation"
+        },
+        "negated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether the constraint should be negated. If set to true, the constraint is inverted.",
+          "title": "Negated"
+        },
+        "null_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that should be treated as null.",
+          "title": "Null Values"
+        },
+        "exceptional_values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Values that bypass this constraint. If the input value is in this list, the constraint evaluates as valid.",
+          "title": "Exceptional Values"
+        },
+        "allowed_schemes": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "List of accepted URI schemes (e.g. ['http', 'https', 'ftp']). None means any scheme is accepted.",
+          "title": "Allowed Schemes"
+        }
+      },
+      "title": "UriConstraint",
+      "type": "object"
+    },
+    "WasmFileDefinition": {
+      "description": "Configuration for an Open Policy Agent policy module.",
+      "properties": {
+        "wasm_file_download_url": {
+          "description": "URL used to download the policy WASM file when it is not available locally.",
+          "title": "Wasm File Download Url",
+          "type": "string"
+        },
+        "wasm_file_path": {
+          "description": "Local path to the WASM file that implements the OPA policy.",
+          "title": "Wasm File Path",
+          "type": "string"
+        },
+        "entrypoint": {
+          "description": "Entrypoint to evaluate policies.",
+          "title": "Entrypoint",
+          "type": "string"
+        }
+      },
+      "required": [
+        "wasm_file_download_url",
+        "wasm_file_path",
+        "entrypoint"
+      ],
+      "title": "WasmFileDefinition",
+      "type": "object"
+    }
+  },
+  "description": "A JSON profile containing metadata, configuration, and field requirements.",
+  "properties": {
+    "id": {
+      "description": "Unique profile identifier. Define different for each version",
+      "title": "Id",
+      "type": "string"
+    },
+    "extends": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Profile id that will be extended.If it is not defined, only this profile will be used.",
+      "title": "Extends"
+    },
+    "version": {
+      "description": "Human readable profile version.",
+      "title": "Version",
+      "type": "string"
+    },
+    "name": {
+      "description": "Human-readable profile name.",
+      "title": "Name",
+      "type": "string"
+    },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Human-readable profile description.",
+      "title": "Description"
+    },
+    "configuration": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/JsonProfileConfiguration"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Validator configuration for the profile.",
+      "title": "Configuration"
+    },
+    "requirements": {
+      "anyOf": [
+        {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/FieldRequirementGroup"
+              },
+              {
+                "$ref": "#/$defs/FieldRequirement"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "propertyNames": {
+            "description": "JSONPath expression used to select values in a JSON document."
+          },
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Mapping from JSONPath expressions to the requirements that apply to matching values.",
+      "title": "Requirements"
+    }
+  },
+  "required": [
+    "id",
+    "version",
+    "name"
+  ],
+  "title": "JsonProfile",
+  "type": "object"
+}

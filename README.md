@@ -37,44 +37,9 @@ uv sync
 
 ## Usage
 
-```python
-# These features are still experimental.
+Examples:
 
-import mztab_m_io as mztabm
-
-file_path = "tests/data/example/example.mztab"
-result: mztabm.MzTabMLoadResult = mztabm.read(file_path)
-for message in result.messages:
-    print(message.message_type.name, message.message)
-mztabm_model = result.mztabm
-
-# You can use model object to get data in mzTab-M file
-print("mzTab-M Id", result.mztabm.metadata.mztab_id)
-
-# You can convert model to json and fetch values from dictionary
-mztabm_dict = mztabm.convert_to_dict(result.mztabm)
-print("mzTab-M Id",  mztabm_dict.get("mzTab-ID"))
-
-# if you have a json version of mzTab-M, you can read it with format parameter.
-file_path = "tests/data/example/example.json"
-result: mztabm.MzTabMLoadResult = mztabm.read(file_path, format="json")
-
-# you can also load from dictionary
-with open(file_path) as f:
-    mztabm_dict = json.load(f)
-mztabm_model = mztabm.load_from_dict(mztabm_dict)
-
-# You can write model object to mzTab-M file as tsv, json or yaml
-temp_folder = Path(".temp/mztabm")
-target_path = temp_folder / Path("example.mztab")
-mztabm.write(result.mztabm, str(target_path), format="tsv")
-
-# Following feature are not tested yet
-target_path = temp_folder / Path("example.json")
-mztabm.write(result.mztabm, str(target_path), format="json")
-target_path = temp_folder / Path("example.yaml")
-mztabm.write(result.mztabm, str(target_path), format="yaml")
-```
+- [Example 01](scripts/example_01.py): Basic read operations
 
 Example mztabm object model definition
 

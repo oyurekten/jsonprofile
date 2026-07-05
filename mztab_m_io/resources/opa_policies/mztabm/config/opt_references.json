@@ -1,0 +1,113 @@
+{
+    "opt_column_id_references": [
+        {
+            "source": [
+                "small_molecule_summary",
+                "opt",
+                "identifier"
+            ],
+            "identifier": "assay",
+            "target": [
+                "metadata",
+                "assay"
+            ],
+            "target_id_field": "id"
+        },
+        {
+            "source": [
+                "small_molecule_summary",
+                "opt",
+                "identifier"
+            ],
+            "target": [
+                "metadata",
+                "ms_run"
+            ],
+            "target_id_field": "id"
+        },
+        {
+            "source": [
+                "small_molecule_summary",
+                "opt",
+                "identifier"
+            ],
+            "target": [
+                "metadata",
+                "study_variable"
+            ],
+            "target_id_field": "id"
+        },
+        {
+            "source": [
+                "small_molecule_feature",
+                "opt",
+                "identifier"
+            ],
+            "target": [
+                "metadata",
+                "assay"
+            ],
+            "target_id_field": "id"
+        },
+        {
+            "source": [
+                "small_molecule_feature",
+                "opt",
+                "identifier"
+            ],
+            "target": [
+                "metadata",
+                "ms_run"
+            ],
+            "target_id_field": "id"
+        },
+        {
+            "source": [
+                "small_molecule_feature",
+                "opt",
+                "identifier"
+            ],
+            "target": [
+                "metadata",
+                "study_variable"
+            ],
+            "target_id_field": "id"
+        },
+        {
+            "source": [
+                "small_molecule_evidence",
+                "opt",
+                "identifier"
+            ],
+            "target": [
+                "metadata",
+                "assay"
+            ],
+            "target_id_field": "id"
+        },
+        {
+            "source": [
+                "small_molecule_evidence",
+                "opt",
+                "identifier"
+            ],
+            "target": [
+                "metadata",
+                "ms_run"
+            ],
+            "target_id_field": "id"
+        },
+        {
+            "source": [
+                "small_molecule_evidence",
+                "opt",
+                "identifier"
+            ],
+            "target": [
+                "metadata",
+                "study_variable"
+            ],
+            "target_id_field": "id"
+        }
+    ]
+}

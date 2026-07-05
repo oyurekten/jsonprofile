@@ -1,0 +1,48 @@
+{
+    "column_counts": [
+        {
+            "source": [
+                "smallMoleculeSummary",
+                0,
+                "abundance_assay"
+            ],
+            "count_of": [
+                "metadata",
+                "assay"
+            ]
+        },
+        {
+            "source": [
+                "smallMoleculeFeature",
+                0,
+                "abundance_assay"
+            ],
+            "count_of": [
+                "metadata",
+                "assay"
+            ]
+        },
+        {
+            "source": [
+                "smallMoleculeSummary",
+                0,
+                "abundance_study_variable"
+            ],
+            "count_of": [
+                "metadata",
+                "study_variable"
+            ]
+        },
+        {
+            "source": [
+                "smallMoleculeSummary",
+                0,
+                "abundance_variation_study_variable"
+            ],
+            "count_of": [
+                "metadata",
+                "study_variable"
+            ]
+        }
+    ]
+}

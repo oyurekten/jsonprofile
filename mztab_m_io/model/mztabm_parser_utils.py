@@ -131,8 +131,9 @@ def split_file_sections(
             if context:
                 context.messages.append(
                     MzTabMessage(
-                        category=Category.FORMAT,
-                        type=MessageType.ERROR,
+                        code="D-1004",
+                        category=Category.PARSE,
+                        message_type=MessageType.ERROR,
                         message=f"line error at {idx}: '{line}'",
                     )
                 )
@@ -142,8 +143,9 @@ def split_file_sections(
             if context:
                 context.messages.append(
                     MzTabMessage(
-                        category=Category.FORMAT,
-                        type=MessageType.ERROR,
+                        code="D-1004",
+                        category=Category.PARSE,
+                        message_type=MessageType.ERROR,
                         message=f"line error at {idx}: '{line}'",
                     )
                 )
@@ -322,6 +324,7 @@ def check_ids(
             jsonpath = to_jsonpath(reference)
             messages.append(
                 MzTabMessage(
+                    code="D-1005",
                     message=f"{jsonpath} is missing",
                     category=Category.CROSS_CHECK,
                     message_type=MessageType.ERROR,

@@ -1,14 +1,10 @@
-from mztab_m_io.model import serialization, validation
 from mztab_m_io.model.base import MzTabBaseModel
 from mztab_m_io.model.common import (
     CV,
-    AdductIon,
     Assay,
     ColumnParameterMapping,
     Comment,
-    CompactObjectModel,
     Contact,
-    CustomSerializer,
     Database,
     Instrument,
     MsRun,
@@ -21,34 +17,40 @@ from mztab_m_io.model.common import (
     Software,
     SpectraReference,
     StudyVariable,
-    Uri,
 )
 from mztab_m_io.model.mztabm import MzTabM
-from mztab_m_io.model.mztabm_validation import (
-    MessageTypeMap,
-    check_validation_policies,
-    cross_check,
-    to_jsonpath,
-)
+from mztab_m_io.model.mztabm_validation import MessageTypeMap, cross_check, to_jsonpath
 from mztab_m_io.model.section.base_table_section import BaseTableSection
 from mztab_m_io.model.section.mtd import Metadata
 from mztab_m_io.model.section.sme import SmallMoleculeEvidence
 from mztab_m_io.model.section.smf import SmallMoleculeFeature
 from mztab_m_io.model.section.sml import SmallMoleculeSummary
+from mztab_m_io.model.serialization import (
+    CompactObjectModel,
+    CustomSerializer,
+    IdentifiableModel,
+    MetadataSerialization,
+    MzTabSerializableModel,
+    SerializationContext,
+    TableSerialization,
+)
+from mztab_m_io.model.validation import (
+    Category,
+    MessageType,
+    MzTabMessage,
+    ValidationContext,
+)
 
 __all__ = [
     "MzTabM",
     "MzTabBaseModel",
     "CompactObjectModel",
-    "CustomSerializer",
-    "AdductIon",
     "Parameter",
     "Instrument",
     "SampleProcessing",
     "Software",
     "PublicationItem",
     "Contact",
-    "Uri",
     "Sample",
     "MsRun",
     "Assay",
@@ -65,10 +67,18 @@ __all__ = [
     "SmallMoleculeSummary",
     "SmallMoleculeEvidence",
     "SmallMoleculeFeature",
-    "validation",
-    "serialization",
     "cross_check",
-    "check_validation_policies",
     "MessageTypeMap",
     "to_jsonpath",
+    "Category",
+    "MessageType",
+    "MzTabMessage",
+    "ValidationContext",
+    "MetadataSerialization",
+    "TableSerialization",
+    "SerializationContext",
+    "MzTabSerializableModel",
+    "IdentifiableModel",
+    "CustomSerializer",
+    "CompactObjectModel",
 ]

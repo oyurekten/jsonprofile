@@ -1,0 +1,99 @@
+{
+    "required_ids": [
+        {
+            "source": [
+                "metadata",
+                "ms_run"
+            ],
+            "source_id_field": "instrument_ref"
+        },
+        {
+            "source": [
+                "metadata",
+                "assay"
+            ],
+            "source_id_field": "sample_ref"
+        },
+        {
+            "source": [
+                "metadata",
+                "assay"
+            ],
+            "source_id_field": "ms_run_refs"
+        },
+        {
+            "source": [
+                "metadata",
+                "study_variable"
+            ],
+            "source_id_field": "group_refs"
+        },
+        {
+            "source": [
+                "metadata",
+                "study_variable"
+            ],
+            "source_id_field": "assay_refs"
+        },
+        {
+            "source": [
+                "small_molecule_evidence",
+                "spectra_ref"
+            ],
+            "source_id_field": "ms_run"
+        },
+        {
+            "source": [
+                "metadata",
+                "instrument"
+            ],
+            "source_id_field": "id"
+        },
+        {
+            "source": [
+                "metadata",
+                "sample"
+            ],
+            "source_id_field": "id"
+        },
+        {
+            "source": [
+                "metadata",
+                "ms_run"
+            ],
+            "source_id_field": "id"
+        },
+        {
+            "source": [
+                "metadata",
+                "study_variable_group"
+            ],
+            "source_id_field": "id"
+        },
+        {
+            "source": [
+                "metadata",
+                "study_variable"
+            ],
+            "source_id_field": "id"
+        },
+        {
+            "source": [
+                "small_molecule_summary"
+            ],
+            "source_id_field": "sml_id"
+        },
+        {
+            "source": [
+                "small_molecule_feature"
+            ],
+            "source_id_field": "smf_id"
+        },
+        {
+            "source": [
+                "small_molecule_evidence"
+            ],
+            "source_id_field": "sme_id"
+        }
+    ]
+}

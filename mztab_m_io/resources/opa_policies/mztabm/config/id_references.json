@@ -1,0 +1,96 @@
+{
+    "id_references": [
+        {
+            "source": [
+                "metadata",
+                "ms_run",
+                "instrument_ref"
+            ],
+            "target": [
+                "metadata",
+                "instrument"
+            ],
+            "target_id_field": "id"
+        },
+        {
+            "source": [
+                "metadata",
+                "assay",
+                "sample_ref"
+            ],
+            "target": [
+                "metadata",
+                "sample"
+            ],
+            "target_id_field": "id"
+        },
+        {
+            "source": [
+                "metadata",
+                "assay",
+                "ms_run_refs"
+            ],
+            "target": [
+                "metadata",
+                "ms_run"
+            ],
+            "target_id_field": "id"
+        },
+        {
+            "source": [
+                "metadata",
+                "study_variable",
+                "group_refs"
+            ],
+            "target": [
+                "metadata",
+                "study_variable_group"
+            ],
+            "target_id_field": "id"
+        },
+        {
+            "source": [
+                "metadata",
+                "study_variable",
+                "assay_refs"
+            ],
+            "target": [
+                "metadata",
+                "assay"
+            ],
+            "target_id_field": "id"
+        },
+        {
+            "source": [
+                "small_molecule_summary",
+                "smf_id_refs"
+            ],
+            "target": [
+                "small_molecule_feature"
+            ],
+            "target_id_field": "smf_id"
+        },
+        {
+            "source": [
+                "small_molecule_feature",
+                "sme_id_refs"
+            ],
+            "target": [
+                "small_molecule_evidence"
+            ],
+            "target_id_field": "sme_id"
+        },
+        {
+            "source": [
+                "small_molecule_evidence",
+                "spectra_ref",
+                "ms_run"
+            ],
+            "target": [
+                "metadata",
+                "ms_run"
+            ],
+            "target_id_field": "id"
+        }
+    ]
+}

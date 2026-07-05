@@ -1,10 +1,8 @@
 import abc
-import json
 from typing import (
     Annotated,
     Any,
     Dict,
-    List,
     Literal,
     Mapping,
     Optional,
@@ -13,6 +11,7 @@ from typing import (
     Union,
 )
 
+import orjson
 import yaml
 from pydantic import BaseModel
 from pydantic.fields import Field
@@ -23,6 +22,7 @@ from mztab_m_io.model.base import MzTabBaseModel
 from mztab_m_io.model.field_utils import get_field_type_info
 from mztab_m_io.model.validation import (
     Category,
+    MessageCircuitBreaker,
     MessageType,
     MzTabMessage,
     ValidationContext,
@@ -41,33 +41,7 @@ class MetadataInfo(MzTabBaseModel):
     metadata_serializations: Dict[str, "MetadataSerialization"] = {}
 
 
-ValueConstraint = Literal[
-    "positive-integer",
-    "non-negative-integer",
-    "curie",
-    "any-url",
-    "datetime",
-    "date",
-    "email",
-]
-
-EnforcementLevel = Literal["recommended", "required"]
-
-
-class ValidationPolicy(MzTabBaseModel):
-    required: Optional[bool] = None
-    minimum: Optional[int] = None
-    maximum: Optional[int] = None
-    pattern: Optional[str] = None
-    value_constraint: Optional[ValueConstraint] = None
-    enforcement_level: Optional[EnforcementLevel] = "required"
-
-
-class ValidationProfile(MzTabBaseModel):
-    validation_policy: Optional[Union[ValidationPolicy]] = ValidationPolicy()
-
-
-class MetadataSerialization(ValidationProfile):
+class MetadataSerialization(MzTabBaseModel):
     ignore: bool = False
     object_level_value: bool = False
     list_concatenation_str: Optional[str] = None
@@ -77,7 +51,7 @@ class MetadataSerialization(ValidationProfile):
     mztab_example: Annotated[Optional[str], Field(alias="x-mztab-example")] = None
 
 
-class TableSerialization(ValidationProfile):
+class TableSerialization(MzTabBaseModel):
     ignore: bool = False
     list_concatenation_str: Optional[str] = None
     multiple_columns: bool = False
@@ -97,10 +71,18 @@ class TableSectionInfo(MzTabBaseModel):
     table_serializations: Dict[str, "TableSerialization"] = {}
 
 
-class SerializationContext(MzTabBaseModel):
-    convert_to: Literal["tsv", "json", "yaml"] = "tsv"
-    messages: List[MzTabMessage] = []
-    success: bool = False
+class SerializationContext:
+    def __init__(
+        self,
+        convert_to: Literal["tsv", "json", "yaml"] = "tsv",
+        max_messages_for_each_code: Optional[int] = None,
+        success: bool = False,
+    ):
+        self.convert_to: Literal["tsv", "json", "yaml"] = convert_to
+        self.messages: MessageCircuitBreaker = MessageCircuitBreaker(
+            max_messages_for_each_code
+        )
+        self.success: bool = success
 
 
 class MzTabSerializableModel(MzTabBaseModel):
@@ -119,6 +101,7 @@ class MzTabSerializableModel(MzTabBaseModel):
             context.success = False
             context.messages.append(
                 MzTabMessage(
+                    code="D-1013",
                     message_type=MessageType.ERROR,
                     category=Category.FORMAT,
                     source="input object",
@@ -136,6 +119,7 @@ class MzTabSerializableModel(MzTabBaseModel):
             context.success = False
             context.messages.append(
                 MzTabMessage(
+                    code="D-1014",
                     message_type=MessageType.ERROR,
                     category=Category.FORMAT,
                     source="output file",
@@ -146,7 +130,9 @@ class MzTabSerializableModel(MzTabBaseModel):
 
     def to_yaml(self, context: SerializationContext, **kwargs) -> str:
         try:
-            json_obj = json.loads(self.model_dump_json(**self._update_kwargs(**kwargs)))
+            json_obj = orjson.loads(
+                self.model_dump_json(**self._update_kwargs(**kwargs))
+            )
             content = yaml.safe_dump(json_obj, sort_keys=False)
             context.success = True
             return content
@@ -154,6 +140,7 @@ class MzTabSerializableModel(MzTabBaseModel):
             context.success = False
             context.messages.append(
                 MzTabMessage(
+                    code="D-1015",
                     message_type=MessageType.ERROR,
                     category=Category.FORMAT,
                     source="output file",
@@ -225,7 +212,8 @@ class MzTabSerializableModel(MzTabBaseModel):
                         info.context.messages = []
                     info.context.messages.append(
                         MzTabMessage(
-                            category=Category.WARNING,
+                            code="D-1016",
+                            category=Category.FORMAT,
                             message_type=MessageType.WARNING,
                             message=f"Unknown field: {item}",
                         )

@@ -1,6 +1,8 @@
 {
   "cSpell.words": [
     "iaaiaaspdr",
+    "metabolights",
+    "mtbls",
     "mztab",
     "mztabm",
     "pydantic",
@@ -8,7 +10,16 @@
     "pytest"
   ],
   "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
-  "python.testing.pytestArgs": ["tests"],
+  "opa.dependency_paths.opa": "/Users/ozgury/.local/bin/opa",
+  "opa.roots": [
+    "${workspaceFolder}/mztab_m_io/resources/opa_policies"
+  ],
+  "opa.bundleMode": false,
+  "opa.checkOnSave": true,
+  "opa.formatter": "opa-fmt-rego-v1",
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
   "search.exclude": {
