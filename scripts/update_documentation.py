@@ -1,13 +1,15 @@
 import re
 from pathlib import Path
-from typing import Set
+from typing import Optional, Set
 
+from jsonprofile.profile import EnforcedRequirement
 from pydantic import BaseModel
 
 from mztab_m_io import MzTabM
 from mztab_m_io.model.field_utils import get_field_type_info
 from mztab_m_io.model.mztabm_validation import MessageTypeMap
 from mztab_m_io.model.validation import MessageType
+from mztab_m_io.profile.default_profile import DEFAULT_PROFILE
 
 
 def escape_markdown(text: str) -> str:
@@ -31,13 +33,55 @@ def remove_extra_spaces(text: str) -> str:
     return re.sub(r"\n +", "\n", text).strip()
 
 
+_default_profile = DEFAULT_PROFILE
+
+
+def find_requirements(
+    model_class: type[BaseModel],
+    updated_documents: Set[type[BaseModel]],
+    path_items: Optional[list[str | int]] = None,
+):
+    if not path_items:
+        path_items = ["$"]
+
+    field_path = path_items.copy()
+    json_path = ".".join(field_path)
+
+    requirements_map: dict[str, list[EnforcedRequirement]] = {}
+    if json_path in _default_profile.requirements:
+        requirement = _default_profile.requirements[json_path]
+        if json_path not in requirements_map:
+            requirements_map[json_path] = []
+        requirements_map[json_path].append(requirement)
+
+    root_requirements = requirements_map.get(json_path)
+    for field, field_info in model_class.model_fields.items():
+        # extra = field_info.json_schema_extra or {}
+        alias = field_info.validation_alias or field
+
+        is_list, field_type = get_field_type_info(model_class, field)
+        field_path = field_path.copy()
+        field_path.append(alias)
+        json_path = ".".join(field_path)
+
+        if json_path in _default_profile.requirements:
+            requirement = _default_profile.requirements[json_path]
+            if json_path not in requirements_map:
+                requirements_map[json_path] = []
+            requirements_map[json_path].append(requirement)
+        if is_list:
+            if f"{json_path}[*]" in requirements_map:
+                requirements_map
+
+
+# TODO: Update
 def update_documentation(
-    model_class: type[BaseModel], updated_documents: Set[type[BaseModel]]
+    model_class: type[BaseModel],
+    updated_documents: Set[type[BaseModel]],
 ):
     if model_class.__name__ in updated_documents:
         return
     model_documentation_path.mkdir(parents=True, exist_ok=True)
-
     md_doc_path = model_documentation_path / f"{Path(model_class.__name__)}.md"
     new_model_classes: Set[type[BaseModel]] = set()
     with md_doc_path.open("w") as f:
@@ -84,6 +128,7 @@ def update_documentation(
                     f"<code>{field_type_name}</code> (<code>{default_value}</code>)"
                 )
             # policy = validation_profile.validation_policy
+
             policy = None
             constraints_list = []
             if policy.required:

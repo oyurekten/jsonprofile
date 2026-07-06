@@ -39,7 +39,8 @@ uv sync
 
 Examples:
 
-- [Example 01](scripts/example_01.py): Basic read operations
+- [Example 01](tutorials/examples/example_01.py): Basic read and write operations
+- [Example 02](tutorials/examples/example_02.py): Class based read, write operations
 
 Example mztabm object model definition
 

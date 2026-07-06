@@ -5,6 +5,10 @@ import logging
 from pathlib import Path
 
 import mztab_m_io as mztabm
+from mztab_m_io.profile import (
+    FULL_PROFILE_PATH,
+    METABOLIGHTS_PROFILE_PATH,
+)
 from scripts import utils
 
 # creating a logger
@@ -18,6 +22,50 @@ utils.setup_basic_logging_config(logging.INFO)
 
 file_path = "tests/data/example/example.mztab"
 result: mztabm.MzTabMLoadResult = mztabm.read(file_path)
+for message in result.messages:
+    logger.info(
+        "%s %s, %s, %s",
+        message.code,
+        message.message_type.name,
+        message.source,
+        message.message,
+    )
+mztabm_model = result.mztabm
+
+# You can use model object to get data in mzTab-M file
+logger.info("mzTab-M Id: %s", result.mztabm.metadata.mztab_id)
+
+
+# %% Load mztab file with FULL profile (MTD + SML + SMF + SME)
+# You can load a MzTab-M file.
+# Result contain list of errors and mztabm python object
+
+file_path = "tests/data/example/example.mztab"
+result: mztabm.MzTabMLoadResult = mztabm.read(
+    file_path, mztabm_profile_file_path=FULL_PROFILE_PATH
+)
+for message in result.messages:
+    logger.info(
+        "%s %s, %s, %s",
+        message.code,
+        message.message_type.name,
+        message.source,
+        message.message,
+    )
+mztabm_model = result.mztabm
+
+# You can use model object to get data in mzTab-M file
+logger.info("mzTab-M Id: %s", result.mztabm.metadata.mztab_id)
+
+
+# %% Load mztab file with MetaboLights profile (MTD + SML + Additional requirements)
+# You can load a MzTab-M file.
+# Result contain list of errors and mztabm python object
+
+file_path = "tests/data/example/example.mztab"
+result: mztabm.MzTabMLoadResult = mztabm.read(
+    file_path, mztabm_profile_file_path=METABOLIGHTS_PROFILE_PATH
+)
 for message in result.messages:
     logger.info(
         "%s %s, %s, %s",
@@ -57,7 +105,7 @@ logger.info("mzTab-M Id: %s", result.mztabm.metadata.mztab_id)
 
 
 # %% Read MzTab-M json and create Python MzTab-M model
-# you can also load from dictionar
+# you can also load from dictionary
 file_path = "tests/data/example/example.json"
 with Path(file_path).open("rb") as f:
     mztabm_dict = json.loads(f.read())
