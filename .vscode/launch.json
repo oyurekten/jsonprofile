@@ -11,6 +11,17 @@
             "env": {
                 "PYTHONPATH": "${workspaceFolder}/python/src"
             }
+        },
+        {
+            "name": "Jsonprofile",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tests/test_example.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/python",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/python/src"
+            }
         }
     ]
 }

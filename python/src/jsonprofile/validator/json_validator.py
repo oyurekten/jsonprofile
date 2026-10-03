@@ -710,14 +710,14 @@ class JsonValidator:
                 if not valid_requirement_group:
                     min_valid = False
                     if (
-                        field_requirement.min_valid is None
-                        or field_requirement.min_valid >= valid_reqs
+                        field_requirement.min_valid is not None
+                        and field_requirement.min_valid >= valid_reqs
                     ):
                         min_valid = True
                     max_valid = False
                     if (
-                        field_requirement.max_valid is None
-                        or field_requirement.max_valid <= valid_reqs
+                        field_requirement.max_valid is not None
+                        and field_requirement.max_valid <= valid_reqs
                     ):
                         max_valid = True
                     if min_valid and max_valid:
