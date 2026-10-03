@@ -8,6 +8,7 @@ from jsonprofile.profile.base import (
     JsonPath,
     JsonProfileBaseModel,
     JsonProfileMessage,
+    ValidationRuntimeConfiguration,
 )
 from jsonprofile.profile.model import (
     EnforcedRequirement,
@@ -16,7 +17,6 @@ from jsonprofile.profile.model import (
     JsonProfile,
     JsonProfileConfiguration,
     ProfileValidatorDefinition,
-    ValidationRuntimeConfiguration,
     WasmFileDefinition,
 )
 from jsonprofile.profile.profile_validator import (

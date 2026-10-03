@@ -38,6 +38,8 @@ def to_jsonpath(reference: list[Union[str, int]]):
 
 
 def convert_full_path(full_path) -> str:
+    if not full_path or full_path == "$":
+        return "$"
     path = str(full_path)
     path = path.replace(".[", "[")
     path = path.replace("(", "")

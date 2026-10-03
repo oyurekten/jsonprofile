@@ -4,6 +4,7 @@ from typing import Annotated, Any, Optional, Union
 from pydantic import Field, field_validator
 
 from jsonprofile.profile.base import (
+    BaseProfileConfiguration,
     EnforcementLevel,
     JsonPath,
     JsonProfileBaseModel,
@@ -170,7 +171,7 @@ class WasmFileDefinition(JsonProfileBaseModel):
     ]
 
 
-class JsonProfileConfiguration(JsonProfileBaseModel):
+class JsonProfileConfiguration(BaseProfileConfiguration):
     """Optional configuration shared by validators for a profile."""
 
     supported_cv_lists: Annotated[
@@ -221,51 +222,6 @@ class JsonProfileConfiguration(JsonProfileBaseModel):
         Field(
             description="Named OPA policy WASM file label and definitions "
             "available to constraints."
-        ),
-    ] = None
-
-
-class ValidationRuntimeConfiguration(JsonProfileBaseModel):
-    """Options that alter validation behavior for one validation run."""
-
-    offline_mode: Annotated[
-        None | bool,
-        Field(description="Skip validations and checks that require network access."),
-    ] = None
-
-    skipped_requirements: Annotated[
-        None | list[str],
-        Field(
-            description="Requirement codes that should be skipped during validation."
-        ),
-    ] = None
-    skip_jsonschema_validation: Annotated[
-        None | bool,
-        Field(description="Skips jsonschema validation if it is set `true`."),
-    ] = None
-    skip_profile_validation: Annotated[
-        None | bool,
-        Field(description="Skips profile validation if it is set `true`."),
-    ] = None
-    max_messages_for_each_requirement: Annotated[
-        None | int,
-        Field(
-            description="Maximum number of validation messages emitted for each "
-            "requirement."
-        ),
-    ] = 10
-
-    skip_decimal_validations: Annotated[
-        None | bool,
-        Field(description="Skip decimal value constraints."),
-    ] = None
-
-    cv_term_search_class: Annotated[
-        None | str,
-        Field(
-            description="Selected CV term search implementation class. "
-            "If it is not defined, default implementation will be used. "
-            "If you want to skip online searches, use `offline_mode`"
         ),
     ] = None
 

@@ -10,7 +10,14 @@ import jsonpath_ng
 import rfc3986
 from rfc3986.validators import Validator as Rfc3986Validator
 
-from jsonprofile.profile.base import BaseCvTerm, CvTerm, JsonProfileBaseModel
+from jsonprofile.profile.base import (
+    DEFAULT_MAPPING,
+    BaseCvTerm,
+    CvTerm,
+    CvTermFieldMapping,
+    JsonProfileBaseModel,
+    ValidationRuntimeConfiguration,
+)
 from jsonprofile.profile.constraints.constraints import (
     BooleanConstraint,
     CollectionConstraint,
@@ -36,7 +43,6 @@ from jsonprofile.profile.constraints.constraints import (
 )
 from jsonprofile.profile.model import (
     JsonProfileConfiguration,
-    ValidationRuntimeConfiguration,
 )
 from jsonprofile.utils import convert_full_path, is_non_string_container
 from jsonprofile.validator.abstract_checker import ConstraintChecker
@@ -46,16 +52,16 @@ from jsonprofile.validator.decorators import constraint_checker
 logger = logging.getLogger(__name__)
 
 
-def _extract_cv_info(value: Any) -> CvTerm:
+def _extract_cv_info(value: Any, mapping: CvTermFieldMapping) -> CvTerm:
     """Extracts label, accession, name, and value from a CvTerm or dict."""
     if isinstance(value, CvTerm):
         return value
     elif isinstance(value, dict):
         return CvTerm(
-            cv_label=value.get("cv_label"),
-            cv_accession=value.get("cv_accession"),
-            name=value.get("name"),
-            value=value.get("value"),
+            cv_label=value.get(mapping.label_field) or "",
+            cv_accession=value.get(mapping.accession_field) or "",
+            name=value.get(mapping.name_field) or "",
+            value=value.get(mapping.value_field) or "",
         )
     elif isinstance(value, str):
         cleaned = value.strip("[]")
@@ -123,6 +129,7 @@ class RegexConstraintChecker(ConstraintChecker):
         if value is None:
             if constraint.exceptional_values and value in constraint.exceptional_values:
                 evaluation = True
+
             message = "value is null"
         else:
             str_val = str(value) if constraint.case_sensitive else str(value).lower()
@@ -243,6 +250,9 @@ class CollectionConstraintChecker(ConstraintChecker):
             elif not constraint.min_occurs:
                 min_req = True
             message = "value is not defined"
+        elif not isinstance(value, list):
+            message = "value is not a collection."
+            return False, message
         else:
             val = value
             if constraint.exceptional_values and (
@@ -472,9 +482,9 @@ class IntegerEnumConstraintChecker(ConstraintChecker):
                 if int_val is not None:
                     if int_val in constraint.options:
                         evaluation = True
-                        message = "value is in the int enum list"
+                        message = f"value {val} is in the int enum list"
                     else:
-                        message = "value is not in the int enum list"
+                        message = f"value {val} is not in the int enum list"
                 else:
                     message = f"value '{val}' is not numeric"
 
@@ -596,7 +606,7 @@ class BooleanConstraintChecker(ConstraintChecker):
                     boolean_value = None
 
                 if boolean_value is not None:
-                    f"value '{val}' evaluated as {boolean_value}"
+                    message = f"value '{val}' evaluated as {boolean_value}"
                 else:
                     message = f"value '{val}' is not boolean"
 
@@ -834,6 +844,12 @@ class UriConstraintChecker(ConstraintChecker):
                         if ref.scheme in constraint.allowed_schemes:
                             evaluation = True
                             message = "value is valid url with allowed scheme"
+                        else:
+                            message = (
+                                f"value is valid url but scheme '{ref.scheme}' "
+                                f"is not in allowed schemes: "
+                                f"{', '.join(constraint.allowed_schemes)}"
+                            )
                     else:
                         evaluation = True
                         message = "value is valid url"
@@ -854,12 +870,14 @@ class CVTermConstraintChecker(ConstraintChecker):
         root: dict[str, Any],
         context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
+        mapping = context.profile_config.cv_term_field_mapping or DEFAULT_MAPPING
+
         evaluation = False
         cv_term_search = context.cv_term_search
         runtime_config = context.runtime_config
         param = None
         if value is not None and constraint.null_values:
-            param = _extract_cv_info(value)
+            param = _extract_cv_info(value, mapping=mapping)
             if str(param) in constraint.null_values:
                 value = None
         if value is None:
@@ -868,7 +886,7 @@ class CVTermConstraintChecker(ConstraintChecker):
             message = "value is not defined"
         else:
             if not param:
-                param = _extract_cv_info(value)
+                param = _extract_cv_info(value, mapping=mapping)
             name_req = False
             value_req = False
             if not param.cv_label and not param.cv_accession and not param.name:
@@ -928,11 +946,12 @@ class CVListConstraintChecker(ConstraintChecker):
         root: dict[str, Any],
         context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
+        mapping = context.profile_config.cv_term_field_mapping or DEFAULT_MAPPING
         evaluation = False
         runtime_config = context.runtime_config
         cv_term_search = context.cv_term_search
         if value is not None and constraint.null_values:
-            param = _extract_cv_info(value)
+            param = _extract_cv_info(value, mapping=mapping)
             if str(param) in constraint.null_values:
                 value = None
         if value is None:
@@ -940,7 +959,7 @@ class CVListConstraintChecker(ConstraintChecker):
                 evaluation = True
             message = "value is null"
         else:
-            param = _extract_cv_info(value)
+            param = _extract_cv_info(value, mapping=mapping)
             name_req = False
             value_req = False
             if not param.cv_label and not param.cv_accession and not param.name:
@@ -963,7 +982,7 @@ class CVListConstraintChecker(ConstraintChecker):
                         else:
                             if constraint.exceptional_values:
                                 base_param = BaseCvTerm.model_validate(
-                                    param, from_attributes=True
+                                    param, from_attributes=True, context=context
                                 )
                                 if base_param in constraint.exceptional_values:
                                     name_req = True
@@ -1028,9 +1047,10 @@ class CVTermEnumConstraintChecker(ConstraintChecker):
         root: dict[str, Any],
         context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
+        mapping = context.profile_config.cv_term_field_mapping or DEFAULT_MAPPING
         evaluation = False
         if value is not None and constraint.null_values:
-            param = _extract_cv_info(value)
+            param = _extract_cv_info(value, mapping=mapping)
             if str(param) in constraint.null_values:
                 value = None
         if value is None:
@@ -1038,7 +1058,7 @@ class CVTermEnumConstraintChecker(ConstraintChecker):
                 evaluation = True
             message = "value is null"
         else:
-            param = _extract_cv_info(value)
+            param = _extract_cv_info(value, mapping=mapping)
             name_req = False
             value_req = False
             if not param.cv_label and not param.cv_accession and not param.name:
@@ -1112,11 +1132,12 @@ class ParentCVTermConstraintChecker(ConstraintChecker):
         root: dict[str, Any],
         context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
+        mapping = context.profile_config.cv_term_field_mapping or DEFAULT_MAPPING
         evaluation = False
         runtime_config = context.runtime_config
         cv_term_search = context.cv_term_search
         if value is not None and constraint.null_values:
-            param = _extract_cv_info(value)
+            param = _extract_cv_info(value, mapping=mapping)
             if str(param) in constraint.null_values:
                 value = None
         if value is None:
@@ -1124,7 +1145,7 @@ class ParentCVTermConstraintChecker(ConstraintChecker):
                 evaluation = True
             message = "value is null"
         else:
-            param = _extract_cv_info(value)
+            param = _extract_cv_info(value, mapping=mapping)
             name_req = False
             value_req = False
             if not param.cv_label and not param.cv_accession and not param.name:
@@ -1214,8 +1235,8 @@ class CVTermValueConstraintChecker(ConstraintChecker):
         root: dict[str, Any],
         context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
-
-        param = _extract_cv_info(value)
+        mapping = context.profile_config.cv_term_field_mapping or DEFAULT_MAPPING
+        param = _extract_cv_info(value, mapping=mapping)
         base_cv_term = BaseCvTerm.model_validate(param, from_attributes=True)
 
         if str(base_cv_term).lower() == str(constraint.key_cv_term).lower():
@@ -1255,11 +1276,12 @@ class ConstraintGroupChecker(ConstraintChecker):
         root: dict[str, Any],
         context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
+        mapping = context.profile_config.cv_term_field_mapping or DEFAULT_MAPPING
         if not constraint.constraints:
             return True, None
         evaluation = False
         if value is not None and constraint.null_values:
-            param = _extract_cv_info(value)
+            param = _extract_cv_info(value, mapping=mapping)
             if str(param) in constraint.null_values:
                 value = None
         is_and = constraint.join_operator == "and"

@@ -15,6 +15,7 @@ from jsonprofile.profile.base import (
     EnforcementLevel,
     JsonPath,
     JsonProfileMessage,
+    ValidationRuntimeConfiguration,
 )
 from jsonprofile.profile.constraints.constraints import DecimalConstraint
 from jsonprofile.profile.model import (
@@ -23,7 +24,6 @@ from jsonprofile.profile.model import (
     JsonProfile,
     JsonProfileConfiguration,
     OpaFieldRequirement,
-    ValidationRuntimeConfiguration,
 )
 from jsonprofile.utils import convert_full_path, to_jsonpath
 from jsonprofile.validator.base import CvTermSearch, ProfileValidatorFactory
@@ -361,10 +361,10 @@ class JsonValidator:
         self, runtime_config: None | ValidationRuntimeConfiguration = None
     ) -> JsonProfileRunContext:
         runtime_config = runtime_config or ValidationRuntimeConfiguration()
+        profile_config = self.json_profile.configuration or JsonProfileConfiguration()
         return JsonProfileRunContext(
             runtime_config=runtime_config or ValidationRuntimeConfiguration(),
-            profile_config=self.json_profile.configuration
-            or JsonProfileConfiguration(),
+            profile_config=profile_config,
             opa_engine_factory=self.opa_engine_factory,
             profile_validator_factory=self.profile_validator_factory,
             cv_term_search=self.default_cv_term_search,

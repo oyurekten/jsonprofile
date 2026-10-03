@@ -3,7 +3,7 @@ name = "jsonprofile"
 version = "0.1.0"
 description = "Dynamic profile management for json files share same schema"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
     "bioregistry>=0.13.64",
     "cachetools>=7.1.4",

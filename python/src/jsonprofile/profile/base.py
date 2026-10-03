@@ -6,6 +6,7 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    InstanceOf,
     ModelWrapValidatorHandler,
     ValidationInfo,
     model_validator,
@@ -43,6 +44,75 @@ class JsonProfileBaseModel(BaseModel):
             field_name.replace("_", " ").strip()
         ),
     )
+
+
+class CvTermFieldMapping(JsonProfileBaseModel):
+    label_field: None | str = "cv_label"
+    accession_field: None | str = "cv_accession"
+    name_field: None | str = "name"
+    value_field: None | str = "value"
+
+
+class BaseProfileConfiguration(JsonProfileBaseModel):
+    cv_term_field_mapping: Annotated[
+        CvTermFieldMapping, Field(description="Input cv term field mapping.")
+    ] = CvTermFieldMapping()
+
+
+class ValidationRuntimeConfiguration(JsonProfileBaseModel):
+    """Options that alter validation behavior for one validation run."""
+
+    offline_mode: Annotated[
+        None | bool,
+        Field(description="Skip validations and checks that require network access."),
+    ] = None
+
+    skipped_requirements: Annotated[
+        None | list[str],
+        Field(
+            description="Requirement codes that should be skipped during validation."
+        ),
+    ] = None
+    skip_jsonschema_validation: Annotated[
+        None | bool,
+        Field(description="Skips jsonschema validation if it is set `true`."),
+    ] = None
+    skip_profile_validation: Annotated[
+        None | bool,
+        Field(description="Skips profile validation if it is set `true`."),
+    ] = None
+    max_messages_for_each_requirement: Annotated[
+        None | int,
+        Field(
+            description="Maximum number of validation messages emitted for each "
+            "requirement."
+        ),
+    ] = 10
+
+    skip_decimal_validations: Annotated[
+        None | bool,
+        Field(description="Skip decimal value constraints."),
+    ] = None
+
+    cv_term_search_class: Annotated[
+        None | str,
+        Field(
+            description="Selected CV term search implementation class. "
+            "If it is not defined, default implementation will be used. "
+            "If you want to skip online searches, use `offline_mode`"
+        ),
+    ] = None
+
+
+class BaseProfileContext(JsonProfileBaseModel):
+    runtime_config: Annotated[
+        InstanceOf[ValidationRuntimeConfiguration],
+        Field(description="Runtime configuration"),
+    ]
+    profile_config: Annotated[
+        InstanceOf[BaseProfileConfiguration],
+        Field(description="Profile configuration"),
+    ]
 
 
 class EnforcementLevel(str, Enum):
@@ -119,6 +189,9 @@ class BaseCvTerm(JsonProfileBaseModel):
         )
 
 
+DEFAULT_MAPPING = CvTermFieldMapping()
+
+
 class CvTerm(JsonProfileBaseModel):
     """Controlled vocabulary term with an optional user-provided value."""
 
@@ -158,6 +231,13 @@ class CvTerm(JsonProfileBaseModel):
         handler: ModelWrapValidatorHandler["CvTerm"],
         info: ValidationInfo,
     ) -> "CvTerm":
+        mapping = DEFAULT_MAPPING
+        if isinstance(info.context, CvTermFieldMapping):
+            mapping = info.context
+        elif isinstance(info.context, BaseProfileContext):
+            profile_config = info.context.profile_config
+            mapping = profile_config.cv_term_field_mapping or DEFAULT_MAPPING
+
         if not data:
             return None
         if isinstance(data, CvTerm):
@@ -166,6 +246,13 @@ class CvTerm(JsonProfileBaseModel):
         if isinstance(val, Mapping):
             if len(val) == 1 and None in val:
                 val = data[None]
+            if isinstance(val, Mapping):
+                val = {
+                    "cv_label": val.get(mapping.label_field) or "",
+                    "cv_accession": val.get(mapping.accession_field) or "",
+                    "name": val.get(mapping.name_field) or "",
+                    "value": val.get(mapping.value_field) or "",
+                }
         if isinstance(val, str):
             cleaned = val.strip("[]")
             parts = cleaned.split(",", maxsplit=3)
@@ -203,6 +290,13 @@ class ExtendedCvTerm(CvTerm):
         handler: ModelWrapValidatorHandler["ExtendedCvTerm"],
         info: ValidationInfo,
     ) -> "ExtendedCvTerm":
+        mapping = DEFAULT_MAPPING
+        if isinstance(info.context, CvTermFieldMapping):
+            mapping = info.context
+        elif isinstance(info.context, BaseProfileContext):
+            profile_config = info.context.profile_config
+            mapping = profile_config.cv_term_field_mapping or DEFAULT_MAPPING
+
         if not data:
             return None
         if isinstance(data, ExtendedCvTerm):
@@ -212,11 +306,18 @@ class ExtendedCvTerm(CvTerm):
         if isinstance(val, Mapping):
             if len(val) == 1 and None in val:
                 val = data[None]
+            if isinstance(val, Mapping):
+                val = {
+                    "cv_label": val.get(mapping.label_field) or "",
+                    "cv_accession": val.get(mapping.accession_field) or "",
+                    "name": val.get(mapping.name_field) or "",
+                    "value": val.get(mapping.value_field) or "",
+                }
         if isinstance(val, dict):
             value_str: str = val.get("value", "")
             value_str = value_str.strip('"')
             if value_str.startswith("["):
-                value = CvTerm.model_validate(value_str.strip("[]"))
+                value = CvTerm.model_validate(value_str.strip("[]"), context=mapping)
                 val["value"] = value.model_dump(by_alias=True)
         elif isinstance(val, str):
             cleaned = val.strip("[]")
@@ -230,7 +331,9 @@ class ExtendedCvTerm(CvTerm):
                 value_str = parts[3].strip('"').strip()
                 value = value_str
                 if value_str.startswith("["):
-                    value = CvTerm.model_validate(value_str.strip("[]"))
+                    value = CvTerm.model_validate(
+                        value_str.strip("[]"), context=mapping
+                    )
 
             val = {
                 "cv_label": cv_label,

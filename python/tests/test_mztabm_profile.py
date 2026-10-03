@@ -3,8 +3,7 @@ import pathlib
 
 import orjson
 
-from jsonprofile.profile.base import EnforcementLevel
-from jsonprofile.profile.model import ValidationRuntimeConfiguration
+from jsonprofile.profile.base import EnforcementLevel, ValidationRuntimeConfiguration
 from jsonprofile.utils import setup_basic_logging_config
 from jsonprofile.validator import JsonValidator
 

@@ -4,15 +4,14 @@ from typing import Annotated, Any
 from pydantic import ConfigDict, Field
 
 from jsonprofile.profile.base import (
+    BaseProfileContext,
     EnforcementLevel,
     JsonPath,
     JsonProfileBaseModel,
     JsonProfileMessage,
-)
-from jsonprofile.profile.model import (
-    JsonProfileConfiguration,
     ValidationRuntimeConfiguration,
 )
+from jsonprofile.profile.model import JsonProfileConfiguration
 from jsonprofile.validator.base import CvTermSearch, ProfileValidatorFactory
 from jsonprofile.validator.opa_engine import OpaEngineFactory
 
@@ -85,7 +84,7 @@ class MessageCollector:
         )
 
 
-class JsonProfileRunContext(JsonProfileBaseModel):
+class JsonProfileRunContext(BaseProfileContext):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     runtime_config: Annotated[
