@@ -98,6 +98,7 @@ class ConstraintChecker(abc.ABC):
             join_operator=evaluation.join_operator,
             min_valid=evaluation.min_valid,
             max_valid=evaluation.max_valid,
+            negated=evaluation.negated,
         )
 
     def evaluate_results(
@@ -109,15 +110,20 @@ class ConstraintChecker(abc.ABC):
         min_valid: None | int = None,
         max_valid: None | int = None,
         default_evaluation: None | bool = None,
+        negated: None | bool = None,
     ):
         if all_items_count == 0:
             success = default_evaluation if default_evaluation is not None else True
+            if negated:
+                success = not success
             return success, "No item found for evaluation"
 
         if join_operator == "and":
             message = "some conditions are not satisfied"
+
             if valid_items_count == all_items_count:
-                return True, "all conditions are satisfied"
+                success = not negated
+                return success, "all conditions are satisfied"
         else:
             message = "some conditions are satisfied"
             min_valid = min_valid if min_valid is not None else 1
@@ -137,9 +143,11 @@ class ConstraintChecker(abc.ABC):
                 messages.append("min valid conditions is not satisfied")
             if min_valid_req and max_valid_req:
                 message = "all conditions are satisfied"
-                return True, message
+                success = not negated
+                return success, message
             message = ". ".join(messages)
-        return False, message
+        success = negated
+        return success, message
 
     def validate_constraint(
         self,

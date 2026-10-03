@@ -764,6 +764,13 @@ class Evaluation(JsonProfileBaseModel):
         Optional[int],
         Field(description="Maximum number of sub-results that may be valid."),
     ] = None
+    negated: Annotated[
+        Optional[bool],
+        Field(
+            description="Whether the evaluation should be negated. If set to true, "
+            "the evaluation value is inverted."
+        ),
+    ] = None
 
 
 DEFAULT_CONSTRAINTS: list[type[Constraint]] = [
