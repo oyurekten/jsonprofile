@@ -460,105 +460,29 @@ class JsonValidator:
             if not json_path:
                 logger.info("Field key is not defined. $ will be used.")
                 json_path = "$"
-            opa_field_requirements = [
-                x
-                for x in requirement_group.requirements
-                if isinstance(x, OpaFieldRequirement)
-            ]
-            wasm_file_reqs: dict[str, list[OpaFieldRequirement]] = {}
-            for opa_field in opa_field_requirements:
-                if opa_field.code in runtime_config.skipped_requirements:
-                    logger.warning(
-                        "%s for %s is in skipped list.", opa_field.code, json_path
-                    )
-                    constraint_name = (
-                        opa_field.policy_id
-                        if opa_field.policy_id
-                        else "field-requirement"
-                    )
-                    context.message_collector.add_message(
-                        json_path=json_path,
-                        message=JsonProfileMessage(
-                            code=opa_field.code,
-                            source=json_path,
-                            category=Category.PROFILE,
-                            name=constraint_name,
-                            enforcement_level=EnforcementLevel.RECOMMENDED,
-                            message=f"{opa_field.code} of '{json_path}' "
-                            "is in skipped list.",
-                        ),
-                    )
-                    continue
-                if opa_field.wasm_file_key not in wasm_file_reqs:
-                    wasm_file_reqs[opa_field.wasm_file_key] = []
-                wasm_file_reqs[opa_field.wasm_file_key].append(opa_field)
-            for opa_fields in wasm_file_reqs.values():
-                if opa_fields:
-                    start = time.perf_counter()
 
-                    self.validate_opa_field_requirement(
-                        opa_field_requirements=opa_fields,
-                        json_path=json_path,
-                        input_json=input_json,
-                        context=context,
-                    )
+            start = time.perf_counter()
 
-                    end = time.perf_counter()
-                    duration = end - start
-                    if duration > 0.5:
-                        logger.warning(
-                            "OPA policy requirement(s) execution time "
-                            "for %s: %.6f seconds",
-                            ", ".join([x.code for x in opa_fields]),
-                            (end - start),
-                        )
-
-            for field_requirement in requirement_group.requirements:
-                if isinstance(field_requirement, OpaFieldRequirement):
-                    continue
-
-                if field_requirement.code in runtime_config.skipped_requirements:
-                    logger.warning(
-                        "%s for %s is in skipped list.",
-                        field_requirement.code,
-                        json_path,
-                    )
-                    constraint_name = (
-                        field_requirement.value_constraint.type
-                        if field_requirement.value_constraint
-                        else "field-requirement"
-                    )
-                    context.message_collector.add_message(
-                        json_path=json_path,
-                        message=JsonProfileMessage(
-                            code=field_requirement.code,
-                            source=json_path,
-                            category=Category.PROFILE,
-                            name=constraint_name,
-                            enforcement_level=EnforcementLevel.RECOMMENDED,
-                            message=f"{field_requirement.code} of '{json_path}' "
-                            "is in skipped list.",
-                        ),
-                    )
-                    continue
-
-                start = time.perf_counter()
-
-                self.validate_requirement(
-                    field_requirement=field_requirement,
-                    json_path=json_path,
-                    input_json=input_json,
-                    context=context,
+            group_message_collector: MessageCollector = MessageCollector()
+            self.validate_requirement(
+                field_requirement=requirement_group,
+                json_path=json_path,
+                input_json=input_json,
+                context=context,
+                group_message_collector=group_message_collector,
+            )
+            for k, v in group_message_collector.messages.items():
+                for items in v.values():
+                    for item in items:
+                        context.message_collector.add_message(k, item)
+            end = time.perf_counter()
+            duration = end - start
+            if duration > 0.5:
+                logger.warning(
+                    "%s execution time: %.6f seconds",
+                    requirement_definition.code,
+                    (end - start),
                 )
-
-                end = time.perf_counter()
-                duration = end - start
-                if duration > 0.5:
-                    logger.warning(
-                        "%s execution time: %.6f seconds",
-                        field_requirement.code,
-                        (end - start),
-                    )
             json_path_eval_end = time.perf_counter()
             requirement_evaluation_times[source_json_path] = (
                 json_path_eval_end - json_path_eval_start
@@ -581,6 +505,7 @@ class JsonValidator:
         json_path: JsonPath,
         input_json: dict,
         context: JsonProfileRunContext,
+        group_message_collector: MessageCollector,
     ):
         policy_ids = [x.policy_id for x in opa_field_requirements]
         policy_id_reqs = {x.policy_id: x for x in opa_field_requirements}
@@ -641,7 +566,7 @@ class JsonValidator:
         messages_output = OpaPolicyMessagesOutput.model_validate(result[0])
 
         for item in messages_output.messages or []:
-            added = context.message_collector.add_message(
+            added = group_message_collector.add_message(
                 json_path=json_path,
                 message=JsonProfileMessage(
                     code=policy_id_reqs.get(item.policy_id).code,
@@ -657,13 +582,151 @@ class JsonValidator:
             if not added:
                 break
 
-    def validate_requirement(
+    def validate_opa_field_requirements(
         self,
-        field_requirement: FieldRequirement | OpaFieldRequirement,
+        field_requirement: OpaFieldRequirement | FieldRequirementGroup,
         json_path: JsonPath,
         input_json: dict,
         context: JsonProfileRunContext,
+        group_message_collector: MessageCollector,
     ):
+        if isinstance(field_requirement, FieldRequirementGroup):
+            opa_field_requirements = [
+                x
+                for x in field_requirement.requirements
+                if isinstance(x, OpaFieldRequirement)
+            ]
+        elif isinstance(field_requirement, OpaFieldRequirement):
+            opa_field_requirements = [opa_field_requirements]
+
+        wasm_file_reqs: dict[str, list[OpaFieldRequirement]] = {}
+        for opa_field in opa_field_requirements:
+            if opa_field.code in context.runtime_config.skipped_requirements:
+                logger.warning(
+                    "%s for %s is in skipped list.", opa_field.code, json_path
+                )
+                constraint_name = (
+                    opa_field.policy_id if opa_field.policy_id else "field-requirement"
+                )
+                group_message_collector.add_message(
+                    json_path=json_path,
+                    message=JsonProfileMessage(
+                        code=opa_field.code,
+                        source=json_path,
+                        category=Category.PROFILE,
+                        name=constraint_name,
+                        enforcement_level=EnforcementLevel.RECOMMENDED,
+                        message=f"{opa_field.code} of '{json_path}' "
+                        "is in skipped list.",
+                    ),
+                )
+                continue
+            if opa_field.wasm_file_key not in wasm_file_reqs:
+                wasm_file_reqs[opa_field.wasm_file_key] = []
+            wasm_file_reqs[opa_field.wasm_file_key].append(opa_field)
+        for opa_fields in wasm_file_reqs.values():
+            if opa_fields:
+                start = time.perf_counter()
+
+                self.validate_opa_field_requirement(
+                    opa_field_requirements=opa_fields,
+                    json_path=json_path,
+                    input_json=input_json,
+                    context=context,
+                    group_message_collector=group_message_collector,
+                )
+
+                end = time.perf_counter()
+                duration = end - start
+                if duration > 0.5:
+                    logger.warning(
+                        "OPA policy requirement(s) execution time for %s: %.6f seconds",
+                        ", ".join([x.code for x in opa_fields]),
+                        (end - start),
+                    )
+
+    def validate_requirement(
+        self,
+        field_requirement: FieldRequirement
+        | OpaFieldRequirement
+        | FieldRequirementGroup,
+        json_path: JsonPath,
+        input_json: dict,
+        context: JsonProfileRunContext,
+        group_message_collector: MessageCollector,
+    ):
+        if isinstance(field_requirement, OpaFieldRequirement):
+            valid = self.validate_opa_field_requirement(
+                opa_field_requirements=[field_requirement],
+                json_path=json_path,
+                context=context,
+                group_message_collector=group_message_collector,
+            )
+            return valid
+        if isinstance(field_requirement, FieldRequirementGroup):
+            sub_message_collector: MessageCollector = MessageCollector()
+
+            self.validate_opa_field_requirements(
+                field_requirement=field_requirement,
+                json_path=json_path,
+                input_json=input_json,
+                context=context,
+                group_message_collector=sub_message_collector,
+            )
+            for item in field_requirement.requirements:
+                if isinstance(field_requirement, OpaFieldRequirement):
+                    continue
+                valid = self.validate_requirement(
+                    field_requirement=item,
+                    json_path=json_path,
+                    input_json=input_json,
+                    context=context,
+                    group_message_collector=sub_message_collector,
+                )
+            instances = {}
+
+            for (
+                source_json_path,
+                messages_dict,
+            ) in sub_message_collector.messages.items():
+                if source_json_path not in instances:
+                    instances[source_json_path] = {}
+                for code, messages in messages_dict.items():
+                    items = [
+                        x
+                        for x in messages
+                        if x.enforcement_level == EnforcementLevel.REQUIRED
+                    ]
+                    if items:
+                        instances[source_json_path][code] = items
+            valid_requirements = {}
+            for source, message_list in instances.items():
+                valid_reqs = len(field_requirement.requirements) - len(message_list)
+                valid_requirements[source] = valid_reqs
+
+                valid_requirement_group = (
+                    len(field_requirement.requirements) == valid_reqs
+                )
+                if not valid_requirement_group:
+                    min_valid = False
+                    if (
+                        field_requirement.min_valid is None
+                        or field_requirement.min_valid >= valid_reqs
+                    ):
+                        min_valid = True
+                    max_valid = False
+                    if (
+                        field_requirement.max_valid is None
+                        or field_requirement.max_valid <= valid_reqs
+                    ):
+                        max_valid = True
+                    if min_valid and max_valid:
+                        valid_requirement_group = True
+                if not valid_requirement_group:
+                    for items in message_list.values():
+                        for message in items:
+                            group_message_collector.add_message(message.source, message)
+            return
         runtime_config = context.runtime_config
 
         constraint_name = (
@@ -675,7 +738,7 @@ class JsonValidator:
             if runtime_config and runtime_config.skip_decimal_validations:
                 if isinstance(field_requirement.value_constraint, DecimalConstraint):
                     logger.warning("Decimal validations are skipped for %s", json_path)
-                    context.message_collector.add_message(
+                    group_message_collector.add_message(
                         json_path=json_path,
                         message=JsonProfileMessage(
                             code=field_requirement.code,
@@ -687,7 +750,7 @@ class JsonValidator:
                             f"are skipped for '{json_path}'",
                         ),
                     )
-                    return
+                    return False
         jsonpath_expr = context.json_path_expressions.get(json_path)
         if not jsonpath_expr:
             jsonpath_expr = jsonpath_ng.parse(json_path)
@@ -696,7 +759,7 @@ class JsonValidator:
         matches = jsonpath_expr.find(input_json)
         if not matches:
             if field_requirement.match_is_required:
-                context.message_collector.add_message(
+                group_message_collector.add_message(
                     json_path=json_path,
                     message=JsonProfileMessage(
                         code=field_requirement.code,
@@ -709,14 +772,14 @@ class JsonValidator:
                 )
         else:
             for x in matches or []:
-                if context.message_collector.is_open(field_requirement.code):
+                if group_message_collector.is_open(field_requirement.code):
                     break
                 source = convert_full_path(x.full_path)
                 if (
                     field_requirement.required_properties
                     or field_requirement.recommended_properties
                 ) and not isinstance(x.value, Mapping):
-                    context.message_collector.add_message(
+                    group_message_collector.add_message(
                         json_path=source,
                         message=JsonProfileMessage(
                             code=field_requirement.code,
@@ -736,7 +799,7 @@ class JsonValidator:
                     ]
                     if not_defined_fields:
                         fields = ", ".join(not_defined_fields)
-                        context.message_collector.add_message(
+                        group_message_collector.add_message(
                             json_path=source,
                             message=JsonProfileMessage(
                                 code=field_requirement.code,
@@ -785,7 +848,7 @@ class JsonValidator:
                             context=context,
                         )
                         if not res.is_valid:
-                            context.message_collector.add_message(
+                            group_message_collector.add_message(
                                 json_path=source,
                                 message=JsonProfileMessage(
                                     code=field_requirement.code,
