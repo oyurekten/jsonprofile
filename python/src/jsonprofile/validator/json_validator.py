@@ -84,6 +84,7 @@ class JsonValidator:
             referenced_profiles if referenced_profiles is not None else {}
         )
         self.json_profile = self.create_profile(profile)
+        self.default_cv_term_search = default_cv_term_search
         if not default_cv_term_search:
             self.default_cv_term_search = OlsCvTermSearch()
 
@@ -371,7 +372,7 @@ class JsonValidator:
             message_collector=MessageCollector(
                 runtime_config.max_messages_for_each_requirement
             ),
-            json_path_expressions=self.json_path_expressions or {},
+            json_path_expressions=self.json_path_expressions,
         )
 
     def validate_jsonschema(
@@ -497,6 +498,7 @@ class JsonValidator:
             for json_path, elapsed_time in requirement_evaluation_times.items():
                 logger.debug("%s\t%0.6f", json_path, elapsed_time)
 
+        self.json_path_expressions.update(context.json_path_expressions)
         return context.message_collector.process_messages()
 
     def validate_opa_field_requirement(

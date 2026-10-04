@@ -838,23 +838,26 @@ class UriConstraintChecker(ConstraintChecker):
             else:
                 try:
                     ref = rfc3986.urlparse(val)
-                    self.validator.validate(ref)
-
-                    if constraint.allowed_schemes:
-                        if ref.scheme in constraint.allowed_schemes:
-                            evaluation = True
-                            message = "value is valid url with allowed scheme"
-                        else:
-                            message = (
-                                f"value is valid url but scheme '{ref.scheme}' "
-                                f"is not in allowed schemes: "
-                                f"{', '.join(constraint.allowed_schemes)}"
-                            )
+                    valid = all([ref.scheme, ref.netloc or ref.path])
+                    if not valid:
+                        evaluation = False
+                        message = f"value '{val}' is not a valid URI"
                     else:
-                        evaluation = True
-                        message = "value is valid url"
+                        if constraint.allowed_schemes:
+                            if ref.scheme in constraint.allowed_schemes:
+                                evaluation = True
+                                message = "value is valid url with allowed scheme"
+                            else:
+                                message = (
+                                    f"value is valid url but scheme '{ref.scheme}' "
+                                    f"is not in allowed schemes: "
+                                    f"{', '.join(constraint.allowed_schemes)}"
+                                )
+                        else:
+                            evaluation = True
+                            message = "value is valid url"
                 except Exception:  # noqa: E722
-                    message = "value is not valid url"
+                    message = f"value {val} is not valid url"
 
         if constraint.negated:
             evaluation = not evaluation
