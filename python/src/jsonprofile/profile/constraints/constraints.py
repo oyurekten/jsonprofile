@@ -459,6 +459,10 @@ class BaseCvTermConstraint(Constraint):
         Optional[list[Optional[str]]],
         Field(description="String values that should be treated as null CV terms."),
     ] = None
+    allow_synonym: Annotated[
+        Optional[bool],
+        Field(description="Whether cv term name can be a synonym of the cv term"),
+    ] = None
 
 
 class CVTermConstraint(BaseCvTermConstraint):

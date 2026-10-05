@@ -916,7 +916,12 @@ class CVTermConstraintChecker(ConstraintChecker):
                                 name_req = True
                                 message = "term is valid."
                             else:
-                                verified, message = cv_term_search.check_cv_term(param)
+                                verified, message = cv_term_search.check_cv_term(
+                                    param,
+                                    allow_synonym_search=True
+                                    if constraint.allow_synonym
+                                    else False,
+                                )
                                 return verified, message
 
                     else:
@@ -1002,7 +1007,12 @@ class CVListConstraintChecker(ConstraintChecker):
                                             message = "offline mode."
                                         else:
                                             verified, message = (
-                                                cv_term_search.check_cv_term(param)
+                                                cv_term_search.check_cv_term(
+                                                    param,
+                                                    allow_synonym_search=True
+                                                    if constraint.allow_synonym
+                                                    else False,
+                                                )
                                             )
                                             return verified, message
                                     else:
@@ -1016,7 +1026,12 @@ class CVListConstraintChecker(ConstraintChecker):
                                         message = "offline mode."
                                     else:
                                         verified, message = (
-                                            cv_term_search.check_cv_term(param)
+                                            cv_term_search.check_cv_term(
+                                                param,
+                                                allow_synonym_search=True
+                                                if constraint.allow_synonym
+                                                else False,
+                                            )
                                         )
                                         return verified, message
 
@@ -1181,7 +1196,11 @@ class ParentCVTermConstraintChecker(ConstraintChecker):
                                     for parent in constraint.parent_cv_terms or []:
                                         verified, message = (
                                             cv_term_search.check_cv_term(
-                                                cv_term=param, parent_cv_term=parent
+                                                cv_term=param,
+                                                parent_cv_term=parent,
+                                                allow_synonym_search=True
+                                                if constraint.allow_synonym
+                                                else False,
                                             )
                                         )
                                         if verified:
