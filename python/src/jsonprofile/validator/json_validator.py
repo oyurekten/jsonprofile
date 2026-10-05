@@ -661,6 +661,7 @@ class JsonValidator:
             valid = self.validate_opa_field_requirement(
                 opa_field_requirements=[field_requirement],
                 json_path=json_path,
+                input_json=input_json,
                 context=context,
                 group_message_collector=group_message_collector,
             )
