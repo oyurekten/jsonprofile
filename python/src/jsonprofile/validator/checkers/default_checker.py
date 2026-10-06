@@ -336,11 +336,15 @@ class CollectionConstraintChecker(ConstraintChecker):
                         tuple(x) if is_non_string_container(x) else (x,)
                         for x in constraint.match_reference_values or []
                     ]
+                    exceptional_values = [
+                        tuple(x) if is_non_string_container(x) else (x,)
+                        for x in constraint.exceptional_values or []
+                    ]
                     matched = []
                     matched_set = set()
                     unmatched_set = set()
                     for key, item in zipped.items():
-                        if item in references:
+                        if item in references or item in exceptional_values:
                             matched.append(key)
                             matched_set.add(item)
                         else:
@@ -352,12 +356,23 @@ class CollectionConstraintChecker(ConstraintChecker):
                     matched_count = len(matched)
                     reference_value_matched_count = len(matched_set)
 
+                    refs = []
+                    for sub in constraint.item_value_jsonpath_list or []:
+                        if constraint.json_path:
+                            prefix = constraint.json_path.lstrip("$").lstrip(".")
+                            trimmed = sub.lstrip("$").lstrip(".")
+                            if trimmed.startswith("["):
+                                refs.append(f"{prefix}{sub}")
+                            else:
+                                refs.append(f"{prefix}.{sub}")
+                        else:
+                            refs.append(sub.lstrip("$").lstrip("."))
                     if constraint.min_match is not None:
                         if matched_count >= constraint.min_match:
                             min_match_req = True
                         else:
                             messages.append(
-                                "Minimum items matched error. "
+                                f"Minimum items matched error in {', '.join(refs)}. "
                                 f"Matched count: {matched_count}, "
                                 f"expected : {constraint.min_match}"
                             )
@@ -368,7 +383,7 @@ class CollectionConstraintChecker(ConstraintChecker):
                             max_match_req = True
                         else:
                             messages.append(
-                                "Maximum items matched error. "
+                                f"Maximum items matched error in {', '.join(refs)}. "
                                 f"Matched count: {matched_count}, "
                                 f"expected : {constraint.max_match}"
                             )
@@ -385,10 +400,8 @@ class CollectionConstraintChecker(ConstraintChecker):
                             messages.append(
                                 "Minimum matched item error. "
                                 f"Matched count: {matched_count}, "
-                                f"expected : {constraint.min_match}. "
-                                "items are fetched with "
-                                f"'{', '.join(constraint.item_value_jsonpath_list)}'"
-                                " :, reference values: "
+                                "Expected values for "
+                                f"'{', '.join(refs)}': "
                                 f"{', '.join([str(x) for x in ref_values])}"
                             )
                     else:
@@ -397,11 +410,9 @@ class CollectionConstraintChecker(ConstraintChecker):
                         else:
                             messages.append(
                                 "Minimum matched item error. "
-                                f"Matched count: {matched_count}, "
-                                f"expected at least 1. "
-                                "items are fetched with "
-                                f"'{', '.join(constraint.item_value_jsonpath_list)}'"
-                                " :, reference values: "
+                                f"Matched count: {matched_count}"
+                                "Expected values for "
+                                f"'{', '.join(refs)}': "
                                 f"{', '.join([str(x) for x in ref_values])}"
                             )
                     if constraint.max_referenced_value_match is not None:
@@ -414,9 +425,8 @@ class CollectionConstraintChecker(ConstraintChecker):
                             messages.append(
                                 "Maximum matched item error. "
                                 f"Matched count: {matched_count}, "
-                                f"expected : {constraint.max_match}. "
-                                "items are fetched with "
-                                f"'{', '.join(constraint.item_value_jsonpath_list)}'"
+                                f"expected : {constraint.max_referenced_value_match}. "
+                                f"'{', '.join(refs)}'"
                                 " :, reference values: "
                                 f"{', '.join([str(x) for x in ref_values])}"
                             )
@@ -426,9 +436,8 @@ class CollectionConstraintChecker(ConstraintChecker):
                         else:
                             messages.append(
                                 "Unmatched values "
-                                f"{', '.join([str(x) for x in unmatched_set])}"
-                                " fetched with "
-                                f"'{', '.join(constraint.item_value_jsonpath_list)}'"
+                                f"{', '.join([str(x) for x in unmatched_set])}: "
+                                f"'{', '.join(refs)}'"
                                 " :, reference values: "
                                 f"{', '.join([str(x) for x in ref_values])}"
                             )

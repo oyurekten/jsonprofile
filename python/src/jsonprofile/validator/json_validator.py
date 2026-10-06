@@ -450,7 +450,9 @@ class JsonValidator:
                 requirement_definition, (FieldRequirement, OpaFieldRequirement)
             ):
                 requirement_group = FieldRequirementGroup(
-                    requirements=[requirement_definition]
+                    code=requirement_definition.code,
+                    description=requirement_definition.description,
+                    requirements=[requirement_definition],
                 )
             elif isinstance(requirement_definition, FieldRequirementGroup):
                 requirement_group = requirement_definition

@@ -100,7 +100,7 @@ class Constraint(abc.ABC, JsonProfileBaseModel):
         Field(description="Values that should be treated as null."),
     ] = None
     exceptional_values: Annotated[
-        Optional[list[Union[None, str]]],
+        Optional[list[Union[None, str, BaseCvTerm]]],
         Field(
             description="Values that bypass this constraint. If the input value is in "
             "this list, the constraint evaluates as valid."
@@ -179,7 +179,7 @@ class NotNullConstraint(Constraint):
         Field(description="Whether the comparison should be case-sensitive."),
     ] = None
     exceptional_values: Annotated[
-        Optional[list[Union[None, str]]],
+        Optional[list[Union[None, str, BaseCvTerm]]],
         Field(
             frozen=True,
             description="Values that are accepted even when they would otherwise fail "
