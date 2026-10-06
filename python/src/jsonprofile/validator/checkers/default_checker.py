@@ -404,13 +404,13 @@ class CollectionConstraintChecker(ConstraintChecker):
                                 " :, reference values: "
                                 f"{', '.join([str(x) for x in ref_values])}"
                             )
-                    if constraint.max_referenced_valued_match is not None:
+                    if constraint.max_referenced_value_match is not None:
                         if (
                             reference_value_matched_count
-                            <= constraint.max_referenced_valued_match
+                            <= constraint.max_referenced_value_match
                         ):
                             max_referenced_value_req = True
-                        elif constraint.max_referenced_valued_match > matched_count:
+                        elif constraint.max_referenced_value_match > matched_count:
                             messages.append(
                                 "Maximum matched item error. "
                                 f"Matched count: {matched_count}, "
