@@ -227,19 +227,6 @@ class CollectionConstraintChecker(ConstraintChecker):
         root: dict[str, Any],
         context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
-        collection_value = value
-        if value and constraint.json_path:
-            target_json_path = constraint.json_path
-            json_expression = context.json_path_expressions.get(target_json_path)
-            if not json_expression:
-                if not target_json_path.startswith("$"):
-                    target_json_path = (
-                        "$" if target_json_path.startswith(".") else "$."
-                    ) + target_json_path
-                json_expression = jsonpath_ng.parse(constraint.json_path)
-                context.json_path_expressions[constraint.json_path] = json_expression
-            collection_value = json_expression.find(value)
-
         mapping = context.profile_config.cv_term_field_mapping or DEFAULT_MAPPING
         if value is not None and constraint.null_values:
             str_val = str(value)
@@ -264,11 +251,11 @@ class CollectionConstraintChecker(ConstraintChecker):
             elif not constraint.min_occurs:
                 min_req = True
             message = "value is not defined"
-        elif not isinstance(collection_value, list):
+        elif not isinstance(value, list):
             message = f"{constraint.json_path} is not a collection."
             return False, message
         else:
-            val = collection_value
+            val = value
             if constraint.exceptional_values and (
                 val in constraint.exceptional_values
                 or value in constraint.exceptional_values
@@ -306,12 +293,22 @@ class CollectionConstraintChecker(ConstraintChecker):
                     )
                 if constraint.match_reference_values:
                     values: list[dict[str, Any]] = []
-                    for json_path in constraint.item_value_jsonpath_list:
+                    for item_json_path in constraint.item_value_jsonpath_list:
+                        if not item_json_path.startswith("$"):
+                            if item_json_path.startswith("."):
+                                item_json_path = f"${item_json_path}"
+                            else:
+                                item_json_path = f"$.{item_json_path}"
                         item_values = {}
-                        json_expression = context.json_path_expressions.get(json_path)
+                        values.append(item_values)
+                        json_expression = context.json_path_expressions.get(
+                            item_json_path
+                        )
                         if not json_expression:
-                            json_expression = jsonpath_ng.parse(json_path)
-                            context.json_path_expressions[json_path] = json_expression
+                            json_expression = jsonpath_ng.parse(item_json_path)
+                            context.json_path_expressions[item_json_path] = (
+                                json_expression
+                            )
                         matches = json_expression.find(value)
                         for x in matches or []:
                             source = convert_full_path(x.full_path)
@@ -341,10 +338,17 @@ class CollectionConstraintChecker(ConstraintChecker):
                     ]
                     matched = []
                     matched_set = set()
+                    unmatched_set = set()
                     for key, item in zipped.items():
                         if item in references:
                             matched.append(key)
                             matched_set.add(item)
+                        else:
+                            unmatched_set.add(
+                                item[0]
+                                if isinstance(item, tuple) and len(item) == 1
+                                else item
+                            )
                     matched_count = len(matched)
                     reference_value_matched_count = len(matched_set)
 
@@ -370,7 +374,7 @@ class CollectionConstraintChecker(ConstraintChecker):
                             )
                     else:
                         max_match_req = True
-
+                    ref_values = constraint.match_reference_values
                     if constraint.min_referenced_value_match is not None:
                         if (
                             reference_value_matched_count
@@ -385,17 +389,28 @@ class CollectionConstraintChecker(ConstraintChecker):
                                 "items are fetched with "
                                 f"'{', '.join(constraint.item_value_jsonpath_list)}'"
                                 " :, reference values: "
-                                f"{', '.join(constraint.match_reference_values)}"
+                                f"{', '.join([str(x) for x in ref_values])}"
                             )
                     else:
-                        min_referenced_value_req = True
-                    if constraint.max_reference_value_match is not None:
+                        if len(zipped) == 0 or reference_value_matched_count > 0:
+                            min_referenced_value_req = True
+                        else:
+                            messages.append(
+                                "Minimum matched item error. "
+                                f"Matched count: {matched_count}, "
+                                f"expected at least 1. "
+                                "items are fetched with "
+                                f"'{', '.join(constraint.item_value_jsonpath_list)}'"
+                                " :, reference values: "
+                                f"{', '.join([str(x) for x in ref_values])}"
+                            )
+                    if constraint.max_referenced_valued_match is not None:
                         if (
                             reference_value_matched_count
-                            <= constraint.max_reference_value_match
+                            <= constraint.max_referenced_valued_match
                         ):
                             max_referenced_value_req = True
-                        elif constraint.max_reference_value_match > matched_count:
+                        elif constraint.max_referenced_valued_match > matched_count:
                             messages.append(
                                 "Maximum matched item error. "
                                 f"Matched count: {matched_count}, "
@@ -403,10 +418,20 @@ class CollectionConstraintChecker(ConstraintChecker):
                                 "items are fetched with "
                                 f"'{', '.join(constraint.item_value_jsonpath_list)}'"
                                 " :, reference values: "
-                                f"{', '.join(constraint.match_reference_values)}"
+                                f"{', '.join([str(x) for x in ref_values])}"
                             )
                     else:
-                        max_referenced_value_req = True
+                        if not unmatched_set:
+                            max_referenced_value_req = True
+                        else:
+                            messages.append(
+                                "Unmatched values "
+                                f"{', '.join([str(x) for x in unmatched_set])}"
+                                " fetched with "
+                                f"'{', '.join(constraint.item_value_jsonpath_list)}'"
+                                " :, reference values: "
+                                f"{', '.join([str(x) for x in ref_values])}"
+                            )
                 else:
                     min_match_req = True
                     max_match_req = True

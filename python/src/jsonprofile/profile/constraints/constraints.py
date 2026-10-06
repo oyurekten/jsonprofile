@@ -156,7 +156,7 @@ class CollectionConstraint(Constraint):
         ),
     ] = None
 
-    max_reference_value_match: Annotated[
+    max_referenced_valued_match: Annotated[
         Optional[int],
         Field(
             description="Maximum number of reference values that may match collection "

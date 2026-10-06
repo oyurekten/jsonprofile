@@ -1021,7 +1021,7 @@
           "description": "Minimum number of reference values that must match at least one collection item.",
           "title": "Min Referenced Value Match"
         },
-        "max_reference_value_match": {
+        "max_reference_valued_match": {
           "anyOf": [
             {
               "minimum": 0,
