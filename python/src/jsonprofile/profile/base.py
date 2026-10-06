@@ -188,6 +188,9 @@ class BaseCvTerm(JsonProfileBaseModel):
             f"{sanitize_str(self.name)}, "
         )
 
+    def __hash__(self):
+        return hash(self.__str__())
+
 
 DEFAULT_MAPPING = CvTermFieldMapping()
 

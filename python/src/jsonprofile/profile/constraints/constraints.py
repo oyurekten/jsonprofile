@@ -62,6 +62,10 @@ class Constraint(abc.ABC, JsonProfileBaseModel):
         Optional[str],
         Field(description="Optional constraint name used to select a custom checker."),
     ] = None
+    description: Annotated[
+        Optional[str],
+        Field(description="Optional constraint description."),
+    ] = None
     precondition: Annotated[
         None | Precondition,
         Field(

@@ -103,7 +103,7 @@ class NotNullConstraintChecker(ConstraintChecker):
 
         if constraint.negated:
             evaluation = not evaluation
-        return evaluation, message
+        return evaluation, self.format_message(constraint, message)
 
 
 @constraint_checker(RegexConstraint)
@@ -157,7 +157,7 @@ class RegexConstraintChecker(ConstraintChecker):
 
         if constraint.negated:
             evaluation = not evaluation
-        return evaluation, message
+        return evaluation, self.format_message(constraint, message)
 
 
 @constraint_checker(StringConstraint)
@@ -215,7 +215,7 @@ class StringConstraintChecker(ConstraintChecker):
         evaluation = True if min_req and max_req else False
         if constraint.negated:
             evaluation = not evaluation
-        return evaluation, message
+        return evaluation, self.format_message(constraint, message)
 
 
 @constraint_checker(CollectionConstraint)
@@ -227,6 +227,20 @@ class CollectionConstraintChecker(ConstraintChecker):
         root: dict[str, Any],
         context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
+        collection_value = value
+        if value and constraint.json_path:
+            target_json_path = constraint.json_path
+            json_expression = context.json_path_expressions.get(target_json_path)
+            if not json_expression:
+                if not target_json_path.startswith("$"):
+                    target_json_path = (
+                        "$" if target_json_path.startswith(".") else "$."
+                    ) + target_json_path
+                json_expression = jsonpath_ng.parse(constraint.json_path)
+                context.json_path_expressions[constraint.json_path] = json_expression
+            collection_value = json_expression.find(value)
+
+        mapping = context.profile_config.cv_term_field_mapping or DEFAULT_MAPPING
         if value is not None and constraint.null_values:
             str_val = str(value)
             if str_val in constraint.null_values:
@@ -250,11 +264,11 @@ class CollectionConstraintChecker(ConstraintChecker):
             elif not constraint.min_occurs:
                 min_req = True
             message = "value is not defined"
-        elif not isinstance(value, list):
-            message = "value is not a collection."
+        elif not isinstance(collection_value, list):
+            message = f"{constraint.json_path} is not a collection."
             return False, message
         else:
-            val = value
+            val = collection_value
             if constraint.exceptional_values and (
                 val in constraint.exceptional_values
                 or value in constraint.exceptional_values
@@ -298,11 +312,7 @@ class CollectionConstraintChecker(ConstraintChecker):
                         if not json_expression:
                             json_expression = jsonpath_ng.parse(json_path)
                             context.json_path_expressions[json_path] = json_expression
-                        # if json_path.startswith("@"):
                         matches = json_expression.find(value)
-                        # else:
-                        #     matches = json_expression.find(root)
-
                         for x in matches or []:
                             source = convert_full_path(x.full_path)
                             if (
@@ -311,8 +321,17 @@ class CollectionConstraintChecker(ConstraintChecker):
                             ):
                                 item_values[source] = None
                             else:
-                                item_values[source] = x.value
-                        values.append(item_values)
+                                current_value = x.value
+                                first_item = constraint.match_reference_values[0]
+                                if isinstance(first_item, BaseCvTerm):
+                                    current_value = BaseCvTerm(
+                                        cv_label=current_value.get(mapping.label_field),
+                                        cv_accession=current_value.get(
+                                            mapping.accession_field
+                                        ),
+                                        name=current_value.get(mapping.name_field),
+                                    )
+                                item_values[source] = current_value
                     keys = set().union(*(d.keys() for d in values))
 
                     zipped = {key: tuple(d.get(key) for d in values) for key in keys}
@@ -407,7 +426,7 @@ class CollectionConstraintChecker(ConstraintChecker):
         evaluation = True if all_results else False
         if constraint.negated:
             evaluation = not evaluation
-        return evaluation, message
+        return evaluation, self.format_message(constraint, message)
 
 
 @constraint_checker(StringEnumConstraint)
@@ -445,7 +464,7 @@ class StringEnumConstraintChecker(ConstraintChecker):
 
         if constraint.negated:
             evaluation = not evaluation
-        return evaluation, message
+        return evaluation, self.format_message(constraint, message)
 
 
 @constraint_checker(IntegerEnumConstraint)
@@ -490,7 +509,7 @@ class IntegerEnumConstraintChecker(ConstraintChecker):
 
         if constraint.negated:
             evaluation = not evaluation
-        return evaluation, message
+        return evaluation, self.format_message(constraint, message)
 
 
 @constraint_checker(IntegerConstraint)
@@ -557,7 +576,7 @@ class IntegerConstraintChecker(ConstraintChecker):
         evaluation = True if min_req and max_req else False
         if constraint.negated:
             evaluation = not evaluation
-        return evaluation, message
+        return evaluation, self.format_message(constraint, message)
 
 
 @constraint_checker(NonNegativeIntegerConstraint)
@@ -612,7 +631,7 @@ class BooleanConstraintChecker(ConstraintChecker):
 
         if constraint.negated:
             evaluation = not evaluation
-        return evaluation, message
+        return evaluation, self.format_message(constraint, message)
 
 
 @constraint_checker(DecimalConstraint)
@@ -719,7 +738,7 @@ class DecimalConstraintChecker(ConstraintChecker):
         )
         if constraint.negated:
             evaluation = not evaluation
-        return evaluation, message
+        return evaluation, self.format_message(constraint, message)
 
 
 @constraint_checker(DateTimeConstraint)
@@ -763,7 +782,7 @@ class DateTimeConstraintChecker(ConstraintChecker):
 
         if constraint.negated:
             evaluation = not evaluation
-        return evaluation, message
+        return evaluation, self.format_message(constraint, message)
 
 
 @constraint_checker(EmailConstraint)
@@ -802,7 +821,7 @@ class EmailConstraintChecker(ConstraintChecker):
 
         if constraint.negated:
             evaluation = not evaluation
-        return evaluation, message
+        return evaluation, self.format_message(constraint, message)
 
 
 @constraint_checker(UriConstraint)
@@ -861,7 +880,7 @@ class UriConstraintChecker(ConstraintChecker):
 
         if constraint.negated:
             evaluation = not evaluation
-        return evaluation, message
+        return evaluation, self.format_message(constraint, message)
 
 
 @constraint_checker(CVTermConstraint)
@@ -922,7 +941,9 @@ class CVTermConstraintChecker(ConstraintChecker):
                                     if constraint.allow_synonym
                                     else False,
                                 )
-                                return verified, message
+                                return verified, self.format_message(
+                                    constraint, message
+                                )
 
                     else:
                         message = f"invalid cv term name: {param}"
@@ -942,7 +963,7 @@ class CVTermConstraintChecker(ConstraintChecker):
 
         if constraint.negated:
             evaluation = not evaluation
-        return evaluation, message
+        return evaluation, self.format_message(constraint, message)
 
 
 @constraint_checker(CVListConstraint)
@@ -1014,7 +1035,9 @@ class CVListConstraintChecker(ConstraintChecker):
                                                     else False,
                                                 )
                                             )
-                                            return verified, message
+                                            return verified, self.format_message(
+                                                constraint, message
+                                            )
                                     else:
                                         message = (
                                             f"'{param}' not in the selected cv list: "
@@ -1033,7 +1056,9 @@ class CVListConstraintChecker(ConstraintChecker):
                                                 else False,
                                             )
                                         )
-                                        return verified, message
+                                        return verified, self.format_message(
+                                            constraint, message
+                                        )
 
                     else:
                         message = "invalid cv term name."
@@ -1053,7 +1078,7 @@ class CVListConstraintChecker(ConstraintChecker):
 
         if constraint.negated:
             evaluation = not evaluation
-        return evaluation, message
+        return evaluation, self.format_message(constraint, message)
 
 
 @constraint_checker(CVTermEnumConstraint)
@@ -1137,7 +1162,7 @@ class CVTermEnumConstraintChecker(ConstraintChecker):
 
         if constraint.negated:
             evaluation = not evaluation
-        return evaluation, message
+        return evaluation, self.format_message(constraint, message)
 
 
 @constraint_checker(ParentCVTermConstraint)
@@ -1244,7 +1269,7 @@ class ParentCVTermConstraintChecker(ConstraintChecker):
 
         if constraint.negated:
             evaluation = not evaluation
-        return evaluation, message
+        return evaluation, self.format_message(constraint, message)
 
 
 @constraint_checker(CVTermValueConstraint)
@@ -1286,7 +1311,7 @@ class CVTermValueConstraintChecker(ConstraintChecker):
 
         if constraint.negated:
             evaluation = not evaluation
-        return evaluation, message
+        return evaluation, self.format_message(constraint, message)
 
 
 @constraint_checker(ConstraintGroup)
@@ -1347,7 +1372,7 @@ class ConstraintGroupChecker(ConstraintChecker):
         message = ". ".join(messages)
         if constraint.negated:
             evaluation = not evaluation
-        return evaluation, message
+        return evaluation, self.format_message(constraint, message)
 
 
 class OpaPolicyInput(JsonProfileBaseModel):
@@ -1455,4 +1480,4 @@ class OpaPolicyConstraintChecker(ConstraintChecker):
 
         if constraint.negated:
             evaluation = not evaluation
-        return evaluation, message
+        return evaluation, self.format_message(constraint, message)

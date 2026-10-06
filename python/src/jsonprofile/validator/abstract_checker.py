@@ -45,6 +45,11 @@ class ConstraintChecker(abc.ABC):
         context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]: ...
 
+    def format_message(self, constraint: Constraint, message: str):
+        if constraint and constraint.description:
+            return f"{constraint.description}. {message.strip()}"
+        return message.strip()
+
     def evaluate_precondition(
         self,
         constraint: Constraint,
