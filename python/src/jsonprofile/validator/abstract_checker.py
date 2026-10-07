@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Literal, Mapping, Optional, Tuple
 
 import jsonpath_ng
 
-from jsonprofile.profile.base import JsonProfileBaseModel
+from jsonprofile.profile.base import JsonPath, JsonProfileBaseModel
 from jsonprofile.profile.constraints.constraints import (
     Constraint,
     DecimalConstraint,
@@ -50,6 +50,21 @@ class ConstraintChecker(abc.ABC):
             return f"{constraint.description}. {message.strip()}"
         return message.strip()
 
+    def join_json_path(self, path1: JsonPath, path2: None | JsonPath = None):
+
+        path1 = path1 or ""
+        path2 = path2 or ""
+        path2 = path2.strip().lstrip("$").strip(".")
+        path1 = path1.strip().lstrip("$").strip(".")
+        if not path1 and not path2:
+            return "$"
+        if not path2:
+            return f"$.{path1}"
+
+        if path2.startswith("["):
+            return f"$.{path1}{path2}" if path1 else f"$.{path2}"
+        return f"$.{path1}.{path2}" if path1 else f"$.{path2}"
+
     def evaluate_precondition(
         self,
         constraint: Constraint,
@@ -65,8 +80,7 @@ class ConstraintChecker(abc.ABC):
         for evaluation in constraint.precondition.evaluations:
             json_path = evaluation.json_path or "$"
 
-            if not json_path.startswith("$"):
-                json_path = f"${json_path}"
+            json_path = self.join_json_path(json_path)
             json_input = root if evaluation.root_value_evaluation else value
             checker = context.profile_validator_factory.get_checker(
                 evaluation.constraint

@@ -498,7 +498,7 @@ class JsonValidator:
         )
         if logger.getEffectiveLevel() == logging.DEBUG:
             for json_path, elapsed_time in requirement_evaluation_times.items():
-                logger.debug("%s\t%0.6f", json_path, elapsed_time)
+                logger.debug("Elapsed time: %s\t%0.6f sec.", json_path, elapsed_time)
 
         self.json_path_expressions.update(context.json_path_expressions)
         return context.message_collector.process_messages()
@@ -846,6 +846,10 @@ class JsonValidator:
                             skip = True
 
                     if not skip:
+                        if not field_requirement.value_constraint.description:
+                            field_requirement.value_constraint.description = (
+                                field_requirement.description
+                            )
                         res = checker.validate_constraint(
                             constraint=field_requirement.value_constraint,
                             value=x.value,

@@ -107,6 +107,23 @@ class Constraint(abc.ABC, JsonProfileBaseModel):
         ),
     ] = None
 
+    def summarize(self) -> str:
+        values = [f"type:{self.type}"]
+
+        if self.null_values:
+            values.append(
+                f"null values: {', '.join([str(x) for x in self.null_values])}"
+            )
+        if self.exceptional_values:
+            values.append(
+                f"exceptional values: "
+                f"{', '.join([str(x) for x in self.exceptional_values])}"
+            )
+        if self.negated:
+            values.append("negated")
+
+        return "; ".join(values)
+
 
 class CollectionConstraint(Constraint):
     """Validates collection size and item matches against reference values."""
@@ -132,6 +149,10 @@ class CollectionConstraint(Constraint):
             "collection item before comparing against reference values. If omitted, "
             "the serialized collection item is compared."
         ),
+    ] = None
+    item_value_match_constraint: Annotated[
+        None | Constraint,
+        Field(description="Constraint definition to evaluate collection items."),
     ] = None
     match_reference_values: Annotated[
         Optional[list[bool] | list[int] | list[str] | list[BaseCvTerm]],
@@ -458,7 +479,10 @@ class BaseCvTermConstraint(Constraint):
         Optional[list[Union[None, BaseCvTerm]]],
         Field(description="CV terms that bypass this constraint."),
     ] = None
-
+    exceptional_cv_source_list: Annotated[
+        Optional[list[str]],
+        Field(description="CV term source/labels that bypass this constraint."),
+    ] = None
     null_values: Annotated[
         Optional[list[Optional[str]]],
         Field(description="String values that should be treated as null CV terms."),

@@ -44,7 +44,7 @@ from jsonprofile.profile.constraints.constraints import (
 from jsonprofile.profile.model import (
     JsonProfileConfiguration,
 )
-from jsonprofile.utils import convert_full_path, is_non_string_container
+from jsonprofile.utils import convert_full_path
 from jsonprofile.validator.abstract_checker import ConstraintChecker
 from jsonprofile.validator.context import JsonProfileRunContext
 from jsonprofile.validator.decorators import constraint_checker
@@ -56,7 +56,11 @@ def _extract_cv_info(value: Any, mapping: CvTermFieldMapping) -> CvTerm:
     """Extracts label, accession, name, and value from a CvTerm or dict."""
     if isinstance(value, CvTerm):
         return value
+    if isinstance(value, BaseCvTerm):
+        return CvTerm.model_validate(value, from_attributes=True)
     elif isinstance(value, dict):
+        if "cv_label" in value and "cv_accession" in value:
+            return CvTerm.model_validate(value)
         return CvTerm(
             cv_label=value.get(mapping.label_field) or "",
             cv_accession=value.get(mapping.accession_field) or "",
@@ -227,6 +231,21 @@ class CollectionConstraintChecker(ConstraintChecker):
         root: dict[str, Any],
         context: JsonProfileRunContext,
     ) -> Tuple[bool, Optional[str]]:
+        collection_values = value
+
+        if constraint.item_value_match_constraint:
+            collection_values = []
+            values: list[dict[str, Any]] = []
+            for item_json_path in constraint.item_value_jsonpath_list:
+                item_json_path = self.join_json_path(item_json_path)
+                item_values = {}
+                values.append(item_values)
+                json_expression = context.json_path_expressions.get(item_json_path)
+                if not json_expression:
+                    json_expression = jsonpath_ng.parse(item_json_path)
+                    context.json_path_expressions[item_json_path] = json_expression
+                collection_values.extend(json_expression.find(value))
+
         mapping = context.profile_config.cv_term_field_mapping or DEFAULT_MAPPING
         if value is not None and constraint.null_values:
             str_val = str(value)
@@ -251,11 +270,11 @@ class CollectionConstraintChecker(ConstraintChecker):
             elif not constraint.min_occurs:
                 min_req = True
             message = "value is not defined"
-        elif not isinstance(value, list):
+        elif not isinstance(collection_values, list):
             message = f"{constraint.json_path} is not a collection."
             return False, message
         else:
-            val = value
+            val = collection_values
             if constraint.exceptional_values and (
                 val in constraint.exceptional_values
                 or value in constraint.exceptional_values
@@ -291,82 +310,61 @@ class CollectionConstraintChecker(ConstraintChecker):
                         "maximum count error: "
                         f"current: {len(val)}, max: {constraint.max_occurs}"
                     )
-                if constraint.match_reference_values:
-                    values: list[dict[str, Any]] = []
-                    for item_json_path in constraint.item_value_jsonpath_list:
-                        if not item_json_path.startswith("$"):
-                            if item_json_path.startswith("."):
-                                item_json_path = f"${item_json_path}"
-                            else:
-                                item_json_path = f"$.{item_json_path}"
-                        item_values = {}
-                        values.append(item_values)
-                        json_expression = context.json_path_expressions.get(
-                            item_json_path
-                        )
-                        if not json_expression:
-                            json_expression = jsonpath_ng.parse(item_json_path)
-                            context.json_path_expressions[item_json_path] = (
-                                json_expression
-                            )
-                        matches = json_expression.find(value)
-                        for x in matches or []:
-                            source = convert_full_path(x.full_path)
-                            if (
-                                constraint.null_values
-                                and x.value in constraint.null_values
-                            ):
-                                item_values[source] = None
-                            else:
-                                current_value = x.value
-                                first_item = constraint.match_reference_values[0]
-                                if isinstance(first_item, BaseCvTerm):
-                                    current_value = BaseCvTerm(
-                                        cv_label=current_value.get(mapping.label_field),
-                                        cv_accession=current_value.get(
-                                            mapping.accession_field
-                                        ),
-                                        name=current_value.get(mapping.name_field),
-                                    )
-                                item_values[source] = current_value
-                    keys = set().union(*(d.keys() for d in values))
+                if constraint.item_value_match_constraint:
+                    # values: list[dict[str, Any]] = []
+                    first_item = constraint.item_value_match_constraint
+                    item_values = {}
+                    for x in collection_values or []:
+                        source = convert_full_path(x.full_path)
+                        if constraint.null_values and x.value in constraint.null_values:
+                            item_values[source] = None
+                        else:
+                            current_value = x.value
 
-                    zipped = {key: tuple(d.get(key) for d in values) for key in keys}
-                    references = [
-                        tuple(x) if is_non_string_container(x) else (x,)
-                        for x in constraint.match_reference_values or []
-                    ]
-                    exceptional_values = [
-                        tuple(x) if is_non_string_container(x) else (x,)
-                        for x in constraint.exceptional_values or []
-                    ]
+                            if isinstance(first_item, CVTermConstraint):
+                                current_value = BaseCvTerm(
+                                    cv_label=current_value.get(mapping.label_field),
+                                    cv_accession=current_value.get(
+                                        mapping.accession_field
+                                    ),
+                                    name=current_value.get(mapping.name_field),
+                                )
+                            item_values[source] = current_value
+
+                    checker = context.profile_validator_factory.get_checker(
+                        constraint.item_value_match_constraint
+                    )
                     matched = []
                     matched_set = set()
                     unmatched_set = set()
-                    for key, item in zipped.items():
-                        if item in references or item in exceptional_values:
-                            matched.append(key)
-                            matched_set.add(item)
-                        else:
-                            unmatched_set.add(
-                                item[0]
-                                if isinstance(item, tuple) and len(item) == 1
-                                else item
+                    if not constraint.item_value_match_constraint.description:
+                        constraint.item_value_match_constraint.description = (
+                            constraint.description
+                        )
+                    for key, item in item_values.items():
+                        match = False
+                        if item in (constraint.null_values or []):
+                            match = True
+                        if not match:
+                            res = checker.validate_constraint(
+                                constraint.item_value_match_constraint,
+                                item,
+                                root=root,
+                                context=context,
                             )
+                            match = res.is_valid
+                        if match:
+                            matched.append(key)
+                            matched_set.add(str(item))
+                        else:
+                            unmatched_set.add(str(item))
                     matched_count = len(matched)
                     reference_value_matched_count = len(matched_set)
 
                     refs = []
                     for sub in constraint.item_value_jsonpath_list or []:
-                        if constraint.json_path:
-                            prefix = constraint.json_path.lstrip("$").lstrip(".")
-                            trimmed = sub.lstrip("$").lstrip(".")
-                            if trimmed.startswith("["):
-                                refs.append(f"{prefix}{sub}")
-                            else:
-                                refs.append(f"{prefix}.{sub}")
-                        else:
-                            refs.append(sub.lstrip("$").lstrip("."))
+                        refs.append(self.join_json_path(constraint.json_path, sub))
+
                     if constraint.min_match is not None:
                         if matched_count >= constraint.min_match:
                             min_match_req = True
@@ -374,7 +372,7 @@ class CollectionConstraintChecker(ConstraintChecker):
                             messages.append(
                                 f"Minimum items matched error in {', '.join(refs)}. "
                                 f"Matched count: {matched_count}, "
-                                f"expected : {constraint.min_match}"
+                                f"expected : {constraint.min_match} "
                             )
                     elif matched_count > 0:
                         min_match_req = True
@@ -384,12 +382,12 @@ class CollectionConstraintChecker(ConstraintChecker):
                         else:
                             messages.append(
                                 f"Maximum items matched error in {', '.join(refs)}. "
-                                f"Matched count: {matched_count}, "
-                                f"expected : {constraint.max_match}"
+                                "Matched count: "
+                                f"{matched_count} of {len(item_values)}, "
+                                f"expected : {constraint.max_match} "
                             )
                     else:
                         max_match_req = True
-                    ref_values = constraint.match_reference_values
                     if constraint.min_referenced_value_match is not None:
                         if (
                             reference_value_matched_count
@@ -398,22 +396,23 @@ class CollectionConstraintChecker(ConstraintChecker):
                             min_referenced_value_req = True
                         else:
                             messages.append(
-                                "Minimum matched item error. "
-                                f"Matched count: {matched_count}, "
-                                "Expected values for "
-                                f"'{', '.join(refs)}': "
-                                f"{', '.join([str(x) for x in ref_values])}"
+                                "Matched item error. "
+                                f"Expected: {constraint.min_referenced_value_match}, "
+                                f"Matched count: "
+                                f"{matched_count} of {len(item_values)}, "
+                                " Fields "
+                                f"'{', '.join(refs)}'"
                             )
                     else:
-                        if len(zipped) == 0 or reference_value_matched_count > 0:
+                        if len(item_values) == 0 or reference_value_matched_count > 0:
                             min_referenced_value_req = True
                         else:
                             messages.append(
-                                "Minimum matched item error. "
-                                f"Matched count: {matched_count}"
-                                "Expected values for "
+                                "Matched item error. "
+                                f"Matched count: "
+                                f"{matched_count} of {len(item_values)}, "
+                                " Fields "
                                 f"'{', '.join(refs)}': "
-                                f"{', '.join([str(x) for x in ref_values])}"
                             )
                     if constraint.max_referenced_value_match is not None:
                         if (
@@ -423,12 +422,11 @@ class CollectionConstraintChecker(ConstraintChecker):
                             max_referenced_value_req = True
                         elif constraint.max_referenced_value_match > matched_count:
                             messages.append(
-                                "Maximum matched item error. "
-                                f"Matched count: {matched_count}, "
-                                f"expected : {constraint.max_referenced_value_match}. "
+                                "Matched item error. "
+                                f"Expected: {constraint.min_referenced_value_match}, "
+                                f"Matched count: "
+                                f"{matched_count} of {len(item_values)}, "
                                 f"'{', '.join(refs)}'"
-                                " :, reference values: "
-                                f"{', '.join([str(x) for x in ref_values])}"
                             )
                     else:
                         if not unmatched_set:
@@ -436,10 +434,7 @@ class CollectionConstraintChecker(ConstraintChecker):
                         else:
                             messages.append(
                                 "Unmatched values "
-                                f"{', '.join([str(x) for x in unmatched_set])}: "
-                                f"'{', '.join(refs)}'"
-                                " :, reference values: "
-                                f"{', '.join([str(x) for x in ref_values])}"
+                                f"{', '.join([str(x) for x in unmatched_set])}"
                             )
                 else:
                     min_match_req = True
@@ -948,6 +943,12 @@ class CVTermConstraintChecker(ConstraintChecker):
             if not param.cv_label and not param.cv_accession and not param.name:
                 message = f"Value '{value}' could not be parsed as a CV term."
             else:
+                if (
+                    constraint.exceptional_cv_source_list
+                    and param.cv_label in constraint.exceptional_cv_source_list
+                ):
+                    message = "CV source is in exception list"
+                    return True, self.format_message(constraint, message)
                 is_user_defined = (
                     not param.cv_label
                     and not param.cv_accession
@@ -1201,7 +1202,6 @@ class CVTermEnumConstraintChecker(ConstraintChecker):
 
 @constraint_checker(ParentCVTermConstraint)
 class ParentCVTermConstraintChecker(ConstraintChecker):
-    # TODO: implement it later
     def validate(
         self,
         constraint: ParentCVTermConstraint,
@@ -1278,7 +1278,9 @@ class ParentCVTermConstraintChecker(ConstraintChecker):
                                     input_val = BaseCvTerm.model_validate(
                                         param, from_attributes=True
                                     )
-                                    if input_val in constraint.exceptional_values:
+                                    if input_val in (
+                                        constraint.exceptional_values or []
+                                    ):
                                         name_req = True
                                     else:
                                         message = "not in cv term list."
@@ -1390,8 +1392,10 @@ class ConstraintGroupChecker(ConstraintChecker):
                 evaluation = True
         else:
             min_valid = min_valid if min_valid is not None else 1
+            min_evaluation = False
+            max_evaluation = False
             if valid_count >= min_valid:
-                evaluation = True
+                min_evaluation = True
                 messages.append(f"Min {min_valid} conditions are valid")
             else:
                 messages.append(f"Min {min_valid} conditions are not valid")
@@ -1399,10 +1403,11 @@ class ConstraintGroupChecker(ConstraintChecker):
                 max_valid if max_valid is not None else len(constraint.constraints)
             )
             if valid_count <= max_valid:
-                evaluation = True
+                max_evaluation = True
                 messages.append(f"Max {max_valid} conditions are valid")
             else:
                 messages.append(f"Max {max_valid} conditions are not valid")
+            evaluation = min_evaluation and max_evaluation
         message = ". ".join(messages)
         if constraint.negated:
             evaluation = not evaluation
@@ -1451,7 +1456,7 @@ class OpaPolicyConstraintChecker(ConstraintChecker):
                 value = None
         message = ""
         if value is None:
-            if constraint.exceptional_values and value in constraint.exceptional_values:
+            if value in (constraint.exceptional_values or []):
                 evaluation = True
             message = "value is null"
         else:

@@ -185,7 +185,7 @@ class BaseCvTerm(JsonProfileBaseModel):
         return (
             f"[{sanitize_str(self.cv_label)}, "
             f"{sanitize_str(self.cv_accession)}, "
-            f"{sanitize_str(self.name)}, "
+            f"{sanitize_str(self.name)}, ]"
         )
 
     def __hash__(self):
