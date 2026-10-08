@@ -25,6 +25,7 @@ from jsonprofile.profile.model import (
     JsonProfileConfiguration,
     OpaFieldRequirement,
 )
+from jsonprofile.profile.profile_validator import validate_profile
 from jsonprofile.utils import convert_full_path, to_jsonpath
 from jsonprofile.validator.base import CvTermSearch, ProfileValidatorFactory
 from jsonprofile.validator.checkers.default_checker import (
@@ -169,7 +170,7 @@ class JsonValidator:
             if not profile.exists():
                 raise ValueError(f"Json profile ({profile}) file does not exist.")
             profile_json = orjson.loads(profile.read_bytes())
-            target_profile = JsonProfile.model_validate(profile_json)
+            target_profile = JsonProfile.model_validate(profile_json, by_alias=True)
         elif isinstance(profile, dict):
             target_profile = JsonProfile.model_validate(profile, by_alias=True)
         if isinstance(profile, JsonProfile):
@@ -192,6 +193,16 @@ class JsonValidator:
             return merged_profile
 
         self.referenced_profiles[target_profile.id] = target_profile
+        success, messages = validate_profile(target_profile)
+        if not success and messages:
+            for item in messages:
+                logger.warning(
+                    "%s: %s-%s: %s",
+                    item.category.name,
+                    item.source,
+                    item.code,
+                    item.message,
+                )
         return target_profile
 
     def validate_json_file(

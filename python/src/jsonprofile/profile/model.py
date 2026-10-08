@@ -284,7 +284,12 @@ class JsonProfile(JsonProfileBaseModel):
         Field(description="Validator configuration for the profile."),
     ] = None
     requirements: Annotated[
-        Optional[dict[JsonPath, None | FieldRequirementGroup | FieldRequirement]],
+        Optional[
+            dict[
+                JsonPath,
+                None | OpaFieldRequirement | FieldRequirementGroup | FieldRequirement,
+            ]
+        ],
         Field(
             description="Mapping from JSONPath expressions to the requirements that "
             "apply to matching values."

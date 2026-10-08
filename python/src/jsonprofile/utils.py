@@ -1,8 +1,14 @@
 import logging
+import pathlib
 import re
 import sys
 from collections.abc import Sequence
+from importlib import resources
 from typing import Mapping, Optional, Union
+
+import jsonschema_rs
+import orjson
+from cachetools import cached
 
 
 def sanitize_str(val: Optional[str], separators: Optional[list[str]] = None) -> str:
@@ -63,3 +69,30 @@ def setup_basic_logging_config(level: int = logging.INFO):
         stream=sys.stdout,
     )
     logging.getLogger("httpx2").setLevel(logging.ERROR)
+
+
+@cached
+def get_jsonprofile_schema() -> dict:
+    json_path = pathlib.Path(
+        resources.files("jsonprofile").joinpath("jsonprofile.schema.json")
+    )
+    return orjson.loads(json_path.read_bytes())
+
+
+def get_jsonprofile_schema_validator() -> jsonschema_rs.Draft202012Validator:
+    schema = get_jsonprofile_schema()
+    return jsonschema_rs.Draft202012Validator(schema=schema)
+
+
+def validate_profile_schema(profile_content: str | pathlib.Path | dict) -> bool:
+    validator = get_jsonprofile_schema_validator()
+    content = None
+    if isinstance(profile_content, str):
+        content = orjson.loads(pathlib.Path(profile_content).read_bytes())
+    elif isinstance(profile_content, pathlib.Path):
+        content = orjson.loads(profile_content.read_bytes())
+    elif isinstance(profile_content, dict):
+        content = profile_content
+    if not content:
+        raise ValueError("Input is not valid")
+    validator.validate(content)
