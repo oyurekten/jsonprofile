@@ -157,30 +157,3 @@ class OntologyLookupCvTermSearch(CvTermSearch):
             )
             return profile_cv_term, result.synonyms or []
         return None, None
-
-    def get_children(
-        self,
-        cv_term: ProfileCvTerm,
-        allow_only_leaf: bool = True,
-        excluded_cv_accessions: None | list[str] = None,
-        recursive: bool = False,
-    ) -> list[ProfileCvTerm]:
-        ontology = cv_term.cv_label
-        if not ontology:
-            if ":" in cv_term.cv_accession:
-                ontology = cv_term.cv_accession.split(":", maxsplit=1)[0]
-            else:
-                return None, []
-        result: list[SearchTermSummary] = self.svc.get_children(
-            parent_curie=cv_term.cv_accession, ontology=ontology
-        )
-        if result:
-            return [
-                ProfileCvTerm(
-                    cv_label=x.ontology,
-                    cv_accession=x.curie,
-                    name=x.label,
-                )
-                for x in result or []
-            ]
-        return []

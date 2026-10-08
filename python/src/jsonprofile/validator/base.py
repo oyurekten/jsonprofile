@@ -41,15 +41,6 @@ class CvTermSearch(abc.ABC):
         self, source: str, accession: str
     ) -> tuple[CvTerm, list[str]]: ...
 
-    @abc.abstractmethod
-    def get_children(
-        self,
-        cv_term: CvTerm,
-        allow_only_leaf: bool = True,
-        excluded_cv_accessions: None | list[str] = None,
-        recursive: bool = False,
-    ) -> list[CvTerm]: ...
-
 
 class ProfileValidator(abc.ABC):
     def __init__(self, profile_validator_factory: "ProfileValidatorFactory", id: str):

@@ -1,7 +1,5 @@
 import logging
-import re
 from typing import Any, Generic, TypeVar
-from urllib.parse import quote
 
 import bioregistry
 import httpx2
@@ -85,94 +83,6 @@ class OlsCvTermSearch(CvTermSearch):
             curie = bioregistry.curie_from_iri(cv_term.cv_accession)
 
         return curie or None
-
-    def get_children(
-        self,
-        cv_term: CvTerm,
-        allow_only_leaf: bool = True,
-        excluded_cv_accessions: None | list[str] = None,
-        recursive: bool = False,
-    ) -> list[CvTerm]:
-        children: list[_ChildrenSearchModel] = []
-        self.find_children_cv_terms(
-            cv_term=cv_term,
-            children=children,
-            allow_only_leaf=allow_only_leaf,
-            excluded_cv_accessions=excluded_cv_accessions,
-            recursive=recursive,
-        )
-        cv_terms = [
-            CvTerm(
-                cv_label=x.ontology_preferred_prefix,
-                cv_accession=x.curie,
-                name=x.label,
-            )
-            for x in children
-        ]
-        return cv_terms
-
-    def find_children_cv_terms(
-        self,
-        cv_term: CvTerm,
-        children: list[_ChildrenSearchModel],
-        allow_only_leaf: bool = True,
-        excluded_cv_accessions: None | list[str] = None,
-        recursive: bool = False,
-    ) -> None:
-        parent_uri = self.get_iri(cv_term)
-
-        parent_uri_encoded = quote(quote(parent_uri, safe=[]))
-        source = cv_term.cv_label.lower()
-        children_subpath = f"/ontologies/{source}/classes/{parent_uri_encoded}/children"
-        ols4_base_url = "https://www.ebi.ac.uk/ols4/api/v2"
-
-        url = ols4_base_url + children_subpath
-        page = 0
-        finished = False
-        headers = {"Accept": "application/json"}
-        selected_terms: list[_ChildrenSearchModel] = []
-        while not finished:
-            params = {"page": page, "size": 100}
-            page += 1
-            _, result_json = _search_ols(url, params, headers, timeout=10)
-            if not result_json:
-                logger.warning(
-                    "Could not find children CV Terms for %s - %s",
-                    cv_term.cv_accession,
-                    cv_term.name,
-                )
-                break
-            search = _OlsSearchModel[_ChildrenSearchModel].model_validate(result_json)
-            selected_items = [x for x in search.elements if not x.is_obsolete]
-            selected = []
-            if excluded_cv_accessions:
-                for x in selected_items:
-                    for pattern in excluded_cv_accessions:
-                        if not re.match(pattern, x):
-                            selected.append(x)
-
-            if selected:
-                selected_terms.extend(selected)
-            if page >= search.total_pages:
-                finished = True
-        for term in selected_terms:
-            if not allow_only_leaf or (
-                allow_only_leaf and not term.has_hierarchical_children
-            ):
-                children.append(term)
-
-            if term.has_hierarchical_children and recursive:
-                self.find_children_cv_terms(
-                    cv_term=CvTerm(
-                        accession=term.curie,
-                        name=term.label,
-                        source=term.ontology_preferred_prefix,
-                    ),
-                    children=children,
-                    allow_only_leaf=allow_only_leaf,
-                    excluded_cv_accessions=excluded_cv_accessions,
-                    recursive=recursive,
-                )
 
     def get_iri(self, cv_term: CvTerm) -> str | None:
         if cv_term.cv_accession and (
