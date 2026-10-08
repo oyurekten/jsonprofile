@@ -236,7 +236,7 @@ class CollectionConstraintChecker(ConstraintChecker):
         if constraint.item_value_match_constraint:
             collection_values = []
             values: list[dict[str, Any]] = []
-            for item_json_path in constraint.item_value_jsonpath_list:
+            for item_json_path in constraint.item_value_jsonpath_list or []:
                 item_json_path = self.join_json_path(item_json_path)
                 item_values = {}
                 values.append(item_values)
