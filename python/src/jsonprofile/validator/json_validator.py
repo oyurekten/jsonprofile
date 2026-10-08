@@ -364,10 +364,11 @@ class JsonValidator:
                 ),
             )
         end = time.perf_counter()
-        logger.info(
-            "Json data is validated with its source jsonschema in %.6f seconds",
-            end - start,
-        )
+        if end > start + 1:
+            logger.warning(
+                "Json data is validated with its source jsonschema in %.6f seconds",
+                end - start,
+            )
 
     def create_context(
         self, runtime_config: None | ValidationRuntimeConfiguration = None
@@ -417,6 +418,7 @@ class JsonValidator:
         self,
         input_json: dict,
         runtime_config: None | ValidationRuntimeConfiguration = None,
+        process_reporting_threshold_in_secs: float = 5.0,
     ) -> JsonValidationResult:
         if not runtime_config:
             runtime_config = ValidationRuntimeConfiguration()
@@ -491,7 +493,7 @@ class JsonValidator:
                         context.message_collector.add_message(k, item)
             end = time.perf_counter()
             duration = end - start
-            if duration > 0.5:
+            if duration >= process_reporting_threshold_in_secs:
                 logger.warning(
                     "%s execution time: %.6f seconds",
                     requirement_definition.code,

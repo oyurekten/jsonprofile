@@ -76,6 +76,7 @@ def _extract_cv_info(value: Any, mapping: CvTermFieldMapping) -> CvTerm:
             name=parts[2].strip() if len(parts) > 2 else None,
             value=parts[3].strip() if len(parts) > 3 else None,
         )
+    return None
 
 
 @constraint_checker(NotNullConstraint)
@@ -929,7 +930,7 @@ class CVTermConstraintChecker(ConstraintChecker):
         param = None
         if value is not None and constraint.null_values:
             param = _extract_cv_info(value, mapping=mapping)
-            if str(param) in constraint.null_values:
+            if not param or str(param) in constraint.null_values:
                 value = None
         if value is None:
             if constraint.exceptional_values and value in constraint.exceptional_values:
@@ -940,7 +941,9 @@ class CVTermConstraintChecker(ConstraintChecker):
                 param = _extract_cv_info(value, mapping=mapping)
             name_req = False
             value_req = False
-            if not param.cv_label and not param.cv_accession and not param.name:
+            if not param:
+                message = f"Value '{value}' is not a CV term."
+            elif not param.cv_label and not param.cv_accession and not param.name:
                 message = f"Value '{value}' could not be parsed as a CV term."
             else:
                 if (
@@ -1016,7 +1019,7 @@ class CVListConstraintChecker(ConstraintChecker):
         cv_term_search = context.cv_term_search
         if value is not None and constraint.null_values:
             param = _extract_cv_info(value, mapping=mapping)
-            if str(param) in constraint.null_values:
+            if not param or str(param) in constraint.null_values:
                 value = None
         if value is None:
             if constraint.exceptional_values and value in constraint.exceptional_values:
@@ -1026,7 +1029,9 @@ class CVListConstraintChecker(ConstraintChecker):
             param = _extract_cv_info(value, mapping=mapping)
             name_req = False
             value_req = False
-            if not param.cv_label and not param.cv_accession and not param.name:
+            if not param:
+                message = f"Value '{value}' is not a CV term."
+            elif not param.cv_label and not param.cv_accession and not param.name:
                 message = f"Value '{value}' could not be parsed as a CV term."
             else:
                 message = ""
@@ -1129,7 +1134,7 @@ class CVTermEnumConstraintChecker(ConstraintChecker):
         evaluation = False
         if value is not None and constraint.null_values:
             param = _extract_cv_info(value, mapping=mapping)
-            if str(param) in constraint.null_values:
+            if not param or str(param) in constraint.null_values:
                 value = None
         if value is None:
             if constraint.exceptional_values and value in constraint.exceptional_values:
@@ -1139,7 +1144,9 @@ class CVTermEnumConstraintChecker(ConstraintChecker):
             param = _extract_cv_info(value, mapping=mapping)
             name_req = False
             value_req = False
-            if not param.cv_label and not param.cv_accession and not param.name:
+            if not param:
+                message = f"Value '{value}' is not a CV term."
+            elif not param.cv_label and not param.cv_accession and not param.name:
                 message = f"Value '{value}' could not be parsed as a CV term."
             else:
                 is_user_defined = (
@@ -1215,7 +1222,7 @@ class ParentCVTermConstraintChecker(ConstraintChecker):
         cv_term_search = context.cv_term_search
         if value is not None and constraint.null_values:
             param = _extract_cv_info(value, mapping=mapping)
-            if str(param) in constraint.null_values:
+            if not param or str(param) in constraint.null_values:
                 value = None
         if value is None:
             if constraint.exceptional_values and value in constraint.exceptional_values:
@@ -1225,7 +1232,9 @@ class ParentCVTermConstraintChecker(ConstraintChecker):
             param = _extract_cv_info(value, mapping=mapping)
             name_req = False
             value_req = False
-            if not param.cv_label and not param.cv_accession and not param.name:
+            if not param:
+                message = f"Value '{value}' is not a CV term."
+            elif not param.cv_label and not param.cv_accession and not param.name:
                 message = f"Value '{value}' could not be parsed as a CV term."
             else:
                 is_user_defined = (
@@ -1320,9 +1329,14 @@ class CVTermValueConstraintChecker(ConstraintChecker):
     ) -> Tuple[bool, Optional[str]]:
         mapping = context.profile_config.cv_term_field_mapping or DEFAULT_MAPPING
         param = _extract_cv_info(value, mapping=mapping)
-        base_cv_term = BaseCvTerm.model_validate(param, from_attributes=True)
+        base_cv_term = None
+        if param:
+            base_cv_term = BaseCvTerm.model_validate(param, from_attributes=True)
 
-        if str(base_cv_term).lower() == str(constraint.key_cv_term).lower():
+        if (
+            base_cv_term
+            and str(base_cv_term).lower() == str(constraint.key_cv_term).lower()
+        ):
             if constraint.value_constraint:
                 checker = context.profile_validator_factory.get_checker(
                     constraint.value_constraint
@@ -1365,7 +1379,7 @@ class ConstraintGroupChecker(ConstraintChecker):
         evaluation = False
         if value is not None and constraint.null_values:
             param = _extract_cv_info(value, mapping=mapping)
-            if str(param) in constraint.null_values:
+            if not param or str(param) in constraint.null_values:
                 value = None
         is_and = constraint.join_operator == "and"
         messages = []
