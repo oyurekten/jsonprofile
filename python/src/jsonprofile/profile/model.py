@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections.abc import Mapping
 from typing import Annotated, Any, Optional, Union
 
@@ -11,6 +13,7 @@ from jsonprofile.profile.base import (
 )
 from jsonprofile.profile.constraints.constraints import (
     DEFAULT_CONSTRAINTS_MAP,
+    CollectionConstraint,
     Constraint,
     ConstraintGroup,
     CVTermValueConstraint,
@@ -118,6 +121,34 @@ class FieldRequirementGroup(EnforcedRequirement):
             "for the group to be true."
         ),
     ] = None
+
+    @field_validator("requirements", mode="before")
+    @classmethod
+    def validate_requirements(cls, value):
+        if value is None or not isinstance(value, dict):
+            return value
+
+        return [cls.create_requirement(x) for x in value]
+
+    @staticmethod
+    def create_requirement(
+        value: Any,
+    ) -> "FieldRequirementGroup" | OpaFieldRequirement | FieldRequirement:
+        if (
+            value is None
+            or isinstance(value, FieldRequirement)
+            or isinstance(value, OpaFieldRequirement)
+            or isinstance(value, FieldRequirementGroup)
+            or not isinstance(value, dict)
+        ):
+            return value
+
+        if "requirements" in value:
+            return FieldRequirementGroup.model_validate(value, by_alias=True)
+        if "policy_id" in value:
+            return OpaFieldRequirement.model_validate(value, by_alias=True)
+        else:
+            return FieldRequirement.model_validate(value, by_alias=True)
 
 
 class ProfileValidatorDefinition(JsonProfileBaseModel):
@@ -266,22 +297,9 @@ class JsonProfile(JsonProfileBaseModel):
         if value is None or not isinstance(value, dict):
             return value
 
-        return {k: cls.create_requirement(v) for k, v in value.items()}
-
-    def create_requirement(value: Any) -> FieldRequirementGroup | FieldRequirement:
-        if (
-            value is None
-            or isinstance(value, FieldRequirement)
-            or isinstance(value, OpaFieldRequirement)
-            or isinstance(value, FieldRequirementGroup)
-            or not isinstance(value, dict)
-        ):
-            return value
-
-        if "requirements" in value:
-            return FieldRequirementGroup.model_validate(value, by_alias=True)
-        else:
-            return FieldRequirement.model_validate(value, by_alias=True)
+        return {
+            k: FieldRequirementGroup.create_requirement(v) for k, v in value.items()
+        }
 
 
 def _populate_constraint_from_name(value):
@@ -309,7 +327,12 @@ def _populate_constraint_from_name(value):
                     evaluation["constraint"] = _populate_constraint_from_name(
                         constraint
                     )
-
+    if constraint_class == CollectionConstraint:
+        constraint = constraint_data.get("item_value_match_constraint")
+        if constraint:
+            constraint_data["item_value_match_constraint"] = (
+                _populate_constraint_from_name(constraint)
+            )
     if constraint_class == ConstraintGroup:
         constraint_data["constraints"] = [
             _populate_constraint_from_name(constraint)

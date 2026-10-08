@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import abc
 from collections.abc import Sequence
 from decimal import Decimal
@@ -151,7 +153,7 @@ class CollectionConstraint(Constraint):
         ),
     ] = None
     item_value_match_constraint: Annotated[
-        None | Constraint,
+        Optional[DefaultConstraintType],
         Field(description="Constraint definition to evaluate collection items."),
     ] = None
     match_reference_values: Annotated[
@@ -479,7 +481,7 @@ class BaseCvTermConstraint(Constraint):
         Optional[list[Union[None, BaseCvTerm]]],
         Field(description="CV terms that bypass this constraint."),
     ] = None
-    exceptional_cv_source_list: Annotated[
+    exceptional_cv_list: Annotated[
         Optional[list[str]],
         Field(description="CV term source/labels that bypass this constraint."),
     ] = None
@@ -578,11 +580,6 @@ class CVTermEnumConstraint(CVTermConstraint):
             "Each entry identifies a term by label, accession, or name.",
         ),
     ]
-
-    exceptional_cv_list: Annotated[
-        Optional[list[str]],
-        Field(description="CV namespace labels that bypass this enum constraint."),
-    ] = None
 
 
 class ParentCVTermConstraint(CVTermConstraint):

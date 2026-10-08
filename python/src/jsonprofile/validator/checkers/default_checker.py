@@ -944,8 +944,8 @@ class CVTermConstraintChecker(ConstraintChecker):
                 message = f"Value '{value}' could not be parsed as a CV term."
             else:
                 if (
-                    constraint.exceptional_cv_source_list
-                    and param.cv_label in constraint.exceptional_cv_source_list
+                    constraint.exceptional_cv_list
+                    and param.cv_label in constraint.exceptional_cv_list
                 ):
                     message = "CV source is in exception list"
                     return True, self.format_message(constraint, message)
